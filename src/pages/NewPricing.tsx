@@ -51,9 +51,9 @@ function createFilament(index: number): FilamentEntry {
 }
 
 interface PrinterRow {
-  id: string; name: string; kinematics: string; acquisition_cost: number;
-  lifespan: number; power_consumption: number; maintenance_cost_monthly: number;
-  monthly_usage_hours: number; max_filaments: number;
+  id: string; nome: string; cinematica: string; custo_aquisicao: number;
+  vida_util_horas: number; consumo_watts: number; custo_manutencao_mensal: number;
+  horas_uso_mensal: number; max_filamentos: number;
 }
 
 interface MarginSuggestion {
@@ -75,8 +75,8 @@ export default function NewPricing() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("printers").select("*").eq("user_id", user.id)
-      .then(({ data }) => { if (data) setPrinters(data); });
+    supabase.from("impressoras").select("*").eq("user_id", user.id)
+      .then(({ data }) => { if (data) setPrinters(data as any); });
     supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {
         if (data) setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
@@ -214,17 +214,17 @@ export default function NewPricing() {
   };
 
   const addFilament = () => {
-    if (printer && filaments.length < printer.max_filaments) setFilaments(fs => [...fs, createFilament(fs.length)]);
+    if (printer && filaments.length < printer.max_filamentos) setFilaments(fs => [...fs, createFilament(fs.length)]);
   };
 
   const removeFilament = (id: string) => setFilaments(fs => fs.filter(f => f.id !== id));
 
   const totalWeight = filaments.reduce((s, f) => s + f.weightUsed, 0);
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
-  const energyCost = printer ? (printer.power_consumption / 1000) * printTimeH * tariff : 0;
+  const energyCost = printer ? (printer.consumo_watts / 1000) * printTimeH * tariff : 0;
   const manualLaborCost = laborRate * laborHours;
-  const maintPerHour = printer && printer.monthly_usage_hours > 0 ? printer.maintenance_cost_monthly / printer.monthly_usage_hours : 0;
-  const depPerHour = printer && printer.lifespan > 0 ? printer.acquisition_cost / printer.lifespan : 0;
+  const maintPerHour = printer && printer.horas_uso_mensal > 0 ? printer.custo_manutencao_mensal / printer.horas_uso_mensal : 0;
+  const depPerHour = printer && printer.vida_util_horas > 0 ? printer.custo_aquisicao / printer.vida_util_horas : 0;
   const maintenanceCost = maintPerHour * printTimeH;
   const depreciationCost = depPerHour * printTimeH;
 
@@ -258,18 +258,23 @@ export default function NewPricing() {
     if (!user) return;
     if (!canCreateQuote) { setUpgradeOpen(true); return; }
 
-    await supabase.from("quotes").insert({
+    await supabase.from("orcamentos").insert({
       user_id: user.id,
-      piece_name: pieceName, printer_id: printerId, printer_name: printer.name,
-      print_time_hours: hours, print_time_minutes: minutes,
-      filaments: filaments as any, total_weight: totalWeight, total_filament_cost: totalFilamentCost,
-      state, city, distributor, tariff, energy_cost: energyCost,
-      labor_rate: laborMode === "manual" ? laborRate : 0, labor_hours: laborMode === "manual" ? laborHours : 0, labor_cost: laborCost, labor_percentage: laborMode === "auto" ? laborAutoPct : 0,
-      maintenance_cost: maintenanceCost, depreciation_cost: depreciationCost,
-      packaging_type: pkgType, packaging_cost: pkgCost,
-      profit_margin: margin, tax_rate: taxRate,
-      total_cost: totalCost, suggested_price: suggestedPrice, minimum_price: minimumPrice,
-    });
+      nome_peca: pieceName, impressora_id: printerId, impressora_nome: printer.nome,
+      tempo_horas: hours, tempo_minutos: minutes,
+      filamentos: filaments as any,
+      estado: state, cidade: city, distribuidora: distributor, tarifa_energia: tariff, custo_energia: energyCost,
+      modo_mao_de_obra: laborMode,
+      valor_hora_mao_de_obra: laborMode === "manual" ? laborRate : null,
+      horas_mao_de_obra: laborMode === "manual" ? laborHours : null,
+      custo_mao_de_obra: laborCost,
+      percentual_mao_de_obra: laborMode === "auto" ? laborAutoPct : null,
+      custo_manutencao: maintenanceCost, custo_depreciacao: depreciationCost,
+      tipo_embalagem: pkgType, custo_embalagem: pkgCost,
+      margem_lucro: margin, percentual_impostos: taxRate,
+      custo_total: totalCost, preco_sugerido: suggestedPrice, preco_minimo: minimumPrice,
+      lucro_liquido: profit,
+    } as any);
     toast.success("Orçamento salvo com sucesso!");
     refresh();
   };
@@ -362,13 +367,13 @@ export default function NewPricing() {
             <Label className="text-foreground">Impressora</Label>
             <Select value={printerId} onValueChange={handlePrinterChange}>
               <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+               <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
             </Select>
             {printer && (
               <div className="flex gap-1.5 mt-2">
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.kinematics}</Badge>
-                <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">Até {printer.max_filaments} filamento{printer.max_filaments > 1 ? 's' : ''}</Badge>
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.power_consumption}W</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.cinematica}</Badge>
+                <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">Até {printer.max_filamentos} filamento{printer.max_filamentos > 1 ? 's' : ''}</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.consumo_watts}W</Badge>
               </div>
             )}
           </div>
@@ -385,7 +390,7 @@ export default function NewPricing() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm text-foreground flex items-center gap-2">🎨 Filamentos</CardTitle>
-            {printer && printer.max_filaments > 1 && filaments.length < printer.max_filaments && (
+            {printer && printer.max_filamentos > 1 && filaments.length < printer.max_filamentos && (
               <Button size="sm" variant="outline" onClick={addFilament} className="border-primary/30 text-primary text-xs">
                 <Plus size={14} className="mr-1" /> Adicionar
               </Button>
@@ -458,7 +463,7 @@ export default function NewPricing() {
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
           {printer && (
             <div className="text-xs text-muted-foreground">
-              Consumo: <span className="font-mono text-primary">{printer.power_consumption}W — {printer.name}</span>
+              Consumo: <span className="font-mono text-primary">{printer.consumo_watts}W — {printer.nome}</span>
               <br />Custo energia: <span className="font-mono text-primary">R$ {energyCost.toFixed(2)}</span>
             </div>
           )}

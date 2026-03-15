@@ -21,7 +21,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
-    const query = supabase.from("quotes").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    const query = supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
 
     if (!isPro) {
       const now = new Date();
@@ -33,12 +33,12 @@ export default function HistoryPage() {
   }, [user, isPro]);
 
   const filtered = quotes.filter(q =>
-    q.piece_name.toLowerCase().includes(search.toLowerCase()) ||
-    q.printer_name.toLowerCase().includes(search.toLowerCase())
+    q.nome_peca.toLowerCase().includes(search.toLowerCase()) ||
+    q.impressora_nome.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleDelete = async (id: string) => {
-    await supabase.from("quotes").delete().eq("id", id);
+    await supabase.from("orcamentos").delete().eq("id", id);
     setQuotes(quotes.filter(q => q.id !== id));
     toast.success("Orçamento removido!");
   };
@@ -46,7 +46,7 @@ export default function HistoryPage() {
   const handleDuplicate = async (q: any) => {
     if (!user) return;
     const { id, created_at, ...rest } = q;
-    const { data } = await supabase.from("quotes").insert({ ...rest, piece_name: `${q.piece_name} (cópia)`, user_id: user.id }).select().single();
+    const { data } = await supabase.from("orcamentos").insert({ ...rest, nome_peca: `${q.nome_peca} (cópia)`, user_id: user.id } as any).select().single();
     if (data) {
       setQuotes([data, ...quotes]);
       toast.success("Orçamento duplicado!");
@@ -57,7 +57,7 @@ export default function HistoryPage() {
     if (!canExport) { setUpgradeOpen(true); return; }
     const headers = "Nome,Impressora,Data,Custo Total,Preço Sugerido,Margem\n";
     const rows = filtered.map(q =>
-      `"${q.piece_name}","${q.printer_name}","${new Date(q.created_at).toLocaleDateString('pt-BR')}",${(q.total_cost || 0).toFixed(2)},${(q.suggested_price || 0).toFixed(2)},${q.profit_margin}%`
+      `"${q.nome_peca}","${q.impressora_nome}","${new Date(q.created_at).toLocaleDateString('pt-BR')}",${(q.custo_total || 0).toFixed(2)},${(q.preco_sugerido || 0).toFixed(2)},${q.margem_lucro}%`
     ).join("\n");
     const blob = new Blob([headers + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -92,13 +92,13 @@ export default function HistoryPage() {
             <Card key={q.id} className="border-border bg-card">
               <CardContent className="flex items-center justify-between py-3 px-4">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-foreground truncate">{q.piece_name}</p>
-                  <p className="text-xs text-muted-foreground">{q.printer_name} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
+                  <p className="font-medium text-sm text-foreground truncate">{q.nome_peca}</p>
+                  <p className="text-xs text-muted-foreground">{q.impressora_nome} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right mr-2">
-                    <p className="font-bold font-mono text-primary text-sm">R$ {(q.suggested_price || 0).toFixed(2)}</p>
-                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{q.profit_margin}%</Badge>
+                    <p className="font-bold font-mono text-primary text-sm">R$ {(q.preco_sugerido || 0).toFixed(2)}</p>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{q.margem_lucro}%</Badge>
                   </div>
                   <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary"><Eye size={15} /></button>
                   <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent"><Copy size={15} /></button>
@@ -112,25 +112,23 @@ export default function HistoryPage() {
 
       <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
         <DialogContent className="bg-card border-border max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="text-foreground">{viewing?.piece_name}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-foreground">{viewing?.nome_peca}</DialogTitle></DialogHeader>
           {viewing && (
             <div className="space-y-3 text-sm">
-              <Row label="Impressora" value={viewing.printer_name} />
-              <Row label="Tempo" value={`${viewing.print_time_hours}h ${viewing.print_time_minutes}min`} />
-              <Row label="Peso total" value={`${(viewing.total_weight || 0).toFixed(1)}g`} />
-              <Row label="Filamento" value={`R$ ${(viewing.total_filament_cost || 0).toFixed(2)}`} />
-              <Row label="Energia" value={`R$ ${(viewing.energy_cost || 0).toFixed(2)}`} />
-              <Row label="Mão de obra" value={`R$ ${(viewing.labor_cost || 0).toFixed(2)}`} />
-              <Row label="Manutenção" value={`R$ ${(viewing.maintenance_cost || 0).toFixed(2)}`} />
-              <Row label="Depreciação" value={`R$ ${(viewing.depreciation_cost || 0).toFixed(2)}`} />
-              <Row label="Embalagem" value={`R$ ${(viewing.packaging_cost || 0).toFixed(2)}`} />
+              <Row label="Impressora" value={viewing.impressora_nome} />
+              <Row label="Tempo" value={`${viewing.tempo_horas}h ${viewing.tempo_minutos}min`} />
+              <Row label="Energia" value={`R$ ${(viewing.custo_energia || 0).toFixed(2)}`} />
+              <Row label="Mão de obra" value={`R$ ${(viewing.custo_mao_de_obra || 0).toFixed(2)}`} />
+              <Row label="Manutenção" value={`R$ ${(viewing.custo_manutencao || 0).toFixed(2)}`} />
+              <Row label="Depreciação" value={`R$ ${(viewing.custo_depreciacao || 0).toFixed(2)}`} />
+              <Row label="Embalagem" value={`R$ ${(viewing.custo_embalagem || 0).toFixed(2)}`} />
               <div className="border-t border-border pt-2">
-                <Row label="Custo total" value={`R$ ${(viewing.total_cost || 0).toFixed(2)}`} />
-                <Row label="Preço mínimo" value={`R$ ${(viewing.minimum_price || 0).toFixed(2)}`} />
-                <Row label="Margem" value={`${viewing.profit_margin}%`} />
+                <Row label="Custo total" value={`R$ ${(viewing.custo_total || 0).toFixed(2)}`} />
+                <Row label="Preço mínimo" value={`R$ ${(viewing.preco_minimo || 0).toFixed(2)}`} />
+                <Row label="Margem" value={`${viewing.margem_lucro}%`} />
                 <div className="flex justify-between items-center pt-2">
                   <span className="font-medium text-foreground">Preço sugerido</span>
-                  <span className="text-xl font-bold font-mono text-primary">R$ {(viewing.suggested_price || 0).toFixed(2)}</span>
+                  <span className="text-xl font-bold font-mono text-primary">R$ {(viewing.preco_sugerido || 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
