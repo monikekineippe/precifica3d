@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, X, Crown } from "lucide-react";
 
-const CHECKOUT_MENSAL = import.meta.env.VITE_GREENN_CHECKOUT_MENSAL || "#";
-const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
+import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 
 const FEATURES = [
   { name: "Orçamentos por mês", free: "2", pro: "Ilimitados" },

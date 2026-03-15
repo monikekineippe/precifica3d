@@ -304,8 +304,6 @@ export default function NewPricing() {
     toast.success("CSV exportado!");
   };
 
-  const CHECKOUT_MENSAL = import.meta.env.VITE_GREENN_CHECKOUT_MENSAL || "#";
-  const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
 
   const daysUntilReset = useMemo(() => {
     const now = new Date();
