@@ -113,13 +113,8 @@ export default function AuthPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm space-y-6">
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 lg:hidden justify-center mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Printer size={20} className="text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">
-              Precifica<span className="text-primary">3D</span>
-            </span>
+          <div className="flex justify-center mb-4 lg:hidden">
+            <img src={logo} alt="Precifica3D" className="h-12 object-contain" />
           </div>
 
           {/* Toggle */}

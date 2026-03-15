@@ -91,9 +91,7 @@ export default function Layout() {
           <button onClick={() => setOpen(true)} className="text-foreground">
             <Menu size={22} />
           </button>
-          <span className="ml-3 font-bold text-foreground">
-            Precifica<span className="text-primary">3D</span>
-          </span>
+          <img src={logo} alt="Precifica3D" className="ml-3 h-8 object-contain" />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
