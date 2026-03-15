@@ -29,8 +29,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             {/* Public */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<AuthPage />} />
+            <Route path="/signup" element={<AuthPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             {/* Protected */}
