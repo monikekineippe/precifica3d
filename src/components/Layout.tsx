@@ -38,13 +38,8 @@ export default function Layout() {
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-border">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">P3</span>
-          </div>
-          <span className="font-bold text-lg tracking-tight text-foreground">
-            Precifica<span className="text-primary">3D</span>
-          </span>
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
+          <img src={logo} alt="Precifica3D" className="h-9 object-contain" />
           <button className="ml-auto md:hidden text-muted-foreground" onClick={() => setOpen(false)}>
             <X size={20} />
           </button>
