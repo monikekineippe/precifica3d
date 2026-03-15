@@ -39,10 +39,10 @@ export default function Layout() {
       >
         <div className="flex items-center gap-2 px-5 py-5 border-b border-border">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">PP</span>
+            <span className="text-primary-foreground font-bold text-sm">P3</span>
           </div>
           <span className="font-bold text-lg tracking-tight text-foreground">
-            Print<span className="text-primary">Price</span>
+            Precifica<span className="text-primary">3D</span>
           </span>
           <button className="ml-auto md:hidden text-muted-foreground" onClick={() => setOpen(false)}>
             <X size={20} />
@@ -86,7 +86,7 @@ export default function Layout() {
           >
             <LogOut size={16} /> Sair
           </button>
-          <p className="text-[11px] text-muted-foreground">Print Price v2.0</p>
+          <p className="text-[11px] text-muted-foreground">Precifica3D v2.0</p>
         </div>
       </aside>
 
@@ -96,7 +96,7 @@ export default function Layout() {
             <Menu size={22} />
           </button>
           <span className="ml-3 font-bold text-foreground">
-            Print<span className="text-primary">Price</span>
+            Precifica<span className="text-primary">3D</span>
           </span>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">

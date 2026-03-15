@@ -8,7 +8,7 @@ const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
 
 const FEATURES = [
   { name: "Orçamentos por mês", free: "2", pro: "Ilimitados" },
-  { name: "Impressoras personalizadas", free: "2", pro: "Ilimitadas" },
+  { name: "Impressoras personalizadas", free: "1", pro: "Ilimitadas" },
   { name: "Exportar PDF/CSV", free: false, pro: true },
   { name: "Histórico completo", free: false, pro: true },
   { name: "Relatórios e gráficos", free: false, pro: true },
@@ -29,7 +29,7 @@ export default function UpgradeModal({ open, onOpenChange }: Props) {
             Upgrade para Pro
           </DialogTitle>
           <DialogDescription>
-            Desbloqueie todo o potencial do Print Price
+            Desbloqueie todo o potencial do Precifica3D
           </DialogDescription>
         </DialogHeader>
 
