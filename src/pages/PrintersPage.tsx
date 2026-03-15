@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import type { KinematicsType } from "@/lib/types";
-import { PRESET_PRINTERS } from "@/lib/printers-data";
+// presets now live in the DB
 import { computePrinterFields } from "@/lib/store";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
