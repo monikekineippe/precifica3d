@@ -222,6 +222,9 @@ export default function AuthPage() {
                 Plano gratuito. Sem cartão de crédito.
               </p>
             )}
+            <p className="text-muted-foreground text-xs lg:hidden">
+              Plano gratuito. Sem cartão de crédito.
+            </p>
             <Link
               to="/planos"
               className="text-primary hover:underline text-xs block"
