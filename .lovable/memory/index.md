@@ -1,34 +1,31 @@
-Precifica3D — plataforma de precificação de impressão 3D, tema escuro com neon azul/verde
+# Memory: index.md
+Precifica3D — plataforma de precificação de impressão 3D
 
 ## Design System
 - Theme: dark mode (class="dark" on html)
-- Primary: HSL 173 80% 50% (teal/neon green)
-- Accent: HSL 200 100% 60% (neon blue)
-- Neon green: HSL 160 100% 50%
+- Primary: HSL 210 65% 52% (blue, from logo)
+- Accent/Gold: HSL 43 56% 56% (gold, from logo)
+- Neon glow: HSL 210 65% 52% (blue glow)
 - Background: HSL 222 30% 8%
 - Card: HSL 222 25% 11%
 - Fonts: Inter (body), JetBrains Mono (numbers/code)
 - Custom utilities: .neon-glow, .neon-text, .glass
+- Logo: src/assets/logo-precifica3d.png (gold+blue identity)
+- 3D printer background: src/assets/3d-printer-bg.png
 
 ## Architecture
-- Lovable Cloud (Supabase) for auth, DB, edge functions
-- Greenn + Make for payment webhooks (no edge function for webhook)
-- Edge functions: energy-tariff, margin-suggestion (Lovable AI Gateway)
+- Supabase for auth + data persistence
+- Edge Functions: energy-tariff, margin-suggestion (Lovable AI Gateway)
+- Greenn + Make for payment webhooks (NOT edge function)
 - IBGE API for Brazilian cities
 - Preset printers: Bambu Lab, Creality, Prusa, FLSUN
-- Free plan: 2 quotes/month, 1 custom printer
-- Pro plan: unlimited
-
-## Auth
-- Single AuthPage.tsx with two-column layout (product showcase + toggle login/signup)
-- ForgotPasswordPage.tsx also two-column
-- ResetPasswordPage for password recovery flow
 
 ## Pages
+- /login AuthPage (two-column layout)
 - / Dashboard
 - /printers Manage printers
 - /new New pricing/quote
 - /history Quote history
-- /reports Pro-only reports
-- /planos Plans comparison
-- /settings Default values + subscription
+- /reports Reports (Pro only)
+- /planos Plans page
+- /settings Default values
