@@ -14,6 +14,167 @@ export type Database = {
   }
   public: {
     Tables: {
+      impressoras: {
+        Row: {
+          cinematica: string
+          consumo_watts: number
+          created_at: string
+          custo_aquisicao: number
+          custo_manutencao_mensal: number
+          horas_uso_mensal: number
+          id: string
+          is_precadastrada: boolean
+          max_filamentos: number
+          nome: string
+          user_id: string
+          vida_util_horas: number
+        }
+        Insert: {
+          cinematica?: string
+          consumo_watts?: number
+          created_at?: string
+          custo_aquisicao?: number
+          custo_manutencao_mensal?: number
+          horas_uso_mensal?: number
+          id?: string
+          is_precadastrada?: boolean
+          max_filamentos?: number
+          nome: string
+          user_id: string
+          vida_util_horas?: number
+        }
+        Update: {
+          cinematica?: string
+          consumo_watts?: number
+          created_at?: string
+          custo_aquisicao?: number
+          custo_manutencao_mensal?: number
+          horas_uso_mensal?: number
+          id?: string
+          is_precadastrada?: boolean
+          max_filamentos?: number
+          nome?: string
+          user_id?: string
+          vida_util_horas?: number
+        }
+        Relationships: []
+      }
+      orcamentos: {
+        Row: {
+          categoria_ia: string | null
+          cidade: string | null
+          created_at: string
+          custo_depreciacao: number
+          custo_embalagem: number
+          custo_energia: number
+          custo_manutencao: number
+          custo_mao_de_obra: number
+          custo_total: number
+          distribuidora: string | null
+          estado: string | null
+          filamentos: Json
+          horas_mao_de_obra: number | null
+          id: string
+          impressora_id: string | null
+          impressora_nome: string
+          lucro_liquido: number
+          margem_lucro: number
+          margem_maxima_ia: number | null
+          margem_minima_ia: number | null
+          margem_sugerida_ia: number | null
+          modo_mao_de_obra: string
+          nome_peca: string
+          percentual_impostos: number
+          percentual_mao_de_obra: number | null
+          preco_minimo: number
+          preco_sugerido: number
+          tarifa_energia: number
+          tempo_horas: number
+          tempo_minutos: number
+          tipo_embalagem: string
+          user_id: string
+          valor_hora_mao_de_obra: number | null
+        }
+        Insert: {
+          categoria_ia?: string | null
+          cidade?: string | null
+          created_at?: string
+          custo_depreciacao?: number
+          custo_embalagem?: number
+          custo_energia?: number
+          custo_manutencao?: number
+          custo_mao_de_obra?: number
+          custo_total?: number
+          distribuidora?: string | null
+          estado?: string | null
+          filamentos?: Json
+          horas_mao_de_obra?: number | null
+          id?: string
+          impressora_id?: string | null
+          impressora_nome?: string
+          lucro_liquido?: number
+          margem_lucro?: number
+          margem_maxima_ia?: number | null
+          margem_minima_ia?: number | null
+          margem_sugerida_ia?: number | null
+          modo_mao_de_obra?: string
+          nome_peca: string
+          percentual_impostos?: number
+          percentual_mao_de_obra?: number | null
+          preco_minimo?: number
+          preco_sugerido?: number
+          tarifa_energia?: number
+          tempo_horas?: number
+          tempo_minutos?: number
+          tipo_embalagem?: string
+          user_id: string
+          valor_hora_mao_de_obra?: number | null
+        }
+        Update: {
+          categoria_ia?: string | null
+          cidade?: string | null
+          created_at?: string
+          custo_depreciacao?: number
+          custo_embalagem?: number
+          custo_energia?: number
+          custo_manutencao?: number
+          custo_mao_de_obra?: number
+          custo_total?: number
+          distribuidora?: string | null
+          estado?: string | null
+          filamentos?: Json
+          horas_mao_de_obra?: number | null
+          id?: string
+          impressora_id?: string | null
+          impressora_nome?: string
+          lucro_liquido?: number
+          margem_lucro?: number
+          margem_maxima_ia?: number | null
+          margem_minima_ia?: number | null
+          margem_sugerida_ia?: number | null
+          modo_mao_de_obra?: string
+          nome_peca?: string
+          percentual_impostos?: number
+          percentual_mao_de_obra?: number | null
+          preco_minimo?: number
+          preco_sugerido?: number
+          tarifa_energia?: number
+          tempo_horas?: number
+          tempo_minutos?: number
+          tipo_embalagem?: string
+          user_id?: string
+          valor_hora_mao_de_obra?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_impressora_id_fkey"
+            columns: ["impressora_id"]
+            isOneToOne: false
+            referencedRelation: "impressoras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       printers: {
         Row: {
           acquisition_cost: number
@@ -62,6 +223,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           greenn_assinatura_id: string | null
           id: string
           nome: string
@@ -72,6 +234,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           greenn_assinatura_id?: string | null
           id?: string
           nome?: string
@@ -82,6 +245,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           greenn_assinatura_id?: string | null
           id?: string
           nome?: string
