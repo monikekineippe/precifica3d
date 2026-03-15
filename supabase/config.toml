@@ -1,0 +1,4 @@
+project_id = "nvghinitrmogshcsluys"
+
+[functions.greenn-webhook]
+verify_jwt = false
