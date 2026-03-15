@@ -94,9 +94,10 @@ export default function NewPricing() {
   const [distributor, setDistributor] = useState("");
   const [tariffRef, setTariffRef] = useState("");
   const [tariffLoading, setTariffLoading] = useState(false);
+  const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
-  const [laborPct, setLaborPct] = useState(0);
+  const [laborAutoPct, setLaborAutoPct] = useState(15);
   const [pkgType, setPkgType] = useState("none");
   const [pkgCost, setPkgCost] = useState(0);
   const [margin, setMargin] = useState(settings.defaultMargin);
