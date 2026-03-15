@@ -304,8 +304,51 @@ export default function NewPricing() {
     toast.success("CSV exportado!");
   };
 
+  const CHECKOUT_MENSAL = import.meta.env.VITE_GREENN_CHECKOUT_MENSAL || "#";
+  const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
+
+  const daysUntilReset = useMemo(() => {
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return Math.ceil((nextMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }, []);
+
+  const isBlocked = !canCreateQuote;
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl relative">
+      {isBlocked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl p-8 max-w-md mx-4 text-center space-y-5 shadow-2xl">
+            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Lock className="text-primary" size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-foreground">Você atingiu o limite do plano gratuito</h2>
+            <p className="text-muted-foreground text-sm">
+              Você já realizou 2 precificações este mês. Faça upgrade para o plano Pro e precifique sem limites.
+            </p>
+            <div className="space-y-3">
+              <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
+                <Button className="w-full bg-primary text-primary-foreground font-semibold" size="lg">
+                  Assinar Pro por R$ 29,90/mês
+                </Button>
+              </a>
+              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
+                <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10" size="lg">
+                  Ver plano anual (economize 33%)
+                </Button>
+              </a>
+              <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate("/")}>
+                Voltar ao Dashboard
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Limite reinicia em <span className="font-semibold text-foreground">{daysUntilReset} dias</span>
+            </p>
+          </div>
+        </div>
+      )}
+
       <div>
         <h1 className="text-2xl font-bold text-foreground">Nova Precificação</h1>
         <p className="text-muted-foreground text-sm mt-1">Calcule o preço ideal da sua peça 3D</p>
