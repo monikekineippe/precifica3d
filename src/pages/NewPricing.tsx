@@ -424,13 +424,45 @@ export default function NewPricing() {
       {/* SECTION D */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Wrench size={16} className="text-accent" />Mão de Obra</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
-            <div><Label className="text-foreground">Horas manuais</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+        <CardContent className="space-y-4">
+          <div className="flex rounded-lg overflow-hidden border border-border">
+            <button
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${laborMode === "auto" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setLaborMode("auto")}
+            >
+              Calcular automaticamente
+            </button>
+            <button
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${laborMode === "manual" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setLaborMode("manual")}
+            >
+              Informar meu valor/hora
+            </button>
           </div>
-          <div><Label className="text-foreground">Adicional sobre custo total (%)<Tip text="Percentual adicional opcional sobre o custo total" /></Label><Input type="number" value={laborPct || ''} onChange={e => setLaborPct(+e.target.value)} className="bg-muted border-border" /></div>
-          <div className="text-xs text-muted-foreground">Custo mão de obra: <span className="font-mono text-primary">R$ {(laborCost + laborPctCost).toFixed(2)}</span></div>
+
+          {laborMode === "manual" ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+              </div>
+              <div className="text-xs text-muted-foreground">Custo de Mão de Obra: <span className="font-mono text-primary">R$ {laborCost.toFixed(2)}</span></div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <p className="text-xs text-muted-foreground">Utilizamos <span className="font-mono text-foreground">{laborAutoPct}%</span> sobre o custo total de produção como referência de mercado</p>
+              </div>
+              <div>
+                <Label className="text-foreground">Percentual de mão de obra (%)</Label>
+                <Input type="number" value={laborAutoPct || ''} onChange={e => setLaborAutoPct(+e.target.value)} className="bg-muted border-border" />
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Custo de Mão de Obra estimado: <span className="font-mono text-primary font-bold">R$ {laborCost.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 italic">Baseado na média de R$ 45/hora para trabalho técnico de impressão 3D no Brasil</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
