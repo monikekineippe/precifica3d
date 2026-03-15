@@ -261,7 +261,7 @@ export default function NewPricing() {
       print_time_hours: hours, print_time_minutes: minutes,
       filaments: filaments as any, total_weight: totalWeight, total_filament_cost: totalFilamentCost,
       state, city, distributor, tariff, energy_cost: energyCost,
-      labor_rate: laborRate, labor_hours: laborHours, labor_cost: laborCost + laborPctCost, labor_percentage: laborPct,
+      labor_rate: laborMode === "manual" ? laborRate : 0, labor_hours: laborMode === "manual" ? laborHours : 0, labor_cost: laborCost, labor_percentage: laborMode === "auto" ? laborAutoPct : 0,
       maintenance_cost: maintenanceCost, depreciation_cost: depreciationCost,
       packaging_type: pkgType, packaging_cost: pkgCost,
       profit_margin: margin, tax_rate: taxRate,
