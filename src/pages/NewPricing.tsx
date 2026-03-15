@@ -463,7 +463,7 @@ export default function NewPricing() {
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
           {printer && (
             <div className="text-xs text-muted-foreground">
-              Consumo: <span className="font-mono text-primary">{printer.power_consumption}W — {printer.name}</span>
+              Consumo: <span className="font-mono text-primary">{printer.consumo_watts}W — {printer.nome}</span>
               <br />Custo energia: <span className="font-mono text-primary">R$ {energyCost.toFixed(2)}</span>
             </div>
           )}
