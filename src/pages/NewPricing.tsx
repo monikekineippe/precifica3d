@@ -283,7 +283,7 @@ export default function NewPricing() {
       ["Item", "Valor (R$)"],
       ["Filamento", totalFilamentCost.toFixed(2)],
       ["Energia", energyCost.toFixed(2)],
-      ["Mão de obra", (laborCost + laborPctCost).toFixed(2)],
+      ["Mão de obra", laborCost.toFixed(2)],
       ["Manutenção", maintenanceCost.toFixed(2)],
       ["Depreciação", depreciationCost.toFixed(2)],
       ["Embalagem", pkgCost.toFixed(2)],
