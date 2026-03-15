@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, Printer } from "lucide-react";
+import printerBg from "@/assets/3d-printer-bg.png";
 
 const BENEFITS = [
   "Cálculo automático de filamento, energia, mão de obra e manutenção",
