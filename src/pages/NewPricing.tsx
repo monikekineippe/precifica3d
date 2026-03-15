@@ -390,7 +390,7 @@ export default function NewPricing() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm text-foreground flex items-center gap-2">🎨 Filamentos</CardTitle>
-            {printer && printer.max_filaments > 1 && filaments.length < printer.max_filaments && (
+            {printer && printer.max_filamentos > 1 && filaments.length < printer.max_filamentos && (
               <Button size="sm" variant="outline" onClick={addFilament} className="border-primary/30 text-primary text-xs">
                 <Plus size={14} className="mr-1" /> Adicionar
               </Button>
