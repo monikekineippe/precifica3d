@@ -94,9 +94,10 @@ export default function NewPricing() {
   const [distributor, setDistributor] = useState("");
   const [tariffRef, setTariffRef] = useState("");
   const [tariffLoading, setTariffLoading] = useState(false);
+  const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
-  const [laborPct, setLaborPct] = useState(0);
+  const [laborAutoPct, setLaborAutoPct] = useState(15);
   const [pkgType, setPkgType] = useState("none");
   const [pkgCost, setPkgCost] = useState(0);
   const [margin, setMargin] = useState(settings.defaultMargin);
@@ -218,15 +219,17 @@ export default function NewPricing() {
   const totalWeight = filaments.reduce((s, f) => s + f.weightUsed, 0);
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
   const energyCost = printer ? (printer.power_consumption / 1000) * printTimeH * tariff : 0;
-  const laborCost = laborRate * laborHours;
+  const manualLaborCost = laborRate * laborHours;
   const maintPerHour = printer && printer.monthly_usage_hours > 0 ? printer.maintenance_cost_monthly / printer.monthly_usage_hours : 0;
   const depPerHour = printer && printer.lifespan > 0 ? printer.acquisition_cost / printer.lifespan : 0;
   const maintenanceCost = maintPerHour * printTimeH;
   const depreciationCost = depPerHour * printTimeH;
 
-  const subtotal = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + pkgCost;
-  const laborPctCost = subtotal * (laborPct / 100);
-  const totalCost = subtotal + laborPctCost;
+  const productionBase = totalFilamentCost + energyCost + maintenanceCost + depreciationCost + pkgCost;
+  const autoLaborCost = productionBase * (laborAutoPct / 100);
+  const laborCost = laborMode === "manual" ? manualLaborCost : autoLaborCost;
+
+  const totalCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + pkgCost;
   const taxAmount = totalCost * (taxRate / 100);
   const minimumPrice = totalCost + taxAmount;
   const suggestedPrice = minimumPrice * (1 + margin / 100);
@@ -238,7 +241,7 @@ export default function NewPricing() {
   const pieData = [
     { name: "Filamento", value: +totalFilamentCost.toFixed(2) },
     { name: "Energia", value: +energyCost.toFixed(2) },
-    { name: "Mão de obra", value: +(laborCost + laborPctCost).toFixed(2) },
+    { name: "Mão de obra", value: +laborCost.toFixed(2) },
     { name: "Manutenção", value: +maintenanceCost.toFixed(2) },
     { name: "Depreciação", value: +depreciationCost.toFixed(2) },
     { name: "Embalagem", value: +pkgCost.toFixed(2) },
@@ -258,7 +261,7 @@ export default function NewPricing() {
       print_time_hours: hours, print_time_minutes: minutes,
       filaments: filaments as any, total_weight: totalWeight, total_filament_cost: totalFilamentCost,
       state, city, distributor, tariff, energy_cost: energyCost,
-      labor_rate: laborRate, labor_hours: laborHours, labor_cost: laborCost + laborPctCost, labor_percentage: laborPct,
+      labor_rate: laborMode === "manual" ? laborRate : 0, labor_hours: laborMode === "manual" ? laborHours : 0, labor_cost: laborCost, labor_percentage: laborMode === "auto" ? laborAutoPct : 0,
       maintenance_cost: maintenanceCost, depreciation_cost: depreciationCost,
       packaging_type: pkgType, packaging_cost: pkgCost,
       profit_margin: margin, tax_rate: taxRate,
@@ -280,7 +283,7 @@ export default function NewPricing() {
       ["Item", "Valor (R$)"],
       ["Filamento", totalFilamentCost.toFixed(2)],
       ["Energia", energyCost.toFixed(2)],
-      ["Mão de obra", (laborCost + laborPctCost).toFixed(2)],
+      ["Mão de obra", laborCost.toFixed(2)],
       ["Manutenção", maintenanceCost.toFixed(2)],
       ["Depreciação", depreciationCost.toFixed(2)],
       ["Embalagem", pkgCost.toFixed(2)],
@@ -421,13 +424,45 @@ export default function NewPricing() {
       {/* SECTION D */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Wrench size={16} className="text-accent" />Mão de Obra</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
-            <div><Label className="text-foreground">Horas manuais</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+        <CardContent className="space-y-4">
+          <div className="flex rounded-lg overflow-hidden border border-border">
+            <button
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${laborMode === "auto" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setLaborMode("auto")}
+            >
+              Calcular automaticamente
+            </button>
+            <button
+              className={`flex-1 py-2 text-xs font-medium transition-colors ${laborMode === "manual" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+              onClick={() => setLaborMode("manual")}
+            >
+              Informar meu valor/hora
+            </button>
           </div>
-          <div><Label className="text-foreground">Adicional sobre custo total (%)<Tip text="Percentual adicional opcional sobre o custo total" /></Label><Input type="number" value={laborPct || ''} onChange={e => setLaborPct(+e.target.value)} className="bg-muted border-border" /></div>
-          <div className="text-xs text-muted-foreground">Custo mão de obra: <span className="font-mono text-primary">R$ {(laborCost + laborPctCost).toFixed(2)}</span></div>
+
+          {laborMode === "manual" ? (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+              </div>
+              <div className="text-xs text-muted-foreground">Custo de Mão de Obra: <span className="font-mono text-primary">R$ {laborCost.toFixed(2)}</span></div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <p className="text-xs text-muted-foreground">Utilizamos <span className="font-mono text-foreground">{laborAutoPct}%</span> sobre o custo total de produção como referência de mercado</p>
+              </div>
+              <div>
+                <Label className="text-foreground">Percentual de mão de obra (%)</Label>
+                <Input type="number" value={laborAutoPct || ''} onChange={e => setLaborAutoPct(+e.target.value)} className="bg-muted border-border" />
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Custo de Mão de Obra estimado: <span className="font-mono text-primary font-bold">R$ {laborCost.toFixed(2)}</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 italic">Baseado na média de R$ 45/hora para trabalho técnico de impressão 3D no Brasil</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
