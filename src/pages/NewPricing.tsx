@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import {
-  Zap, Package, Wrench, DollarSign, PieChart, Plus, Trash2, Info, RefreshCw, Loader2,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PieChart as RePie, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { toast } from "sonner";
-import type { Printer, FilamentEntry, Quote } from "@/lib/types";
+import type { FilamentEntry } from "@/lib/types";
 import { FILAMENT_TYPES, PACKAGING_TYPES } from "@/lib/types";
-import { getPrinters, addQuote, getSettings } from "@/lib/store";
 import { BRAZILIAN_STATES } from "@/lib/brazilian-states";
+import { useAuth } from "@/contexts/AuthContext";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
+import UpgradeModal from "@/components/UpgradeModal";
+import { supabase } from "@/integrations/supabase/client";
 
 const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)"];
 const FILAMENT_COLORS = ["#00ccaa", "#3399ff", "#ff6633", "#cc33ff", "#ffcc00", "#00ff88", "#ff3366", "#6633ff"];
@@ -38,21 +41,35 @@ function createFilament(index: number): FilamentEntry {
   return { id: crypto.randomUUID(), color: FILAMENT_COLORS[index % FILAMENT_COLORS.length], type: 'PLA', brand: '', costPerKg: 0, weightUsed: 0, computedCost: 0 };
 }
 
-export default function NewPricing() {
-  const settings = getSettings();
-  const printers = getPrinters();
+interface PrinterRow {
+  id: string; name: string; kinematics: string; acquisition_cost: number;
+  lifespan: number; power_consumption: number; maintenance_cost_monthly: number;
+  monthly_usage_hours: number; max_filaments: number;
+}
 
-  // A - Print data
+export default function NewPricing() {
+  const { user, isPro } = useAuth();
+  const { canCreateQuote, refresh } = usePlanLimits();
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [printers, setPrinters] = useState<PrinterRow[]>([]);
+  const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6 });
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("printers").select("*").eq("user_id", user.id)
+      .then(({ data }) => { if (data) setPrinters(data); });
+    supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+      .then(({ data }) => {
+        if (data) setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
+      });
+  }, [user]);
+
   const [pieceName, setPieceName] = useState("");
   const [printerId, setPrinterId] = useState("");
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
-
-  // B - Filaments
   const [filaments, setFilaments] = useState<FilamentEntry[]>([createFilament(0)]);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
-
-  // C - Energy
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [cities, setCities] = useState<{ id: number; nome: string }[]>([]);
@@ -61,44 +78,32 @@ export default function NewPricing() {
   const [distributor, setDistributor] = useState("");
   const [tariffRef, setTariffRef] = useState("");
   const [tariffLoading, setTariffLoading] = useState(false);
-
-  // D - Labor
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
   const [laborPct, setLaborPct] = useState(0);
-
-  // F - Packaging
   const [pkgType, setPkgType] = useState("none");
   const [pkgCost, setPkgCost] = useState(0);
-
-  // G - Margin
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
 
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
-  // Fetch cities
   useEffect(() => {
     if (!state) { setCities([]); setCity(""); return; }
     setCitiesLoading(true);
     fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`)
       .then(r => r.json())
-      .then((data: { id: number; nome: string }[]) => {
-        setCities(data.sort((a, b) => a.nome.localeCompare(b.nome)));
-      })
+      .then((data: { id: number; nome: string }[]) => setCities(data.sort((a, b) => a.nome.localeCompare(b.nome))))
       .catch(() => setCities([]))
       .finally(() => setCitiesLoading(false));
     setCity("");
   }, [state]);
 
-  // Fetch tariff when city changes
   useEffect(() => {
     if (!city || !state) return;
     setTariffLoading(true);
-    // Simulate tariff lookup — in production this would call an AI API
     const timer = setTimeout(() => {
-      // Use default tariff as fallback
       setTariff(settings.defaultTariff);
       setDistributor("Distribuidora local");
       setTariffRef("Março/2026");
@@ -108,26 +113,16 @@ export default function NewPricing() {
     return () => clearTimeout(timer);
   }, [city, state, settings.defaultTariff]);
 
-  // Printer change handler
   const handlePrinterChange = (id: string) => {
     const hasData = filaments.some(f => f.weightUsed > 0 || f.brand || f.costPerKg > 0);
-    if (hasData) {
-      setConfirmReset(id);
-    } else {
-      setPrinterId(id);
-      setFilaments([createFilament(0)]);
-    }
+    if (hasData) setConfirmReset(id);
+    else { setPrinterId(id); setFilaments([createFilament(0)]); }
   };
 
   const confirmPrinterChange = () => {
-    if (confirmReset) {
-      setPrinterId(confirmReset);
-      setFilaments([createFilament(0)]);
-      setConfirmReset(null);
-    }
+    if (confirmReset) { setPrinterId(confirmReset); setFilaments([createFilament(0)]); setConfirmReset(null); }
   };
 
-  // Filament ops
   const updateFilament = (id: string, updates: Partial<FilamentEntry>) => {
     setFilaments(fs => fs.map(f => {
       if (f.id !== id) return f;
@@ -138,22 +133,19 @@ export default function NewPricing() {
   };
 
   const addFilament = () => {
-    if (printer && filaments.length < printer.maxFilaments) {
-      setFilaments(fs => [...fs, createFilament(fs.length)]);
-    }
+    if (printer && filaments.length < printer.max_filaments) setFilaments(fs => [...fs, createFilament(fs.length)]);
   };
 
-  const removeFilament = (id: string) => {
-    setFilaments(fs => fs.filter(f => f.id !== id));
-  };
+  const removeFilament = (id: string) => setFilaments(fs => fs.filter(f => f.id !== id));
 
-  // Calculations
   const totalWeight = filaments.reduce((s, f) => s + f.weightUsed, 0);
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
-  const energyCost = printer ? (printer.powerConsumption / 1000) * printTimeH * tariff : 0;
+  const energyCost = printer ? (printer.power_consumption / 1000) * printTimeH * tariff : 0;
   const laborCost = laborRate * laborHours;
-  const maintenanceCost = printer ? printer.maintenanceCostPerHour * printTimeH : 0;
-  const depreciationCost = printer ? printer.depreciationPerHour * printTimeH : 0;
+  const maintPerHour = printer && printer.monthly_usage_hours > 0 ? printer.maintenance_cost_monthly / printer.monthly_usage_hours : 0;
+  const depPerHour = printer && printer.lifespan > 0 ? printer.acquisition_cost / printer.lifespan : 0;
+  const maintenanceCost = maintPerHour * printTimeH;
+  const depreciationCost = depPerHour * printTimeH;
 
   const subtotal = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + pkgCost;
   const laborPctCost = subtotal * (laborPct / 100);
@@ -171,24 +163,31 @@ export default function NewPricing() {
     { name: "Embalagem", value: +pkgCost.toFixed(2) },
   ].filter(d => d.value > 0);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!pieceName.trim()) { toast.error("Nome da peça é obrigatório"); return; }
     if (!printer) { toast.error("Selecione uma impressora"); return; }
-    const quote: Quote = {
-      id: crypto.randomUUID(),
-      pieceName, printerId, printerName: printer.name,
-      printTimeHours: hours, printTimeMinutes: minutes,
-      filaments, totalWeight, totalFilamentCost,
-      state, city, distributor, tariff, energyCost,
-      laborRate, laborHours, laborCost: laborCost + laborPctCost, laborPercentage: laborPct,
-      maintenanceCost, depreciationCost,
-      packagingType: pkgType, packagingCost: pkgCost,
-      profitMargin: margin, taxRate,
-      totalCost, suggestedPrice, minimumPrice,
-      createdAt: new Date().toISOString(),
-    };
-    addQuote(quote);
+    if (!user) return;
+    if (!canCreateQuote) { setUpgradeOpen(true); return; }
+
+    await supabase.from("quotes").insert({
+      user_id: user.id,
+      piece_name: pieceName, printer_id: printerId, printer_name: printer.name,
+      print_time_hours: hours, print_time_minutes: minutes,
+      filaments: filaments as any, total_weight: totalWeight, total_filament_cost: totalFilamentCost,
+      state, city, distributor, tariff, energy_cost: energyCost,
+      labor_rate: laborRate, labor_hours: laborHours, labor_cost: laborCost + laborPctCost, labor_percentage: laborPct,
+      maintenance_cost: maintenanceCost, depreciation_cost: depreciationCost,
+      packaging_type: pkgType, packaging_cost: pkgCost,
+      profit_margin: margin, tax_rate: taxRate,
+      total_cost: totalCost, suggested_price: suggestedPrice, minimum_price: minimumPrice,
+    });
     toast.success("Orçamento salvo com sucesso!");
+    refresh();
+  };
+
+  const handleExportPDF = () => {
+    if (!isPro) { setUpgradeOpen(true); return; }
+    toast.info("Exportação PDF em breve!");
   };
 
   return (
@@ -198,7 +197,7 @@ export default function NewPricing() {
         <p className="text-muted-foreground text-sm mt-1">Calcule o preço ideal da sua peça 3D</p>
       </div>
 
-      {/* SECTION A - Print Data */}
+      {/* SECTION A */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Package size={16} className="text-primary" />Dados da Impressão</CardTitle></CardHeader>
         <CardContent className="space-y-4">
@@ -212,8 +211,8 @@ export default function NewPricing() {
             {printer && (
               <div className="flex gap-1.5 mt-2">
                 <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.kinematics}</Badge>
-                <Badge variant="outline" className="text-[10px] border-neon-blue/30 text-neon-blue">Até {printer.maxFilaments} filamento{printer.maxFilaments > 1 ? 's' : ''}</Badge>
-                <Badge variant="outline" className="text-[10px] border-neon-green/30 text-neon-green">{printer.powerConsumption}W</Badge>
+                <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">Até {printer.max_filaments} filamento{printer.max_filaments > 1 ? 's' : ''}</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.power_consumption}W</Badge>
               </div>
             )}
           </div>
@@ -225,12 +224,12 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION B - Filaments */}
+      {/* SECTION B */}
       <Card className="border-border bg-card">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm text-foreground flex items-center gap-2">🎨 Filamentos</CardTitle>
-            {printer && printer.maxFilaments > 1 && filaments.length < printer.maxFilaments && (
+            {printer && printer.max_filaments > 1 && filaments.length < printer.max_filaments && (
               <Button size="sm" variant="outline" onClick={addFilament} className="border-primary/30 text-primary text-xs">
                 <Plus size={14} className="mr-1" /> Adicionar
               </Button>
@@ -269,9 +268,9 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION C - Energy */}
+      {/* SECTION C */}
       <Card className="border-border bg-card">
-        <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Zap size={16} className="text-neon-green" />Energia<Tip text="Tarifa estimada com base na distribuidora da sua região. Verifique sua fatura para maior precisão." /></CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Zap size={16} className="text-primary" />Energia<Tip text="Tarifa estimada com base na distribuidora da sua região. Verifique sua fatura para maior precisão." /></CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -291,9 +290,7 @@ export default function NewPricing() {
               )}
             </div>
           </div>
-          {tariffLoading ? (
-            <Skeleton className="h-16 w-full" />
-          ) : city && (
+          {tariffLoading ? <Skeleton className="h-16 w-full" /> : city && (
             <div className="p-3 rounded-lg bg-muted/50 border border-border flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">{distributor}</p>
@@ -302,20 +299,17 @@ export default function NewPricing() {
               <RefreshCw size={14} className="text-muted-foreground cursor-pointer hover:text-primary" />
             </div>
           )}
-          <div>
-            <Label className="text-foreground">Tarifa (R$/kWh)</Label>
-            <Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" />
-          </div>
+          <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
           {printer && (
             <div className="text-xs text-muted-foreground">
-              Consumo: <span className="font-mono text-neon-green">{printer.powerConsumption}W — {printer.name}</span>
+              Consumo: <span className="font-mono text-primary">{printer.power_consumption}W — {printer.name}</span>
               <br />Custo energia: <span className="font-mono text-primary">R$ {energyCost.toFixed(2)}</span>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* SECTION D - Labor */}
+      {/* SECTION D */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Wrench size={16} className="text-accent" />Mão de Obra</CardTitle></CardHeader>
         <CardContent className="space-y-3">
@@ -328,7 +322,7 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION E - Maintenance */}
+      {/* SECTION E */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2">🔧 Manutenção e Depreciação</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-xs">
@@ -337,7 +331,7 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION F - Packaging */}
+      {/* SECTION F */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Package size={16} className="text-muted-foreground" />Embalagem</CardTitle></CardHeader>
         <CardContent className="space-y-3">
@@ -349,7 +343,7 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION G - Margin & Result */}
+      {/* SECTION G */}
       <Card className="border-border bg-card neon-glow">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><DollarSign size={16} className="text-primary" />Margem e Resultado</CardTitle></CardHeader>
         <CardContent className="space-y-6">
@@ -359,7 +353,6 @@ export default function NewPricing() {
           </div>
           <div><Label className="text-foreground">Impostos/Taxas (%)</Label><Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" /></div>
 
-          {/* Pie chart */}
           {pieData.length > 0 && (
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -373,7 +366,6 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* Result */}
           <div className="space-y-3 border-t border-border pt-4">
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo total</span><span className="font-mono text-foreground">R$ {totalCost.toFixed(2)}</span></div>
             <div className="flex justify-between text-sm"><span className="text-muted-foreground">Impostos</span><span className="font-mono text-foreground">R$ {taxAmount.toFixed(2)}</span></div>
@@ -385,13 +377,16 @@ export default function NewPricing() {
           </div>
 
           <div className="flex gap-3">
-            <Button onClick={handleSave} className="flex-1 bg-primary text-primary-foreground neon-glow">Salvar Orçamento</Button>
-            <Button variant="outline" className="border-border" onClick={() => toast.info("Exportação PDF em breve!")}>Exportar PDF</Button>
+            <Button onClick={handleSave} className="flex-1 bg-primary text-primary-foreground neon-glow">
+              Salvar Orçamento
+            </Button>
+            <Button variant="outline" className="border-border" onClick={handleExportPDF}>
+              {!isPro && <Lock size={14} className="mr-1" />} Exportar PDF
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Confirm printer change */}
       <AlertDialog open={!!confirmReset} onOpenChange={() => setConfirmReset(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
@@ -404,6 +399,8 @@ export default function NewPricing() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
 }

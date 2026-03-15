@@ -1,27 +1,36 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Badge } from "@/components/ui/badge";
 
 const NAV = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/printers", icon: Printer, label: "Impressoras" },
   { to: "/new", icon: PlusCircle, label: "Nova Precificação" },
   { to: "/history", icon: History, label: "Histórico" },
+  { to: "/reports", icon: BarChart3, label: "Relatórios" },
+  { to: "/planos", icon: Crown, label: "Planos" },
   { to: "/settings", icon: Settings, label: "Configurações" },
 ];
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
+  const { profile, isPro, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* Mobile overlay */}
       {open && (
         <div className="fixed inset-0 z-40 bg-black/60 md:hidden" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed z-50 md:static flex flex-col w-64 h-full bg-card border-r border-border transition-transform duration-200",
@@ -39,7 +48,16 @@ export default function Layout() {
             <X size={20} />
           </button>
         </div>
-        <nav className="flex-1 py-4 px-3 space-y-1">
+
+        {/* User info */}
+        <div className="px-5 py-3 border-b border-border">
+          <p className="text-sm font-medium text-foreground truncate">{profile?.nome || "Usuário"}</p>
+          <Badge variant="outline" className={cn("text-[10px] mt-1", isPro ? "border-primary/50 text-primary" : "border-border text-muted-foreground")}>
+            {isPro ? "Pro" : "Free"}
+          </Badge>
+        </div>
+
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {NAV.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
@@ -60,12 +78,18 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
-        <div className="px-5 py-4 border-t border-border">
-          <p className="text-[11px] text-muted-foreground">Print Price v1.0</p>
+
+        <div className="px-5 py-4 border-t border-border space-y-2">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground w-full"
+          >
+            <LogOut size={16} /> Sair
+          </button>
+          <p className="text-[11px] text-muted-foreground">Print Price v2.0</p>
         </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="flex items-center h-14 px-4 border-b border-border md:hidden">
           <button onClick={() => setOpen(true)} className="text-foreground">
