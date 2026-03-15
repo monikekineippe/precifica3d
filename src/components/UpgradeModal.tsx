@@ -29,7 +29,7 @@ export default function UpgradeModal({ open, onOpenChange }: Props) {
             Upgrade para Pro
           </DialogTitle>
           <DialogDescription>
-            Desbloqueie todo o potencial do Print Price
+            Desbloqueie todo o potencial do Precifica3D
           </DialogDescription>
         </DialogHeader>
 

@@ -32,11 +32,11 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-2">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">PP</span>
+              <span className="text-primary-foreground font-bold">P3</span>
             </div>
           </div>
           <CardTitle className="text-xl text-foreground">
-            Print<span className="text-primary">Price</span>
+            Precifica<span className="text-primary">3D</span>
           </CardTitle>
           <p className="text-sm text-muted-foreground">Entre na sua conta</p>
         </CardHeader>

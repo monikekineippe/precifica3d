@@ -96,7 +96,7 @@ export default function Layout() {
             <Menu size={22} />
           </button>
           <span className="ml-3 font-bold text-foreground">
-            Print<span className="text-primary">Price</span>
+            Precifica<span className="text-primary">3D</span>
           </span>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">

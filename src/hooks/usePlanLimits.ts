@@ -29,13 +29,13 @@ export function usePlanLimits() {
   }, [user]);
 
   const canCreateQuote = isPro || quotesThisMonth < 2;
-  const canCreatePrinter = isPro || customPrintersCount < 2;
+  const canCreatePrinter = isPro || customPrintersCount < 1;
   const canExport = isPro;
   const canViewReports = isPro;
   const canViewFullHistory = isPro;
 
   const FREE_QUOTE_LIMIT = 2;
-  const FREE_PRINTER_LIMIT = 2;
+  const FREE_PRINTER_LIMIT = 1;
 
   return {
     quotesThisMonth,

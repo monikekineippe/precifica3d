@@ -12,7 +12,7 @@ const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
 
 const FEATURES = [
   { name: "Orçamentos por mês", free: "2", pro: "Ilimitados" },
-  { name: "Impressoras personalizadas", free: "2", pro: "Ilimitadas" },
+  { name: "Impressoras personalizadas", free: "1", pro: "Ilimitadas" },
   { name: "Impressoras pré-cadastradas", free: true, pro: true },
   { name: "Cálculos em tempo real", free: true, pro: true },
   { name: "Exportar PDF", free: false, pro: true },
