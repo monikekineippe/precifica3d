@@ -112,9 +112,24 @@ export default function AuthPage() {
       {/* RIGHT COLUMN — Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm space-y-6">
-          {/* Mobile logo */}
-          <div className="flex justify-center mb-4 lg:hidden">
-            <img src={logo} alt="Precifica3D" className="h-12 object-contain" />
+      {/* Mobile hero block */}
+          <div className="lg:hidden space-y-4 text-center mb-6">
+            <div className="flex justify-center">
+              <img src={logo} alt="Precifica3D" className="h-12 object-contain" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground leading-tight">
+              Precifique suas peças 3D com <span className="text-primary neon-text">inteligência</span>
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Calcule custos e descubra o preço ideal de venda com IA
+            </p>
+            <div className="flex justify-center gap-4 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">🧮 Custo real</span>
+              <span className="text-border">|</span>
+              <span className="flex items-center gap-1">⚡ Energia por cidade</span>
+              <span className="text-border">|</span>
+              <span className="flex items-center gap-1">🤖 IA sugere margem</span>
+            </div>
           </div>
 
           {/* Toggle */}
