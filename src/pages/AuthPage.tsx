@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Printer } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import printerBg from "@/assets/3d-printer-bg.png";
+import logo from "@/assets/logo-precifica3d.png";
 
 const BENEFITS = [
   "Cálculo automático de filamento, energia, mão de obra e manutenção",
@@ -77,13 +78,8 @@ export default function AuthPage() {
 
         <div className="relative z-10 space-y-8">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center neon-glow">
-              <Printer size={24} className="text-primary-foreground" />
-            </div>
-            <span className="text-3xl font-bold tracking-tight text-foreground">
-              Precifica<span className="text-primary">3D</span>
-            </span>
+          <div className="flex items-center">
+            <img src={logo} alt="Precifica3D" className="h-16 xl:h-20 object-contain" />
           </div>
 
           {/* Headline */}
@@ -117,13 +113,8 @@ export default function AuthPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm space-y-6">
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 lg:hidden justify-center mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-              <Printer size={20} className="text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">
-              Precifica<span className="text-primary">3D</span>
-            </span>
+          <div className="flex justify-center mb-4 lg:hidden">
+            <img src={logo} alt="Precifica3D" className="h-12 object-contain" />
           </div>
 
           {/* Toggle */}
