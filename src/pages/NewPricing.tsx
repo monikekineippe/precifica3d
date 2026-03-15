@@ -75,7 +75,8 @@ export default function NewPricing() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("impressoras").select("*").eq("user_id", user.id)
+    supabase.from("impressoras").select("*")
+      .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
       .then(({ data }) => { if (data) setPrinters(data as any); });
     supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {

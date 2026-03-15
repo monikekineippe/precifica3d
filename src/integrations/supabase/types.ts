@@ -26,7 +26,7 @@ export type Database = {
           is_precadastrada: boolean
           max_filamentos: number
           nome: string
-          user_id: string
+          user_id: string | null
           vida_util_horas: number
         }
         Insert: {
@@ -40,7 +40,7 @@ export type Database = {
           is_precadastrada?: boolean
           max_filamentos?: number
           nome: string
-          user_id: string
+          user_id?: string | null
           vida_util_horas?: number
         }
         Update: {
@@ -54,7 +54,7 @@ export type Database = {
           is_precadastrada?: boolean
           max_filamentos?: number
           nome?: string
-          user_id?: string
+          user_id?: string | null
           vida_util_horas?: number
         }
         Relationships: []
