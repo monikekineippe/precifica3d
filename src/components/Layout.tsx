@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/logo-precifica3d.png";
+import logoIcon from "@/assets/logo-icon.png";
 
 const NAV = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -91,7 +92,7 @@ export default function Layout() {
           <button onClick={() => setOpen(true)} className="text-foreground">
             <Menu size={22} />
           </button>
-          <img src={logo} alt="Precifica3D" className="ml-3 h-8 object-contain" />
+          <img src={logoIcon} alt="Precifica3D" className="ml-3 h-8 object-contain" />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
