@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,15 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import UpgradeModal from "@/components/UpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
-const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)"];
+const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)", "hsl(30,80%,50%)", "hsl(310,60%,55%)"];
 const FILAMENT_COLORS = ["#00ccaa", "#3399ff", "#ff6633", "#cc33ff", "#ffcc00", "#00ff88", "#ff3366", "#6633ff"];
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  decorativo: "🎨",
+  funcional: "⚙️",
+  miniatura: "🎭",
+  customizado: "✨",
+};
 
 function Tip({ text }: { text: string }) {
   return (
@@ -47,12 +54,21 @@ interface PrinterRow {
   monthly_usage_hours: number; max_filaments: number;
 }
 
+interface MarginSuggestion {
+  categoria: string;
+  margem_minima: number;
+  margem_sugerida: number;
+  margem_maxima: number;
+  justificativa: string;
+  fallback?: boolean;
+}
+
 export default function NewPricing() {
   const { user, isPro } = useAuth();
   const { canCreateQuote, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
-  const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6 });
+  const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
 
   useEffect(() => {
     if (!user) return;
@@ -86,9 +102,15 @@ export default function NewPricing() {
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
 
+  // AI margin suggestion
+  const [marginSuggestion, setMarginSuggestion] = useState<MarginSuggestion | null>(null);
+  const [marginLoading, setMarginLoading] = useState(false);
+  const marginFetchRef = useRef<string>("");
+
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
+  // Fetch cities
   useEffect(() => {
     if (!state) { setCities([]); setCity(""); return; }
     setCitiesLoading(true);
@@ -100,18 +122,73 @@ export default function NewPricing() {
     setCity("");
   }, [state]);
 
+  // Fetch tariff via AI
   useEffect(() => {
     if (!city || !state) return;
     setTariffLoading(true);
-    const timer = setTimeout(() => {
-      setTariff(settings.defaultTariff);
-      setDistributor("Distribuidora local");
-      setTariffRef("Março/2026");
-      setTariffLoading(false);
-      toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
-    }, 1000);
+    const fetchTariff = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('energy-tariff', {
+          body: { city, state },
+        });
+        if (error) throw error;
+        if (data && data.tarifa) {
+          setTariff(data.tarifa);
+          setDistributor(data.distribuidora || "Distribuidora local");
+          setTariffRef(data.referencia || "");
+          if (data.fallback) {
+            toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
+          }
+        }
+      } catch {
+        setTariff(settings.defaultTariff);
+        setDistributor("Distribuidora local");
+        setTariffRef("padrão");
+        toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
+      } finally {
+        setTariffLoading(false);
+      }
+    };
+    fetchTariff();
+  }, [city, state]);
+
+  // Fetch margin suggestion via AI
+  useEffect(() => {
+    const firstFilamentType = filaments[0]?.type;
+    if (!pieceName.trim() || !firstFilamentType) return;
+    const key = `${pieceName}|${firstFilamentType}`;
+    if (key === marginFetchRef.current) return;
+
+    const timer = setTimeout(async () => {
+      marginFetchRef.current = key;
+      setMarginLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('margin-suggestion', {
+          body: { pieceName, filamentType: firstFilamentType },
+        });
+        if (error) throw error;
+        if (data) {
+          setMarginSuggestion(data as MarginSuggestion);
+          if (!data.fallback) {
+            setMargin(data.margem_sugerida);
+          }
+        }
+      } catch {
+        setMarginSuggestion({
+          categoria: "decorativo",
+          margem_minima: 80,
+          margem_sugerida: 150,
+          margem_maxima: 250,
+          justificativa: "Margem padrão aplicada. Ajuste conforme sua experiência.",
+          fallback: true,
+        });
+      } finally {
+        setMarginLoading(false);
+      }
+    }, 1500);
+
     return () => clearTimeout(timer);
-  }, [city, state, settings.defaultTariff]);
+  }, [pieceName, filaments[0]?.type]);
 
   const handlePrinterChange = (id: string) => {
     const hasData = filaments.some(f => f.weightUsed > 0 || f.brand || f.costPerKg > 0);
@@ -153,6 +230,10 @@ export default function NewPricing() {
   const taxAmount = totalCost * (taxRate / 100);
   const minimumPrice = totalCost + taxAmount;
   const suggestedPrice = minimumPrice * (1 + margin / 100);
+  const profit = suggestedPrice - minimumPrice;
+
+  const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
+  const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
 
   const pieData = [
     { name: "Filamento", value: +totalFilamentCost.toFixed(2) },
@@ -161,6 +242,8 @@ export default function NewPricing() {
     { name: "Manutenção", value: +maintenanceCost.toFixed(2) },
     { name: "Depreciação", value: +depreciationCost.toFixed(2) },
     { name: "Embalagem", value: +pkgCost.toFixed(2) },
+    { name: "Margem", value: +profit.toFixed(2) },
+    { name: "Impostos", value: +taxAmount.toFixed(2) },
   ].filter(d => d.value > 0);
 
   const handleSave = async () => {
@@ -188,6 +271,32 @@ export default function NewPricing() {
   const handleExportPDF = () => {
     if (!isPro) { setUpgradeOpen(true); return; }
     toast.info("Exportação PDF em breve!");
+  };
+
+  const handleExportCSV = () => {
+    if (!isPro) { setUpgradeOpen(true); return; }
+    if (!pieceName || !printer) return;
+    const rows = [
+      ["Item", "Valor (R$)"],
+      ["Filamento", totalFilamentCost.toFixed(2)],
+      ["Energia", energyCost.toFixed(2)],
+      ["Mão de obra", (laborCost + laborPctCost).toFixed(2)],
+      ["Manutenção", maintenanceCost.toFixed(2)],
+      ["Depreciação", depreciationCost.toFixed(2)],
+      ["Embalagem", pkgCost.toFixed(2)],
+      ["Custo Total", totalCost.toFixed(2)],
+      ["Impostos", taxAmount.toFixed(2)],
+      ["Preço Mínimo", minimumPrice.toFixed(2)],
+      [`Margem ${margin}%`, profit.toFixed(2)],
+      ["Preço Sugerido", suggestedPrice.toFixed(2)],
+    ];
+    const csv = rows.map(r => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `${pieceName}-orcamento.csv`; a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado!");
   };
 
   return (
@@ -296,7 +405,7 @@ export default function NewPricing() {
                 <p className="text-xs text-muted-foreground">{distributor}</p>
                 <p className="font-mono text-sm text-foreground">R$ {tariff.toFixed(2)}/kWh <span className="text-[10px] text-muted-foreground ml-1">{tariffRef}</span></p>
               </div>
-              <RefreshCw size={14} className="text-muted-foreground cursor-pointer hover:text-primary" />
+              <RefreshCw size={14} className="text-muted-foreground cursor-pointer hover:text-primary" onClick={() => { setTariffLoading(true); supabase.functions.invoke('energy-tariff', { body: { city, state } }).then(({ data }) => { if (data?.tarifa) { setTariff(data.tarifa); setDistributor(data.distribuidora || ""); setTariffRef(data.referencia || ""); } setTariffLoading(false); }).catch(() => setTariffLoading(false)); }} />
             </div>
           )}
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
@@ -343,45 +452,172 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION G */}
+      {/* SECTION G — Resultado e Precificação Inteligente */}
       <Card className="border-border bg-card neon-glow">
-        <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><DollarSign size={16} className="text-primary" />Margem e Resultado</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><DollarSign size={16} className="text-primary" />Resultado e Precificação Inteligente</CardTitle></CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <div className="flex justify-between mb-2"><Label className="text-foreground">Margem de lucro</Label><span className="font-mono text-primary text-sm">{margin}%</span></div>
-            <Slider value={[margin]} onValueChange={([v]) => setMargin(v)} min={0} max={200} step={1} className="[&>span:first-child]:bg-muted [&_[role=slider]]:bg-primary" />
-          </div>
-          <div><Label className="text-foreground">Impostos/Taxas (%)</Label><Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" /></div>
 
-          {pieData.length > 0 && (
-            <div className="h-52">
-              <ResponsiveContainer width="100%" height="100%">
-                <RePie data={pieData}>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
-                    {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                </RePie>
-              </ResponsiveContainer>
+          {/* BLOCK 1 — AI Margin Suggestion */}
+          {marginLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-20 w-full" />
+            </div>
+          ) : marginSuggestion && (
+            <div className="p-4 rounded-lg bg-muted/50 border border-primary/30 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={16} className="text-primary" />
+                <span className="text-sm font-medium text-foreground">Sugestão da IA</span>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                  {CATEGORY_EMOJI[marginSuggestion.categoria] || "📦"} {marginSuggestion.categoria}
+                </Badge>
+                {marginSuggestion.fallback && (
+                  <Badge variant="outline" className="text-[10px] border-destructive/30 text-destructive">Padrão</Badge>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Mercado pratica entre <span className="font-mono text-foreground">{marginSuggestion.margem_minima}%</span> e <span className="font-mono text-foreground">{marginSuggestion.margem_maxima}%</span>
+              </div>
+              <div className="text-lg font-bold font-mono text-primary">
+                Sugerimos {marginSuggestion.margem_sugerida}%
+              </div>
+              <p className="text-xs text-muted-foreground italic">{marginSuggestion.justificativa}</p>
+              <Button size="sm" variant="outline" className="border-primary/30 text-primary text-xs" onClick={() => setMargin(marginSuggestion.margem_sugerida)}>
+                Aplicar sugestão
+              </Button>
             </div>
           )}
 
-          <div className="space-y-3 border-t border-border pt-4">
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Custo total</span><span className="font-mono text-foreground">R$ {totalCost.toFixed(2)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Impostos</span><span className="font-mono text-foreground">R$ {taxAmount.toFixed(2)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-muted-foreground">Preço mínimo</span><span className="font-mono text-foreground">R$ {minimumPrice.toFixed(2)}</span></div>
-            <div className="flex justify-between items-center pt-2 border-t border-border">
-              <span className="text-foreground font-medium">Preço sugerido</span>
-              <span className="text-3xl font-bold font-mono text-primary neon-text">R$ {suggestedPrice.toFixed(2)}</span>
+          {/* BLOCK 2 — Margin & Tax Controls */}
+          <div>
+            <div className="flex justify-between mb-2"><Label className="text-foreground">Margem de lucro</Label><span className="font-mono text-primary text-sm">{margin}%</span></div>
+            <Slider value={[margin]} onValueChange={([v]) => setMargin(v)} min={0} max={300} step={1} className="[&>span:first-child]:bg-muted [&_[role=slider]]:bg-primary" />
+          </div>
+          <div>
+            <Label className="text-foreground">Impostos/Taxas (%)<Tip text="Inclua MEI, Simples Nacional ou outras taxas aplicáveis" /></Label>
+            <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
+          </div>
+
+          {/* BLOCK 3 — Result Panel */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-muted/50 border border-border text-center">
+              <p className="text-[10px] text-muted-foreground mb-1">💸 Custo Total</p>
+              <p className="text-lg font-bold font-mono text-foreground">R$ {totalCost.toFixed(2)}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50 border border-border text-center">
+              <p className="text-[10px] text-muted-foreground mb-1">🏷️ Preço Mínimo</p>
+              <p className="text-lg font-bold font-mono text-foreground">R$ {minimumPrice.toFixed(2)}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/30 text-center col-span-2">
+              <p className="text-[10px] text-muted-foreground mb-1">✅ Preço Sugerido de Venda</p>
+              <p className="text-3xl font-bold font-mono text-primary neon-text">R$ {suggestedPrice.toFixed(2)}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/50 border border-border text-center col-span-2">
+              <p className="text-[10px] text-muted-foreground mb-1">💰 Lucro Líquido por Peça</p>
+              <p className="text-lg font-bold font-mono text-primary">R$ {profit.toFixed(2)} <span className="text-xs text-muted-foreground">({margin}%)</span></p>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          {/* BLOCK 4 — Breakdown Chart */}
+          {pieData.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-foreground mb-2">Breakdown de Custos</p>
+              <div className="h-52">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RePie data={pieData}>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={40} outerRadius={75} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false} fontSize={10}>
+                      {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                    </Pie>
+                    <Legend iconSize={8} wrapperStyle={{ fontSize: 11 }} />
+                  </RePie>
+                </ResponsiveContainer>
+              </div>
+              <div className="space-y-1 mt-2">
+                {pieData.map((d, i) => (
+                  <div key={d.name} className="flex justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                      <span className="text-muted-foreground">{d.name}</span>
+                    </div>
+                    <span className="font-mono text-foreground">R$ {d.value.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* BLOCK 5 — Scenario Simulator */}
+          {marginSuggestion && totalCost > 0 && (
+            <div>
+              <p className="text-xs font-medium text-foreground mb-2">Simulador de Cenários</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 text-muted-foreground font-medium"></th>
+                      <th className="text-center py-2 text-muted-foreground font-medium">Conservador</th>
+                      <th className="text-center py-2 text-primary font-medium">Sugerido</th>
+                      <th className="text-center py-2 text-muted-foreground font-medium">Agressivo</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-border/50">
+                      <td className="py-2 text-muted-foreground">Margem</td>
+                      <td className="py-2 text-center font-mono text-foreground">{marginSuggestion.margem_minima}%</td>
+                      <td className="py-2 text-center font-mono text-primary font-bold">{marginSuggestion.margem_sugerida}%</td>
+                      <td className="py-2 text-center font-mono text-foreground">{marginSuggestion.margem_maxima}%</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="py-2 text-muted-foreground">Preço de venda</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {calcPriceForMargin(marginSuggestion.margem_minima).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-primary font-bold">R$ {calcPriceForMargin(marginSuggestion.margem_sugerida).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {calcPriceForMargin(marginSuggestion.margem_maxima).toFixed(2)}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="py-2 text-muted-foreground">Lucro/peça</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {calcProfitForMargin(marginSuggestion.margem_minima).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-primary font-bold">R$ {calcProfitForMargin(marginSuggestion.margem_sugerida).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {calcProfitForMargin(marginSuggestion.margem_maxima).toFixed(2)}</td>
+                    </tr>
+                    <tr className="border-b border-border/50">
+                      <td className="py-2 text-muted-foreground">Lucro 10 peças</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {(calcProfitForMargin(marginSuggestion.margem_minima) * 10).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-primary font-bold">R$ {(calcProfitForMargin(marginSuggestion.margem_sugerida) * 10).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {(calcProfitForMargin(marginSuggestion.margem_maxima) * 10).toFixed(2)}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 text-muted-foreground">Lucro 50 peças</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {(calcProfitForMargin(marginSuggestion.margem_minima) * 50).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-primary font-bold">R$ {(calcProfitForMargin(marginSuggestion.margem_sugerida) * 50).toFixed(2)}</td>
+                      <td className="py-2 text-center font-mono text-foreground">R$ {(calcProfitForMargin(marginSuggestion.margem_maxima) * 50).toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <Button size="sm" variant="outline" className="text-xs border-border flex-1" onClick={() => setMargin(marginSuggestion.margem_minima)}>
+                  Aplicar {marginSuggestion.margem_minima}%
+                </Button>
+                <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary flex-1" onClick={() => setMargin(marginSuggestion.margem_sugerida)}>
+                  Aplicar {marginSuggestion.margem_sugerida}%
+                </Button>
+                <Button size="sm" variant="outline" className="text-xs border-border flex-1" onClick={() => setMargin(marginSuggestion.margem_maxima)}>
+                  Aplicar {marginSuggestion.margem_maxima}%
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* BLOCK 6 — Actions */}
+          <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
             <Button onClick={handleSave} className="flex-1 bg-primary text-primary-foreground neon-glow">
               Salvar Orçamento
             </Button>
             <Button variant="outline" className="border-border" onClick={handleExportPDF}>
               {!isPro && <Lock size={14} className="mr-1" />} Exportar PDF
+            </Button>
+            <Button variant="outline" className="border-border" onClick={handleExportCSV}>
+              {!isPro && <Lock size={14} className="mr-1" />} Exportar CSV
             </Button>
           </div>
         </CardContent>
