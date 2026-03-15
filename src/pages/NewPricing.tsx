@@ -219,15 +219,17 @@ export default function NewPricing() {
   const totalWeight = filaments.reduce((s, f) => s + f.weightUsed, 0);
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
   const energyCost = printer ? (printer.power_consumption / 1000) * printTimeH * tariff : 0;
-  const laborCost = laborRate * laborHours;
+  const manualLaborCost = laborRate * laborHours;
   const maintPerHour = printer && printer.monthly_usage_hours > 0 ? printer.maintenance_cost_monthly / printer.monthly_usage_hours : 0;
   const depPerHour = printer && printer.lifespan > 0 ? printer.acquisition_cost / printer.lifespan : 0;
   const maintenanceCost = maintPerHour * printTimeH;
   const depreciationCost = depPerHour * printTimeH;
 
-  const subtotal = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + pkgCost;
-  const laborPctCost = subtotal * (laborPct / 100);
-  const totalCost = subtotal + laborPctCost;
+  const productionBase = totalFilamentCost + energyCost + maintenanceCost + depreciationCost + pkgCost;
+  const autoLaborCost = productionBase * (laborAutoPct / 100);
+  const laborCost = laborMode === "manual" ? manualLaborCost : autoLaborCost;
+
+  const totalCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + pkgCost;
   const taxAmount = totalCost * (taxRate / 100);
   const minimumPrice = totalCost + taxAmount;
   const suggestedPrice = minimumPrice * (1 + margin / 100);
