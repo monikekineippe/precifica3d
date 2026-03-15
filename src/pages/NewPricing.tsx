@@ -65,8 +65,9 @@ interface MarginSuggestion {
 }
 
 export default function NewPricing() {
+  const navigate = useNavigate();
   const { user, isPro } = useAuth();
-  const { canCreateQuote, refresh } = usePlanLimits();
+  const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
