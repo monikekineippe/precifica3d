@@ -43,7 +43,7 @@ export default function PrintersPage() {
   const [editing, setEditing] = useState<PrinterRow | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [presetsLoaded, setPresetsLoaded] = useState(false);
+  
 
   const loadPrinters = async () => {
     if (!user) return;
