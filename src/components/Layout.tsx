@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import logo from "@/assets/logo-precifica3d.png";
+import logoIcon from "@/assets/logo-icon.png";
 
 const NAV = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
