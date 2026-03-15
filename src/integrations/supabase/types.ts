@@ -14,7 +14,210 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      printers: {
+        Row: {
+          acquisition_cost: number
+          created_at: string
+          id: string
+          is_preset: boolean
+          kinematics: string
+          lifespan: number
+          maintenance_cost_monthly: number
+          max_filaments: number
+          monthly_usage_hours: number
+          name: string
+          power_consumption: number
+          user_id: string
+        }
+        Insert: {
+          acquisition_cost?: number
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          kinematics: string
+          lifespan?: number
+          maintenance_cost_monthly?: number
+          max_filaments?: number
+          monthly_usage_hours?: number
+          name: string
+          power_consumption?: number
+          user_id: string
+        }
+        Update: {
+          acquisition_cost?: number
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          kinematics?: string
+          lifespan?: number
+          maintenance_cost_monthly?: number
+          max_filaments?: number
+          monthly_usage_hours?: number
+          name?: string
+          power_consumption?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          greenn_assinatura_id: string | null
+          id: string
+          nome: string
+          plano: string
+          plano_expiracao: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          greenn_assinatura_id?: string | null
+          id?: string
+          nome?: string
+          plano?: string
+          plano_expiracao?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          greenn_assinatura_id?: string | null
+          id?: string
+          nome?: string
+          plano?: string
+          plano_expiracao?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      quotes: {
+        Row: {
+          city: string | null
+          created_at: string
+          depreciation_cost: number
+          distributor: string | null
+          energy_cost: number
+          filaments: Json
+          id: string
+          labor_cost: number
+          labor_hours: number
+          labor_percentage: number
+          labor_rate: number
+          maintenance_cost: number
+          minimum_price: number
+          packaging_cost: number
+          packaging_type: string
+          piece_name: string
+          print_time_hours: number
+          print_time_minutes: number
+          printer_id: string
+          printer_name: string
+          profit_margin: number
+          state: string | null
+          suggested_price: number
+          tariff: number
+          tax_rate: number
+          total_cost: number
+          total_filament_cost: number
+          total_weight: number
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          depreciation_cost?: number
+          distributor?: string | null
+          energy_cost?: number
+          filaments?: Json
+          id?: string
+          labor_cost?: number
+          labor_hours?: number
+          labor_percentage?: number
+          labor_rate?: number
+          maintenance_cost?: number
+          minimum_price?: number
+          packaging_cost?: number
+          packaging_type?: string
+          piece_name: string
+          print_time_hours?: number
+          print_time_minutes?: number
+          printer_id: string
+          printer_name: string
+          profit_margin?: number
+          state?: string | null
+          suggested_price?: number
+          tariff?: number
+          tax_rate?: number
+          total_cost?: number
+          total_filament_cost?: number
+          total_weight?: number
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          depreciation_cost?: number
+          distributor?: string | null
+          energy_cost?: number
+          filaments?: Json
+          id?: string
+          labor_cost?: number
+          labor_hours?: number
+          labor_percentage?: number
+          labor_rate?: number
+          maintenance_cost?: number
+          minimum_price?: number
+          packaging_cost?: number
+          packaging_type?: string
+          piece_name?: string
+          print_time_hours?: number
+          print_time_minutes?: number
+          printer_id?: string
+          printer_name?: string
+          profit_margin?: number
+          state?: string | null
+          suggested_price?: number
+          tariff?: number
+          tax_rate?: number
+          total_cost?: number
+          total_filament_cost?: number
+          total_weight?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          default_margin: number
+          default_tariff: number
+          default_tax_rate: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_margin?: number
+          default_tariff?: number
+          default_tax_rate?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_margin?: number
+          default_tariff?: number
+          default_tax_rate?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
