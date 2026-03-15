@@ -86,7 +86,7 @@ export default function Layout() {
           >
             <LogOut size={16} /> Sair
           </button>
-          <p className="text-[11px] text-muted-foreground">Print Price v2.0</p>
+          <p className="text-[11px] text-muted-foreground">Precifica3D v2.0</p>
         </div>
       </aside>
 
