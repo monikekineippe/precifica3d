@@ -214,7 +214,7 @@ export default function NewPricing() {
   };
 
   const addFilament = () => {
-    if (printer && filaments.length < printer.max_filaments) setFilaments(fs => [...fs, createFilament(fs.length)]);
+    if (printer && filaments.length < printer.max_filamentos) setFilaments(fs => [...fs, createFilament(fs.length)]);
   };
 
   const removeFilament = (id: string) => setFilaments(fs => fs.filter(f => f.id !== id));
