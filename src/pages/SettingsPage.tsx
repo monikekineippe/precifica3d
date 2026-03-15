@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { getSettings, saveSettings, type AppSettings } from "@/lib/store";
+import { getSettings, saveSettings } from "@/lib/store";
+import type { AppSettings } from "@/lib/types";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<AppSettings>(getSettings);
