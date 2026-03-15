@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { useNavigate } from "react-router-dom";
 import {
   Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
@@ -304,8 +305,6 @@ export default function NewPricing() {
     toast.success("CSV exportado!");
   };
 
-  const CHECKOUT_MENSAL = import.meta.env.VITE_GREENN_CHECKOUT_MENSAL || "#";
-  const CHECKOUT_ANUAL = import.meta.env.VITE_GREENN_CHECKOUT_ANUAL || "#";
 
   const daysUntilReset = useMemo(() => {
     const now = new Date();
