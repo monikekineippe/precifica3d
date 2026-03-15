@@ -221,10 +221,10 @@ export default function NewPricing() {
 
   const totalWeight = filaments.reduce((s, f) => s + f.weightUsed, 0);
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
-  const energyCost = printer ? (printer.power_consumption / 1000) * printTimeH * tariff : 0;
+  const energyCost = printer ? (printer.consumo_watts / 1000) * printTimeH * tariff : 0;
   const manualLaborCost = laborRate * laborHours;
-  const maintPerHour = printer && printer.monthly_usage_hours > 0 ? printer.maintenance_cost_monthly / printer.monthly_usage_hours : 0;
-  const depPerHour = printer && printer.lifespan > 0 ? printer.acquisition_cost / printer.lifespan : 0;
+  const maintPerHour = printer && printer.horas_uso_mensal > 0 ? printer.custo_manutencao_mensal / printer.horas_uso_mensal : 0;
+  const depPerHour = printer && printer.vida_util_horas > 0 ? printer.custo_aquisicao / printer.vida_util_horas : 0;
   const maintenanceCost = maintPerHour * printTimeH;
   const depreciationCost = depPerHour * printTimeH;
 
