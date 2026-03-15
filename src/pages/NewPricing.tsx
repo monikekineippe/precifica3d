@@ -258,18 +258,23 @@ export default function NewPricing() {
     if (!user) return;
     if (!canCreateQuote) { setUpgradeOpen(true); return; }
 
-    await supabase.from("quotes").insert({
+    await supabase.from("orcamentos").insert({
       user_id: user.id,
-      piece_name: pieceName, printer_id: printerId, printer_name: printer.name,
-      print_time_hours: hours, print_time_minutes: minutes,
-      filaments: filaments as any, total_weight: totalWeight, total_filament_cost: totalFilamentCost,
-      state, city, distributor, tariff, energy_cost: energyCost,
-      labor_rate: laborMode === "manual" ? laborRate : 0, labor_hours: laborMode === "manual" ? laborHours : 0, labor_cost: laborCost, labor_percentage: laborMode === "auto" ? laborAutoPct : 0,
-      maintenance_cost: maintenanceCost, depreciation_cost: depreciationCost,
-      packaging_type: pkgType, packaging_cost: pkgCost,
-      profit_margin: margin, tax_rate: taxRate,
-      total_cost: totalCost, suggested_price: suggestedPrice, minimum_price: minimumPrice,
-    });
+      nome_peca: pieceName, impressora_id: printerId, impressora_nome: printer.nome,
+      tempo_horas: hours, tempo_minutos: minutes,
+      filamentos: filaments as any,
+      estado: state, cidade: city, distribuidora: distributor, tarifa_energia: tariff, custo_energia: energyCost,
+      modo_mao_de_obra: laborMode,
+      valor_hora_mao_de_obra: laborMode === "manual" ? laborRate : null,
+      horas_mao_de_obra: laborMode === "manual" ? laborHours : null,
+      custo_mao_de_obra: laborCost,
+      percentual_mao_de_obra: laborMode === "auto" ? laborAutoPct : null,
+      custo_manutencao: maintenanceCost, custo_depreciacao: depreciationCost,
+      tipo_embalagem: pkgType, custo_embalagem: pkgCost,
+      margem_lucro: margin, percentual_impostos: taxRate,
+      custo_total: totalCost, preco_sugerido: suggestedPrice, preco_minimo: minimumPrice,
+      lucro_liquido: profit,
+    } as any);
     toast.success("Orçamento salvo com sucesso!");
     refresh();
   };
