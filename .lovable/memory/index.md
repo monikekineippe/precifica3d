@@ -11,20 +11,23 @@ Precifica3D — plataforma de precificação de impressão 3D, tema escuro com n
 - Custom utilities: .neon-glow, .neon-text, .glass
 
 ## Architecture
-- Supabase (Lovable Cloud) for auth, DB, edge functions
-- Edge functions: energy-tariff (AI tariff lookup), margin-suggestion (AI margin)
-- Greenn webhook processed by Make (make.com), NOT edge function
+- Lovable Cloud (Supabase) for auth, DB, edge functions
+- Greenn + Make for payment webhooks (no edge function for webhook)
+- Edge functions: energy-tariff, margin-suggestion (Lovable AI Gateway)
 - IBGE API for Brazilian cities
 - Preset printers: Bambu Lab, Creality, Prusa, FLSUN
+- Free plan: 2 quotes/month, 1 custom printer
+- Pro plan: unlimited
 
-## Plans
-- Free: 2 quotes/month, 1 custom printer, no export/reports
-- Pro: unlimited everything, R$ 29.90/month or R$ 239/year
+## Auth
+- Single AuthPage.tsx with two-column layout (product showcase + toggle login/signup)
+- ForgotPasswordPage.tsx also two-column
+- ResetPasswordPage for password recovery flow
 
 ## Pages
 - / Dashboard
 - /printers Manage printers
-- /new New pricing/quote (with AI margin suggestion + scenario simulator)
+- /new New pricing/quote
 - /history Quote history
 - /reports Pro-only reports
 - /planos Plans comparison
