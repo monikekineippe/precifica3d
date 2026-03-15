@@ -17,14 +17,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("quotes").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
+    supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => { if (data) setQuotes(data); });
-    supabase.from("printers").select("id", { count: "exact", head: true }).eq("user_id", user.id)
+    supabase.from("impressoras").select("id", { count: "exact", head: true }).eq("user_id", user.id)
       .then(({ count }) => setPrinterCount(count || 0));
   }, [user]);
 
   const avgCostPerGram = quotes.length > 0
-    ? quotes.reduce((s, q) => s + (q.total_weight > 0 ? q.total_filament_cost / q.total_weight : 0), 0) / quotes.length
+    ? quotes.reduce((s, q) => {
+        const filaments = Array.isArray(q.filamentos) ? q.filamentos : [];
+        const totalWeight = filaments.reduce((w: number, f: any) => w + (f.weightUsed || 0), 0);
+        const totalFilamentCost = filaments.reduce((c: number, f: any) => c + (f.computedCost || 0), 0);
+        return s + (totalWeight > 0 ? totalFilamentCost / totalWeight : 0);
+      }, 0) / quotes.length
     : 0;
 
   return (
@@ -90,7 +95,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold font-mono text-primary">
-              R$ {quotes.reduce((s, q) => s + (q.suggested_price || 0), 0).toFixed(0)}
+              R$ {quotes.reduce((s, q) => s + (q.preco_sugerido || 0), 0).toFixed(0)}
             </div>
           </CardContent>
         </Card>
@@ -123,12 +128,12 @@ export default function Dashboard() {
               {quotes.map(q => (
                 <div key={q.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
                   <div>
-                    <p className="font-medium text-sm text-foreground">{q.piece_name}</p>
-                    <p className="text-xs text-muted-foreground">{q.printer_name} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
+                    <p className="font-medium text-sm text-foreground">{q.nome_peca}</p>
+                    <p className="text-xs text-muted-foreground">{q.impressora_nome} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold font-mono text-primary text-sm">R$ {(q.suggested_price || 0).toFixed(2)}</p>
-                    <p className="text-[10px] text-muted-foreground">Margem {q.profit_margin}%</p>
+                    <p className="font-bold font-mono text-primary text-sm">R$ {(q.preco_sugerido || 0).toFixed(2)}</p>
+                    <p className="text-[10px] text-muted-foreground">Margem {q.margem_lucro}%</p>
                   </div>
                 </div>
               ))}

@@ -16,7 +16,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (isPro && user) {
-      supabase.from("quotes").select("*").eq("user_id", user.id).order("created_at", { ascending: true })
+      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: true })
         .then(({ data }) => { if (data) setQuotes(data); });
     }
   }, [isPro, user]);
@@ -26,7 +26,6 @@ export default function ReportsPage() {
       <div className="space-y-6 max-w-5xl">
         <h1 className="text-2xl font-bold text-foreground">Relatórios</h1>
         <div className="relative">
-          {/* Blurred preview */}
           <div className="filter blur-sm pointer-events-none opacity-50">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card className="border-border bg-card h-64" />
@@ -35,7 +34,6 @@ export default function ReportsPage() {
               <Card className="border-border bg-card h-64" />
             </div>
           </div>
-          {/* Overlay */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <Lock size={40} className="text-muted-foreground mb-3" />
             <p className="text-foreground font-medium mb-1">Recurso exclusivo Pro</p>
@@ -50,36 +48,33 @@ export default function ReportsPage() {
     );
   }
 
-  // Aggregate data
   const filamentCosts: Record<string, { total: number; count: number }> = {};
   const monthlyData: Record<string, { month: string; count: number; revenue: number }> = {};
   const costBreakdown = { filament: 0, energy: 0, labor: 0, maintenance: 0, depreciation: 0, packaging: 0 };
   let topPieces: { name: string; margin: number; price: number }[] = [];
 
   quotes.forEach(q => {
-    // Filament type costs
-    const filaments = Array.isArray(q.filaments) ? q.filaments : [];
+    const filaments = Array.isArray(q.filamentos) ? q.filamentos : [];
     filaments.forEach((f: any) => {
       if (!filamentCosts[f.type]) filamentCosts[f.type] = { total: 0, count: 0 };
       filamentCosts[f.type].total += f.computedCost || 0;
       filamentCosts[f.type].count += 1;
     });
 
-    // Monthly
     const month = new Date(q.created_at).toLocaleDateString("pt-BR", { month: "short", year: "2-digit" });
     if (!monthlyData[month]) monthlyData[month] = { month, count: 0, revenue: 0 };
     monthlyData[month].count += 1;
-    monthlyData[month].revenue += q.suggested_price || 0;
+    monthlyData[month].revenue += q.preco_sugerido || 0;
 
-    // Costs
-    costBreakdown.filament += q.total_filament_cost || 0;
-    costBreakdown.energy += q.energy_cost || 0;
-    costBreakdown.labor += q.labor_cost || 0;
-    costBreakdown.maintenance += q.maintenance_cost || 0;
-    costBreakdown.depreciation += q.depreciation_cost || 0;
-    costBreakdown.packaging += q.packaging_cost || 0;
+    const totalFilamentCost = filaments.reduce((c: number, f: any) => c + (f.computedCost || 0), 0);
+    costBreakdown.filament += totalFilamentCost;
+    costBreakdown.energy += q.custo_energia || 0;
+    costBreakdown.labor += q.custo_mao_de_obra || 0;
+    costBreakdown.maintenance += q.custo_manutencao || 0;
+    costBreakdown.depreciation += q.custo_depreciacao || 0;
+    costBreakdown.packaging += q.custo_embalagem || 0;
 
-    topPieces.push({ name: q.piece_name, margin: q.profit_margin, price: q.suggested_price });
+    topPieces.push({ name: q.nome_peca, margin: q.margem_lucro, price: q.preco_sugerido });
   });
 
   topPieces = topPieces.sort((a, b) => b.margin - a.margin).slice(0, 5);
@@ -105,7 +100,6 @@ export default function ReportsPage() {
       <p className="text-muted-foreground text-sm">Análise detalhada dos seus orçamentos</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Cost breakdown */}
         <Card className="border-border bg-card">
           <CardHeader><CardTitle className="text-sm text-foreground">Distribuição de Custos</CardTitle></CardHeader>
           <CardContent>
@@ -124,7 +118,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Monthly evolution */}
         <Card className="border-border bg-card">
           <CardHeader><CardTitle className="text-sm text-foreground">Evolução Mensal</CardTitle></CardHeader>
           <CardContent>
@@ -145,7 +138,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Top pieces */}
         <Card className="border-border bg-card">
           <CardHeader><CardTitle className="text-sm text-foreground">Peças Mais Lucrativas</CardTitle></CardHeader>
           <CardContent>
@@ -165,7 +157,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
 
-        {/* Filament avg cost */}
         <Card className="border-border bg-card">
           <CardHeader><CardTitle className="text-sm text-foreground">Custo Médio por Filamento</CardTitle></CardHeader>
           <CardContent>
