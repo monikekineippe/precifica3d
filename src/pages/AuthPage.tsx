@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Printer } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import printerBg from "@/assets/3d-printer-bg.png";
+import logo from "@/assets/logo-precifica3d.png";
 
 const BENEFITS = [
   "Cálculo automático de filamento, energia, mão de obra e manutenção",
