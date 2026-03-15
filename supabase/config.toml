@@ -1,4 +1,7 @@
 project_id = "nvghinitrmogshcsluys"
 
-[functions.greenn-webhook]
+[functions.energy-tariff]
+verify_jwt = false
+
+[functions.margin-suggestion]
 verify_jwt = false
