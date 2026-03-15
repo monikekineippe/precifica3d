@@ -1,16 +1,15 @@
-# Memory: index.md
 Precifica3D — plataforma de precificação de impressão 3D
 
 ## Design System
 - Theme: dark mode (class="dark" on html)
-- Primary: HSL 210 65% 52% (blue, from logo)
-- Accent/Gold: HSL 43 56% 56% (gold, from logo)
-- Neon glow: HSL 210 65% 52% (blue glow)
-- Background: HSL 222 30% 8%
-- Card: HSL 222 25% 11%
+- Primary: HSL 178 70% 42% (teal/cyan, from logo)
+- Accent: HSL 195 75% 45% (blue-cyan, from logo)
+- Background: HSL 200 25% 7%
+- Card: HSL 200 22% 10%
 - Fonts: Inter (body), JetBrains Mono (numbers/code)
 - Custom utilities: .neon-glow, .neon-text, .glass
-- Logo: src/assets/logo-precifica3d.png (gold+blue identity)
+- Logo full: src/assets/logo-precifica3d.png (teal 3D printer + text)
+- Logo icon: src/assets/logo-icon.png (teal 3D printer only)
 - 3D printer background: src/assets/3d-printer-bg.png
 
 ## Architecture
