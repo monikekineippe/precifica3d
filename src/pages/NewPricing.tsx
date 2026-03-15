@@ -367,13 +367,13 @@ export default function NewPricing() {
             <Label className="text-foreground">Impressora</Label>
             <Select value={printerId} onValueChange={handlePrinterChange}>
               <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-              <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+               <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
             </Select>
             {printer && (
               <div className="flex gap-1.5 mt-2">
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.kinematics}</Badge>
-                <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">Até {printer.max_filaments} filamento{printer.max_filaments > 1 ? 's' : ''}</Badge>
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.power_consumption}W</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.cinematica}</Badge>
+                <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">Até {printer.max_filamentos} filamento{printer.max_filamentos > 1 ? 's' : ''}</Badge>
+                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.consumo_watts}W</Badge>
               </div>
             )}
           </div>
