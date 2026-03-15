@@ -75,8 +75,8 @@ export default function NewPricing() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("printers").select("*").eq("user_id", user.id)
-      .then(({ data }) => { if (data) setPrinters(data); });
+    supabase.from("impressoras").select("*").eq("user_id", user.id)
+      .then(({ data }) => { if (data) setPrinters(data as any); });
     supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {
         if (data) setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
