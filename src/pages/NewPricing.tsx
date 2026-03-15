@@ -51,9 +51,9 @@ function createFilament(index: number): FilamentEntry {
 }
 
 interface PrinterRow {
-  id: string; name: string; kinematics: string; acquisition_cost: number;
-  lifespan: number; power_consumption: number; maintenance_cost_monthly: number;
-  monthly_usage_hours: number; max_filaments: number;
+  id: string; nome: string; cinematica: string; custo_aquisicao: number;
+  vida_util_horas: number; consumo_watts: number; custo_manutencao_mensal: number;
+  horas_uso_mensal: number; max_filamentos: number;
 }
 
 interface MarginSuggestion {
