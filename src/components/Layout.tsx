@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import logo from "@/assets/logo-precifica3d.png";
 
 const NAV = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
