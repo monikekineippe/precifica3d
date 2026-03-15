@@ -47,26 +47,11 @@ export default function PrintersPage() {
 
   const loadPrinters = async () => {
     if (!user) return;
-    const { data } = await supabase.from("impressoras").select("*").eq("user_id", user.id);
+    // Load user's own printers + all presets (RLS allows viewing is_precadastrada=true)
+    const { data } = await supabase.from("impressoras").select("*")
+      .or(`user_id.eq.${user.id},is_precadastrada.eq.true`);
     if (data) {
       setPrinters(data as any);
-      if (data.length === 0 && !presetsLoaded) {
-        const presets = PRESET_PRINTERS.map(p => ({
-          user_id: user.id,
-          nome: p.name,
-          cinematica: p.kinematics,
-          custo_aquisicao: p.acquisitionCost,
-          vida_util_horas: p.lifespan,
-          consumo_watts: p.powerConsumption,
-          custo_manutencao_mensal: p.maintenanceCostMonthly,
-          horas_uso_mensal: p.monthlyUsageHours,
-          max_filamentos: p.maxFilaments,
-          is_precadastrada: true,
-        }));
-        await supabase.from("impressoras").insert(presets as any);
-        setPresetsLoaded(true);
-        loadPrinters();
-      }
     }
   };
 
