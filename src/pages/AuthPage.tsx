@@ -78,13 +78,8 @@ export default function AuthPage() {
 
         <div className="relative z-10 space-y-8">
           {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center neon-glow">
-              <Printer size={24} className="text-primary-foreground" />
-            </div>
-            <span className="text-3xl font-bold tracking-tight text-foreground">
-              Precifica<span className="text-primary">3D</span>
-            </span>
+          <div className="flex items-center">
+            <img src={logo} alt="Precifica3D" className="h-16 xl:h-20 object-contain" />
           </div>
 
           {/* Headline */}
