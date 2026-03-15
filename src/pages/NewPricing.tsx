@@ -241,7 +241,7 @@ export default function NewPricing() {
   const pieData = [
     { name: "Filamento", value: +totalFilamentCost.toFixed(2) },
     { name: "Energia", value: +energyCost.toFixed(2) },
-    { name: "Mão de obra", value: +(laborCost + laborPctCost).toFixed(2) },
+    { name: "Mão de obra", value: +laborCost.toFixed(2) },
     { name: "Manutenção", value: +maintenanceCost.toFixed(2) },
     { name: "Depreciação", value: +depreciationCost.toFixed(2) },
     { name: "Embalagem", value: +pkgCost.toFixed(2) },
