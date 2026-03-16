@@ -6,7 +6,7 @@ interface Profile {
   id: string;
   user_id: string;
   nome: string;
-  plano: "free" | "pro";
+  plano: "free" | "pro" | "vitalicio";
   plano_expiracao: string | null;
   greenn_assinatura_id: string | null;
 }
@@ -16,6 +16,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   isPro: boolean;
+  isVitalicio: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   isPro: false,
+  isVitalicio: false,
   signOut: async () => {},
   refreshProfile: async () => {},
 });
@@ -59,7 +61,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
         if (currentUser) {
-          // Use setTimeout to avoid Supabase deadlock
           setTimeout(() => fetchProfile(currentUser.id), 0);
         } else {
           setProfile(null);
@@ -80,8 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isPro = profile?.plano === "pro" && (
-    !profile.plano_expiracao || new Date(profile.plano_expiracao) > new Date()
+  const isVitalicio = profile?.plano === "vitalicio";
+
+  const isPro = isVitalicio || (
+    profile?.plano === "pro" && (
+      !profile.plano_expiracao || new Date(profile.plano_expiracao) > new Date()
+    )
   );
 
   const signOut = async () => {
@@ -91,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isPro, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isPro, isVitalicio, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
 export function usePlanLimits() {
-  const { user, isPro } = useAuth();
+  const { user, isPro, isVitalicio } = useAuth();
   const [quotesThisMonth, setQuotesThisMonth] = useState(0);
   const [customPrintersCount, setCustomPrintersCount] = useState(0);
 
@@ -30,7 +30,7 @@ export function usePlanLimits() {
 
   const canCreateQuote = isPro || quotesThisMonth < 2;
   const canCreatePrinter = isPro || customPrintersCount < 1;
-  const canExport = isPro;
+  const canExport = isVitalicio;
   const canViewReports = isPro;
   const canViewFullHistory = isPro;
 
