@@ -333,14 +333,14 @@ export default function NewPricing() {
               Você já realizou 2 precificações este mês. Faça upgrade para o plano Pro e precifique sem limites.
             </p>
             <div className="space-y-3">
-              <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
+              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
                 <Button className="w-full bg-primary text-primary-foreground font-semibold" size="lg">
-                  Assinar Pro por R$ 29,90/mês
+                  Assinar Pro Anual — R$ 97/ano
                 </Button>
               </a>
-              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
+              <a href={CHECKOUT_VITALICIO} target="_blank" rel="noopener noreferrer" className="block">
                 <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10" size="lg">
-                  Ver plano anual (economize 33%)
+                  Acesso Vitalício — R$ 197 (pagamento único)
                 </Button>
               </a>
               <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate("/")}>
