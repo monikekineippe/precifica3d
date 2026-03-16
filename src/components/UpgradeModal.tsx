@@ -6,11 +6,12 @@ import { Check, X, Crown, Infinity } from "lucide-react";
 import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
 
 const FEATURES = [
-  { name: "Orçamentos por mês", free: "2", pro: "Ilimitados" },
-  { name: "Impressoras personalizadas", free: "1", pro: "Ilimitadas" },
-  { name: "Exportar PDF/CSV", free: false, pro: true },
-  { name: "Histórico completo", free: false, pro: true },
-  { name: "Relatórios e gráficos", free: false, pro: true },
+  { name: "Orçamentos ilimitados", anual: true, vitalicio: true },
+  { name: "Impressoras ilimitadas", anual: true, vitalicio: true },
+  { name: "Histórico completo", anual: true, vitalicio: true },
+  { name: "Relatórios e gráficos", anual: true, vitalicio: true },
+  { name: "Exportar PDF/CSV", anual: false, vitalicio: true },
+  { name: "Todas as atualizações futuras", anual: false, vitalicio: true },
 ];
 
 interface Props {
@@ -37,25 +38,17 @@ export default function UpgradeModal({ open, onOpenChange }: Props) {
           <div className="rounded-lg border border-border overflow-hidden">
             <div className="grid grid-cols-3 bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">
               <span>Recurso</span>
-              <span className="text-center">Free</span>
-              <span className="text-center">Pro</span>
+              <span className="text-center">Anual</span>
+              <span className="text-center">Vitalício</span>
             </div>
             {FEATURES.map((f) => (
               <div key={f.name} className="grid grid-cols-3 px-4 py-2.5 border-t border-border text-sm">
                 <span className="text-foreground">{f.name}</span>
                 <span className="text-center">
-                  {typeof f.free === "boolean" ? (
-                    f.free ? <Check size={16} className="inline text-primary" /> : <X size={16} className="inline text-muted-foreground" />
-                  ) : (
-                    <span className="text-muted-foreground text-xs">{f.free}</span>
-                  )}
+                  {f.anual ? <Check size={16} className="inline text-primary" /> : <X size={16} className="inline text-muted-foreground" />}
                 </span>
                 <span className="text-center">
-                  {typeof f.pro === "boolean" ? (
-                    f.pro ? <Check size={16} className="inline text-primary" /> : <X size={16} className="inline text-muted-foreground" />
-                  ) : (
-                    <span className="text-primary font-medium text-xs">{f.pro}</span>
-                  )}
+                  {f.vitalicio ? <Check size={16} className="inline text-primary" /> : <X size={16} className="inline text-muted-foreground" />}
                 </span>
               </div>
             ))}
