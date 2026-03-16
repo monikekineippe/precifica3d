@@ -33,6 +33,7 @@ const App = () => (
             <Route path="/signup" element={<AuthPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/planos" element={<PlansPage />} />
             {/* Protected */}
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
@@ -40,7 +41,6 @@ const App = () => (
               <Route path="/new" element={<NewPricing />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/planos" element={<PlansPage />} />
               <Route path="/reports" element={<ReportsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
