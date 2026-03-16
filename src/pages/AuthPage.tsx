@@ -43,7 +43,7 @@ export default function AuthPage() {
         setLoading(false);
         return;
       }
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -51,6 +51,9 @@ export default function AuthPage() {
           emailRedirectTo: window.location.origin,
         },
       });
+      console.log("[SignUp] Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+      console.log("[SignUp] Response data:", data);
+      console.log("[SignUp] Response error:", error);
       setLoading(false);
       if (error) {
         toast.error(error.message);
