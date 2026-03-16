@@ -1,9 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Crown } from "lucide-react";
+import { Check, X, Crown, Infinity } from "lucide-react";
 
-import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
+import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
 
 const FEATURES = [
   { name: "Orçamentos por mês", free: "2", pro: "Ilimitados" },
@@ -63,26 +63,26 @@ export default function UpgradeModal({ open, onOpenChange }: Props) {
 
           {/* Pricing cards */}
           <div className="grid grid-cols-2 gap-3">
-            <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
+            <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
               <div className="p-4 rounded-lg border border-border hover:border-primary/50 transition-colors text-center">
-                <p className="text-xs text-muted-foreground mb-1">Mensal</p>
-                <p className="text-2xl font-bold font-mono text-foreground">R$ 29,90</p>
-                <p className="text-[10px] text-muted-foreground">/mês</p>
+                <p className="text-xs text-muted-foreground mb-1">Anual</p>
+                <p className="text-2xl font-bold font-mono text-foreground">R$ 97</p>
+                <p className="text-[10px] text-muted-foreground">/ano (~R$ 8,08/mês)</p>
                 <Button className="w-full mt-3 bg-primary text-primary-foreground" size="sm">
-                  Assinar Mensal
+                  Assinar Anual
                 </Button>
               </div>
             </a>
-            <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
+            <a href={CHECKOUT_VITALICIO} target="_blank" rel="noopener noreferrer" className="block">
               <div className="p-4 rounded-lg border border-primary/50 hover:border-primary transition-colors text-center relative neon-glow">
                 <Badge className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px]">
-                  Economize 33%
+                  Melhor custo-benefício
                 </Badge>
-                <p className="text-xs text-muted-foreground mb-1">Anual</p>
-                <p className="text-2xl font-bold font-mono text-foreground">R$ 239</p>
-                <p className="text-[10px] text-muted-foreground">/ano (~R$ 19,92/mês)</p>
+                <p className="text-xs text-muted-foreground mb-1">Vitalício</p>
+                <p className="text-2xl font-bold font-mono text-foreground">R$ 197</p>
+                <p className="text-[10px] text-muted-foreground">pagamento único</p>
                 <Button className="w-full mt-3 bg-primary text-primary-foreground" size="sm">
-                  Assinar Anual
+                  <Infinity size={14} className="mr-1" /> Acesso Vitalício
                 </Button>
               </div>
             </a>
