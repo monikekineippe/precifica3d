@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
+import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
 import { useNavigate } from "react-router-dom";
 import {
   Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
