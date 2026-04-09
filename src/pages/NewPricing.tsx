@@ -121,7 +121,7 @@ export default function NewPricing() {
   const [tariff, setTariff] = useState(settings.defaultTariff);
   const [distributor, setDistributor] = useState("");
   const [tariffRef, setTariffRef] = useState("");
-  const [tariffLoading, setTariffLoading] = useState(false);
+  
   const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
