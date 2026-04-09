@@ -355,7 +355,10 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string
+          default_city: string | null
           default_margin: number
+          default_printer_id: string | null
+          default_state: string | null
           default_tariff: number
           default_tax_rate: number
           id: string
@@ -364,7 +367,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_city?: string | null
           default_margin?: number
+          default_printer_id?: string | null
+          default_state?: string | null
           default_tariff?: number
           default_tax_rate?: number
           id?: string
@@ -373,7 +379,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_city?: string | null
           default_margin?: number
+          default_printer_id?: string | null
+          default_state?: string | null
           default_tariff?: number
           default_tax_rate?: number
           id?: string

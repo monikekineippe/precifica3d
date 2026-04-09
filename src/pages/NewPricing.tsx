@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
+import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,15 +73,37 @@ export default function NewPricing() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
+  const [defaultsApplied, setDefaultsApplied] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase.from("impressoras").select("*")
       .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
-      .then(({ data }) => { if (data) setPrinters(data as any); });
-    supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {
-        if (data) setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
+        if (data) setPrinters(data as any);
+        // Load user settings and apply defaults after printers are loaded
+        supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+          .then(({ data: settingsData }) => {
+            if (settingsData) {
+              setSettings({ defaultTariff: settingsData.default_tariff, defaultMargin: settingsData.default_margin, defaultTaxRate: settingsData.default_tax_rate });
+              setMargin(settingsData.default_margin);
+              setTaxRate(settingsData.default_tax_rate);
+              // Apply saved defaults
+              if (!defaultsApplied) {
+                if ((settingsData as any).default_printer_id && data?.some((p: any) => p.id === (settingsData as any).default_printer_id)) {
+                  setPrinterId((settingsData as any).default_printer_id);
+                }
+                if ((settingsData as any).default_state) {
+                  setState((settingsData as any).default_state);
+                }
+                if ((settingsData as any).default_city) {
+                  // City will be set after cities load via the separate effect
+                  setDefaultCity((settingsData as any).default_city);
+                }
+                setDefaultsApplied(true);
+              }
+            }
+          });
       });
   }, [user]);
 
@@ -92,12 +115,13 @@ export default function NewPricing() {
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
+  const [defaultCity, setDefaultCity] = useState("");
   const [cities, setCities] = useState<{ id: number; nome: string }[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [tariff, setTariff] = useState(settings.defaultTariff);
   const [distributor, setDistributor] = useState("");
   const [tariffRef, setTariffRef] = useState("");
-  const [tariffLoading, setTariffLoading] = useState(false);
+  
   const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
@@ -121,41 +145,29 @@ export default function NewPricing() {
     setCitiesLoading(true);
     fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`)
       .then(r => r.json())
-      .then((data: { id: number; nome: string }[]) => setCities(data.sort((a, b) => a.nome.localeCompare(b.nome))))
+      .then((data: { id: number; nome: string }[]) => {
+        const sorted = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setCities(sorted);
+        // If there's a pending default city, apply it
+        if (defaultCity && sorted.some(c => c.nome === defaultCity)) {
+          setCity(defaultCity);
+          setDefaultCity("");
+        } else if (!defaultCity) {
+          setCity("");
+        }
+      })
       .catch(() => setCities([]))
       .finally(() => setCitiesLoading(false));
-    setCity("");
   }, [state]);
 
-  // Fetch tariff via AI
+  // Apply tariff from static table when state changes
   useEffect(() => {
-    if (!city || !state) return;
-    setTariffLoading(true);
-    const fetchTariff = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('energy-tariff', {
-          body: { city, state },
-        });
-        if (error) throw error;
-        if (data && data.tarifa) {
-          setTariff(data.tarifa);
-          setDistributor(data.distribuidora || "Distribuidora local");
-          setTariffRef(data.referencia || "");
-          if (data.fallback) {
-            toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
-          }
-        }
-      } catch {
-        setTariff(settings.defaultTariff);
-        setDistributor("Distribuidora local");
-        setTariffRef("padrão");
-        toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
-      } finally {
-        setTariffLoading(false);
-      }
-    };
-    fetchTariff();
-  }, [city, state]);
+    if (!state) return;
+    const info = getTariffByState(state);
+    setTariff(info.tarifa);
+    setDistributor(info.distribuidora);
+    setTariffRef(info.referencia);
+  }, [state]);
 
   // Fetch margin suggestion via AI
   useEffect(() => {
@@ -452,13 +464,22 @@ export default function NewPricing() {
               )}
             </div>
           </div>
-          {tariffLoading ? <Skeleton className="h-16 w-full" /> : city && (
-            <div className="p-3 rounded-lg bg-muted/50 border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">{distributor}</p>
-                <p className="font-mono text-sm text-foreground">R$ {tariff.toFixed(2)}/kWh <span className="text-[10px] text-muted-foreground ml-1">{tariffRef}</span></p>
-              </div>
-              <RefreshCw size={14} className="text-muted-foreground cursor-pointer hover:text-primary" onClick={() => { setTariffLoading(true); supabase.functions.invoke('energy-tariff', { body: { city, state } }).then(({ data }) => { if (data?.tarifa) { setTariff(data.tarifa); setDistributor(data.distribuidora || ""); setTariffRef(data.referencia || ""); } setTariffLoading(false); }).catch(() => setTariffLoading(false)); }} />
+          {state && (
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
+              <p className="text-xs text-muted-foreground">{distributor}</p>
+              <p className="font-mono text-sm text-foreground">R$ {tariff.toFixed(2)}/kWh <span className="text-[10px] text-muted-foreground ml-1">{tariffRef}</span></p>
+              {getDistributorsByState(state).length > 1 && (
+                <div className="mt-2">
+                  <Label className="text-xs text-muted-foreground">Distribuidora</Label>
+                  <Select value={distributor} onValueChange={v => {
+                    const info = getDistributorsByState(state).find(d => d.distribuidora === v);
+                    if (info) { setTariff(info.tarifa); setDistributor(info.distribuidora); setTariffRef(info.referencia); }
+                  }}>
+                    <SelectTrigger className="bg-background border-border text-xs h-8 mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{getDistributorsByState(state).map(d => <SelectItem key={d.distribuidora} value={d.distribuidora}>{d.distribuidora} — R$ {d.tarifa.toFixed(2)}/kWh</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
