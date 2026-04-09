@@ -3,7 +3,7 @@ import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
