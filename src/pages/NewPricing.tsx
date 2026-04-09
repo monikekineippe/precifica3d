@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
+import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
   Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, RefreshCw, Loader2, Lock, Share2, Sparkles,
@@ -72,15 +73,37 @@ export default function NewPricing() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
+  const [defaultsApplied, setDefaultsApplied] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase.from("impressoras").select("*")
       .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
-      .then(({ data }) => { if (data) setPrinters(data as any); });
-    supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {
-        if (data) setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
+        if (data) setPrinters(data as any);
+        // Load user settings and apply defaults after printers are loaded
+        supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+          .then(({ data: settingsData }) => {
+            if (settingsData) {
+              setSettings({ defaultTariff: settingsData.default_tariff, defaultMargin: settingsData.default_margin, defaultTaxRate: settingsData.default_tax_rate });
+              setMargin(settingsData.default_margin);
+              setTaxRate(settingsData.default_tax_rate);
+              // Apply saved defaults
+              if (!defaultsApplied) {
+                if ((settingsData as any).default_printer_id && data?.some((p: any) => p.id === (settingsData as any).default_printer_id)) {
+                  setPrinterId((settingsData as any).default_printer_id);
+                }
+                if ((settingsData as any).default_state) {
+                  setState((settingsData as any).default_state);
+                }
+                if ((settingsData as any).default_city) {
+                  // City will be set after cities load via the separate effect
+                  setDefaultCity((settingsData as any).default_city);
+                }
+                setDefaultsApplied(true);
+              }
+            }
+          });
       });
   }, [user]);
 
