@@ -115,6 +115,7 @@ export default function NewPricing() {
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
+  const [defaultCity, setDefaultCity] = useState("");
   const [cities, setCities] = useState<{ id: number; nome: string }[]>([]);
   const [citiesLoading, setCitiesLoading] = useState(false);
   const [tariff, setTariff] = useState(settings.defaultTariff);
@@ -144,41 +145,29 @@ export default function NewPricing() {
     setCitiesLoading(true);
     fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${state}/municipios`)
       .then(r => r.json())
-      .then((data: { id: number; nome: string }[]) => setCities(data.sort((a, b) => a.nome.localeCompare(b.nome))))
+      .then((data: { id: number; nome: string }[]) => {
+        const sorted = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setCities(sorted);
+        // If there's a pending default city, apply it
+        if (defaultCity && sorted.some(c => c.nome === defaultCity)) {
+          setCity(defaultCity);
+          setDefaultCity("");
+        } else if (!defaultCity) {
+          setCity("");
+        }
+      })
       .catch(() => setCities([]))
       .finally(() => setCitiesLoading(false));
-    setCity("");
   }, [state]);
 
-  // Fetch tariff via AI
+  // Apply tariff from static table when state changes
   useEffect(() => {
-    if (!city || !state) return;
-    setTariffLoading(true);
-    const fetchTariff = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('energy-tariff', {
-          body: { city, state },
-        });
-        if (error) throw error;
-        if (data && data.tarifa) {
-          setTariff(data.tarifa);
-          setDistributor(data.distribuidora || "Distribuidora local");
-          setTariffRef(data.referencia || "");
-          if (data.fallback) {
-            toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
-          }
-        }
-      } catch {
-        setTariff(settings.defaultTariff);
-        setDistributor("Distribuidora local");
-        setTariffRef("padrão");
-        toast.info("Tarifa padrão aplicada. Ajuste manualmente se necessário.");
-      } finally {
-        setTariffLoading(false);
-      }
-    };
-    fetchTariff();
-  }, [city, state]);
+    if (!state) return;
+    const info = getTariffByState(state);
+    setTariff(info.tarifa);
+    setDistributor(info.distribuidora);
+    setTariffRef(info.referencia);
+  }, [state]);
 
   // Fetch margin suggestion via AI
   useEffect(() => {
