@@ -464,13 +464,22 @@ export default function NewPricing() {
               )}
             </div>
           </div>
-          {tariffLoading ? <Skeleton className="h-16 w-full" /> : city && (
-            <div className="p-3 rounded-lg bg-muted/50 border border-border flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">{distributor}</p>
-                <p className="font-mono text-sm text-foreground">R$ {tariff.toFixed(2)}/kWh <span className="text-[10px] text-muted-foreground ml-1">{tariffRef}</span></p>
-              </div>
-              <RefreshCw size={14} className="text-muted-foreground cursor-pointer hover:text-primary" onClick={() => { setTariffLoading(true); supabase.functions.invoke('energy-tariff', { body: { city, state } }).then(({ data }) => { if (data?.tarifa) { setTariff(data.tarifa); setDistributor(data.distribuidora || ""); setTariffRef(data.referencia || ""); } setTariffLoading(false); }).catch(() => setTariffLoading(false)); }} />
+          {state && (
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
+              <p className="text-xs text-muted-foreground">{distributor}</p>
+              <p className="font-mono text-sm text-foreground">R$ {tariff.toFixed(2)}/kWh <span className="text-[10px] text-muted-foreground ml-1">{tariffRef}</span></p>
+              {getDistributorsByState(state).length > 1 && (
+                <div className="mt-2">
+                  <Label className="text-xs text-muted-foreground">Distribuidora</Label>
+                  <Select value={distributor} onValueChange={v => {
+                    const info = getDistributorsByState(state).find(d => d.distribuidora === v);
+                    if (info) { setTariff(info.tarifa); setDistributor(info.distribuidora); setTariffRef(info.referencia); }
+                  }}>
+                    <SelectTrigger className="bg-background border-border text-xs h-8 mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>{getDistributorsByState(state).map(d => <SelectItem key={d.distribuidora} value={d.distribuidora}>{d.distribuidora} — R$ {d.tarifa.toFixed(2)}/kWh</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           )}
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
