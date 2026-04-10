@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
+import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
@@ -345,14 +345,14 @@ export default function NewPricing() {
               Você já realizou 2 precificações este mês. Faça upgrade para o plano Pro e precifique sem limites.
             </p>
             <div className="space-y-3">
-              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
+              <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
                 <Button className="w-full bg-primary text-primary-foreground font-semibold" size="lg">
-                  Assinar Pro Anual — R$ 97/ano
+                  Assinar Pro Mensal — R$ 29,90/mês
                 </Button>
               </a>
-              <a href={CHECKOUT_VITALICIO} target="_blank" rel="noopener noreferrer" className="block">
+              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
                 <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10" size="lg">
-                  Acesso Vitalício — R$ 197 (pagamento único)
+                  Assinar Pro Anual — R$ 239,90/ano
                 </Button>
               </a>
               <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate("/")}>
