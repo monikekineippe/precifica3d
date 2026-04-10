@@ -3,7 +3,7 @@ import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles, CreditCard, QrCode,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,12 +68,15 @@ interface MarginSuggestion {
 
 export default function NewPricing() {
   const navigate = useNavigate();
-  const { user, isPro } = useAuth();
+  const { user, isPro, isAnual } = useAuth();
   const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
+  const [pixDiscount, setPixDiscount] = useState(0);
+  const [cardFeePercent, setCardFeePercent] = useState(4.99);
+  const [maxInstallments, setMaxInstallments] = useState(12);
 
   useEffect(() => {
     if (!user) return;
@@ -102,6 +105,10 @@ export default function NewPricing() {
                 }
                 setDefaultsApplied(true);
               }
+              // Load payment settings
+              setPixDiscount((settingsData as any).pix_discount ?? 0);
+              setCardFeePercent((settingsData as any).card_fee_percent ?? 4.99);
+              setMaxInstallments((settingsData as any).max_installments ?? 12);
             }
           });
       });
@@ -623,6 +630,70 @@ export default function NewPricing() {
               <p className="text-lg font-bold font-mono text-primary">R$ {profit.toFixed(2)} <span className="text-xs text-muted-foreground">({margin}%)</span></p>
             </div>
           </div>
+
+          {/* BLOCK 3.5 — Payment Methods */}
+          {suggestedPrice > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-foreground flex items-center gap-2">
+                <CreditCard size={14} className="text-primary" /> Meios de Pagamento
+              </p>
+              
+              {/* PIX */}
+              <div className="p-3 rounded-lg bg-muted/50 border border-border">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <QrCode size={16} className="text-primary" />
+                    <span className="text-sm font-medium text-foreground">PIX</span>
+                    {pixDiscount > 0 && (
+                      <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">-{pixDiscount}%</Badge>
+                    )}
+                  </div>
+                  <span className="text-lg font-bold font-mono text-primary">
+                    R$ {(suggestedPrice * (1 - pixDiscount / 100)).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Credit Card */}
+              <div className="p-3 rounded-lg bg-muted/50 border border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CreditCard size={16} className="text-primary" />
+                    <span className="text-sm font-medium text-foreground">Cartão de Crédito</span>
+                    <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground">+{cardFeePercent}%</Badge>
+                  </div>
+                  <span className="text-lg font-bold font-mono text-foreground">
+                    R$ {(suggestedPrice * (1 + cardFeePercent / 100)).toFixed(2)}
+                  </span>
+                </div>
+                
+                {/* Installments */}
+                {maxInstallments > 1 && (
+                  <div className="space-y-1 pt-2 border-t border-border/50">
+                    <p className="text-[10px] text-muted-foreground mb-1">Parcelamento</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                      {Array.from({ length: maxInstallments }, (_, i) => i + 1).map(n => {
+                        const cardTotal = suggestedPrice * (1 + cardFeePercent / 100);
+                        const installmentValue = cardTotal / n;
+                        return (
+                          <div key={n} className="flex justify-between text-xs px-2 py-1 rounded bg-background/50">
+                            <span className="text-muted-foreground">{n}x</span>
+                            <span className="font-mono text-foreground">R$ {installmentValue.toFixed(2)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                
+                {!isAnual && (
+                  <p className="text-[10px] text-muted-foreground italic flex items-center gap-1">
+                    <Lock size={10} /> Configure taxas e parcelas nas Configurações (plano Anual)
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* BLOCK 4 — Breakdown Chart */}
           {pieData.length > 0 && (
