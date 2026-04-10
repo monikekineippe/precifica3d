@@ -360,6 +360,7 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          card_fee_percent: number
           created_at: string
           default_city: string | null
           default_margin: number
@@ -368,10 +369,13 @@ export type Database = {
           default_tariff: number
           default_tax_rate: number
           id: string
+          max_installments: number
+          pix_discount: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          card_fee_percent?: number
           created_at?: string
           default_city?: string | null
           default_margin?: number
@@ -380,10 +384,13 @@ export type Database = {
           default_tariff?: number
           default_tax_rate?: number
           id?: string
+          max_installments?: number
+          pix_discount?: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          card_fee_percent?: number
           created_at?: string
           default_city?: string | null
           default_margin?: number
@@ -392,6 +399,8 @@ export type Database = {
           default_tariff?: number
           default_tax_rate?: number
           id?: string
+          max_installments?: number
+          pix_discount?: number
           updated_at?: string
           user_id?: string
         }
