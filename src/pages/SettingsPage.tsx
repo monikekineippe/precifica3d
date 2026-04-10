@@ -47,6 +47,9 @@ export default function SettingsPage() {
           setDefaultPrinterId((data as any).default_printer_id || "");
           setDefaultState((data as any).default_state || "");
           setDefaultCity((data as any).default_city || "");
+          setPixDiscount((data as any).pix_discount ?? 0);
+          setCardFeePercent((data as any).card_fee_percent ?? 4.99);
+          setMaxInstallments((data as any).max_installments ?? 12);
         }
       });
   }, [user]);
