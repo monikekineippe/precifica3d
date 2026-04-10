@@ -226,9 +226,11 @@ export type Database = {
           email: string | null
           greenn_assinatura_id: string | null
           id: string
+          instagram: string
           nome: string
           plano: string
           plano_expiracao: string | null
+          telefone: string
           updated_at: string
           user_id: string
         }
@@ -237,9 +239,11 @@ export type Database = {
           email?: string | null
           greenn_assinatura_id?: string | null
           id?: string
+          instagram?: string
           nome?: string
           plano?: string
           plano_expiracao?: string | null
+          telefone?: string
           updated_at?: string
           user_id: string
         }
@@ -248,9 +252,11 @@ export type Database = {
           email?: string | null
           greenn_assinatura_id?: string | null
           id?: string
+          instagram?: string
           nome?: string
           plano?: string
           plano_expiracao?: string | null
+          telefone?: string
           updated_at?: string
           user_id?: string
         }
