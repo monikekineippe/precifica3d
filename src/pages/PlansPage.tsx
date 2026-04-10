@@ -147,21 +147,23 @@ export default function PlansPage() {
           <CardTitle className="text-sm text-foreground">Comparação detalhada</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-0">
-            <div className="grid grid-cols-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
-              <span>Recurso</span>
-              <span className="text-center">Free</span>
-              <span className="text-center">Mensal</span>
-              <span className="text-center">Anual</span>
-            </div>
-            {FEATURES.map(f => (
-              <div key={f.name} className="grid grid-cols-4 py-2.5 text-sm border-b border-border/50">
-                <span className="text-foreground">{f.name}</span>
-                <span className="text-center"><FeatureCell value={f.free} /></span>
-                <span className="text-center"><FeatureCell value={f.mensal} /></span>
-                <span className="text-center"><FeatureCell value={f.anual} /></span>
+          <div className="overflow-x-auto">
+            <div className="min-w-[400px] space-y-0">
+              <div className="grid grid-cols-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
+                <span>Recurso</span>
+                <span className="text-center">Free</span>
+                <span className="text-center">Mensal</span>
+                <span className="text-center">Anual</span>
               </div>
-            ))}
+              {FEATURES.map(f => (
+                <div key={f.name} className="grid grid-cols-4 py-2.5 text-sm border-b border-border/50">
+                  <span className="text-foreground">{f.name}</span>
+                  <span className="text-center"><FeatureCell value={f.free} /></span>
+                  <span className="text-center"><FeatureCell value={f.mensal} /></span>
+                  <span className="text-center"><FeatureCell value={f.anual} /></span>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

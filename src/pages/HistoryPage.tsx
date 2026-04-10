@@ -90,19 +90,21 @@ export default function HistoryPage() {
         <div className="space-y-2">
           {filtered.map(q => (
             <Card key={q.id} className="border-border bg-card">
-              <CardContent className="flex items-center justify-between py-3 px-4">
+              <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 px-4">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-foreground truncate">{q.nome_peca}</p>
                   <p className="text-xs text-muted-foreground">{q.impressora_nome} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="text-right mr-2">
+                <div className="flex items-center justify-between sm:justify-end gap-3">
+                  <div className="text-left sm:text-right mr-2">
                     <p className="font-bold font-mono text-primary text-sm">R$ {(q.preco_sugerido || 0).toFixed(2)}</p>
                     <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{q.margem_lucro}%</Badge>
                   </div>
-                  <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary"><Eye size={15} /></button>
-                  <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent"><Copy size={15} /></button>
-                  <button onClick={() => handleDelete(q.id)} className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 size={15} /></button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary"><Eye size={15} /></button>
+                    <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent"><Copy size={15} /></button>
+                    <button onClick={() => handleDelete(q.id)} className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 size={15} /></button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
