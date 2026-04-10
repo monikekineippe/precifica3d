@@ -105,6 +105,10 @@ export default function NewPricing() {
                 }
                 setDefaultsApplied(true);
               }
+              // Load payment settings
+              setPixDiscount((settingsData as any).pix_discount ?? 0);
+              setCardFeePercent((settingsData as any).card_fee_percent ?? 4.99);
+              setMaxInstallments((settingsData as any).max_installments ?? 12);
             }
           });
       });
