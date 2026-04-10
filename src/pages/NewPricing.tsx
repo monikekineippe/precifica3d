@@ -453,23 +453,12 @@ export default function NewPricing() {
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Zap size={16} className="text-primary" />Energia<Tip text="Tarifa estimada com base na distribuidora da sua região. Verifique sua fatura para maior precisão." /></CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-foreground">Estado</Label>
-              <Select value={state} onValueChange={v => { setState(v); setCity(""); }}>
-                <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
-                <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-foreground">Cidade</Label>
-              {citiesLoading ? <Skeleton className="h-10 w-full" /> : (
-                <Select value={city} onValueChange={setCity} disabled={!state}>
-                  <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent>{cities.map(c => <SelectItem key={c.id} value={c.nome}>{c.nome}</SelectItem>)}</SelectContent>
-                </Select>
-              )}
-            </div>
+          <div>
+            <Label className="text-foreground">Estado</Label>
+            <Select value={state} onValueChange={v => { setState(v); }}>
+              <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
+              <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
+            </Select>
           </div>
           {state && (
             <div className="p-3 rounded-lg bg-muted/50 border border-border">
