@@ -22,6 +22,8 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [instagram, setInstagram] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -47,7 +49,7 @@ export default function AuthPage() {
         email,
         password,
         options: {
-          data: { nome },
+          data: { nome, telefone, instagram },
           emailRedirectTo: window.location.origin,
         },
       });
@@ -162,16 +164,37 @@ export default function AuthPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
-              <div>
-                <Label className="text-foreground">Nome</Label>
-                <Input
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  required={!isLogin}
-                  className="bg-muted border-border"
-                  placeholder="Seu nome"
-                />
-              </div>
+              <>
+                <div>
+                  <Label className="text-foreground">Nome</Label>
+                  <Input
+                    value={nome}
+                    onChange={(e) => setNome(e.target.value)}
+                    required
+                    className="bg-muted border-border"
+                    placeholder="Seu nome"
+                  />
+                </div>
+                <div>
+                  <Label className="text-foreground">Telefone</Label>
+                  <Input
+                    type="tel"
+                    value={telefone}
+                    onChange={(e) => setTelefone(e.target.value)}
+                    className="bg-muted border-border"
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+                <div>
+                  <Label className="text-foreground">Instagram</Label>
+                  <Input
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
+                    className="bg-muted border-border"
+                    placeholder="@seuperfil"
+                  />
+                </div>
+              </>
             )}
             <div>
               <Label className="text-foreground">E-mail</Label>
@@ -220,12 +243,7 @@ export default function AuthPage() {
                 Esqueci minha senha
               </Link>
             )}
-            {!isLogin && (
-              <p className="text-muted-foreground text-xs">
-                Plano gratuito. Sem cartão de crédito.
-              </p>
-            )}
-            <p className="text-muted-foreground text-xs lg:hidden">
+            <p className="text-muted-foreground text-xs">
               Plano gratuito. Sem cartão de crédito.
             </p>
             <Link
