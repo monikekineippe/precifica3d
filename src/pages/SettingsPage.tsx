@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Crown, ExternalLink } from "lucide-react";
+import { Crown, ExternalLink, CreditCard, Lock } from "lucide-react";
 import UpgradeModal from "@/components/UpgradeModal";
 import { BRAZILIAN_STATES } from "@/lib/brazilian-states";
 
@@ -21,7 +21,11 @@ interface PrinterRow {
 
 export default function SettingsPage() {
   const { user, isPro, profile } = useAuth();
+  const { isAnual } = useAuth();
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6 });
+  const [pixDiscount, setPixDiscount] = useState(0);
+  const [cardFeePercent, setCardFeePercent] = useState(4.99);
+  const [maxInstallments, setMaxInstallments] = useState(12);
   const [defaultPrinterId, setDefaultPrinterId] = useState<string>("");
   const [defaultState, setDefaultState] = useState<string>("");
   const [defaultCity, setDefaultCity] = useState<string>("");
