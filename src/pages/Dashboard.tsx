@@ -41,8 +41,8 @@ export default function Dashboard() {
 
       {/* Plan status */}
       <Card className="border-border bg-card">
-        <CardContent className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-3">
+        <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4">
+          <div className="flex items-center gap-3 flex-wrap">
             <Badge variant="outline" className={isPro ? "border-primary/50 text-primary" : "border-border text-muted-foreground"}>
               {isPro ? <><Crown size={12} className="mr-1" /> Pro</> : "Free"}
             </Badge>
@@ -56,7 +56,7 @@ export default function Dashboard() {
             )}
           </div>
           {!isPro && (
-            <Button asChild size="sm" className="bg-primary text-primary-foreground">
+            <Button asChild size="sm" className="bg-primary text-primary-foreground w-full sm:w-auto">
               <Link to="/planos"><Crown size={14} className="mr-1" /> Upgrade</Link>
             </Button>
           )}
@@ -64,7 +64,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Orçamentos (mês)</CardTitle>
@@ -126,12 +126,12 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-2">
               {quotes.map(q => (
-                <div key={q.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border border-border">
-                  <div>
-                    <p className="font-medium text-sm text-foreground">{q.nome_peca}</p>
+                <div key={q.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-muted/50 border border-border">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-foreground truncate">{q.nome_peca}</p>
                     <p className="text-xs text-muted-foreground">{q.impressora_nome} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <p className="font-bold font-mono text-primary text-sm">R$ {(q.preco_sugerido || 0).toFixed(2)}</p>
                     <p className="text-[10px] text-muted-foreground">Margem {q.margem_lucro}%</p>
                   </div>
