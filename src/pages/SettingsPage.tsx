@@ -76,6 +76,9 @@ export default function SettingsPage() {
       default_printer_id: defaultPrinterId || null,
       default_state: defaultState || null,
       default_city: defaultCity || null,
+      pix_discount: pixDiscount,
+      card_fee_percent: cardFeePercent,
+      max_installments: maxInstallments,
     };
     const { data: existing } = await supabase.from("user_settings").select("id").eq("user_id", user.id).single();
     if (existing) {
