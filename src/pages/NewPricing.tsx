@@ -74,6 +74,9 @@ export default function NewPricing() {
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
+  const [pixDiscount, setPixDiscount] = useState(0);
+  const [cardFeePercent, setCardFeePercent] = useState(4.99);
+  const [maxInstallments, setMaxInstallments] = useState(12);
 
   useEffect(() => {
     if (!user) return;
