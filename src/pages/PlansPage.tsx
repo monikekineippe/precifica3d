@@ -1,22 +1,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Crown, Infinity } from "lucide-react";
+import { Check, X, Crown, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-import { CHECKOUT_ANUAL, CHECKOUT_VITALICIO } from "@/lib/checkout-links";
+import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 
 const FEATURES = [
-  { name: "Orçamentos por mês", free: "2", anual: "Ilimitados", vitalicio: "Ilimitados" },
-  { name: "Impressoras personalizadas", free: "1", anual: "Ilimitadas", vitalicio: "Ilimitadas" },
-  { name: "Impressoras pré-cadastradas", free: true, anual: true, vitalicio: true },
-  { name: "Cálculos em tempo real", free: true, anual: true, vitalicio: true },
-  { name: "Histórico completo", free: false, anual: true, vitalicio: true },
-  { name: "Relatórios e gráficos", free: false, anual: true, vitalicio: true },
-  { name: "Busca automática de tarifa", free: true, anual: true, vitalicio: true },
-  { name: "Exportar PDF", free: false, anual: false, vitalicio: true },
-  { name: "Exportar CSV", free: false, anual: false, vitalicio: true },
-  { name: "Todas as atualizações futuras", free: false, anual: false, vitalicio: true },
+  { name: "Orçamentos por mês", free: "2", mensal: "Ilimitados", anual: "Ilimitados" },
+  { name: "Impressoras personalizadas", free: "1", mensal: "Ilimitadas", anual: "Ilimitadas" },
+  { name: "Impressoras pré-cadastradas", free: true, mensal: true, anual: true },
+  { name: "Cálculos em tempo real", free: true, mensal: true, anual: true },
+  { name: "Histórico completo", free: false, mensal: true, anual: true },
+  { name: "Relatórios e gráficos", free: false, mensal: true, anual: true },
+  { name: "Busca automática de tarifa", free: true, mensal: true, anual: true },
+  { name: "Exportar PDF", free: false, mensal: false, anual: true },
+  { name: "Exportar CSV", free: false, mensal: false, anual: true },
+  { name: "Todas as atualizações futuras", free: false, mensal: false, anual: true },
 ];
 
 function FeatureCell({ value }: { value: boolean | string }) {
@@ -27,7 +27,9 @@ function FeatureCell({ value }: { value: boolean | string }) {
 }
 
 export default function PlansPage() {
-  const { isPro } = useAuth();
+  const { isPro, isAnual, profile } = useAuth();
+
+  const currentPlan = profile?.plano || "free";
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -60,78 +62,78 @@ export default function PlansPage() {
                 </span>
               </div>
             ))}
-            {isPro ? (
-              <Button disabled className="w-full" variant="outline">Plano atual: Pro</Button>
-            ) : (
+            {currentPlan === "free" ? (
               <Button disabled className="w-full" variant="outline">Plano atual</Button>
+            ) : (
+              <Button disabled className="w-full" variant="outline">—</Button>
             )}
           </CardContent>
         </Card>
 
-        {/* Anual */}
+        {/* Mensal */}
         <Card className="border-border bg-card">
           <CardHeader>
-            <CardTitle className="text-lg text-foreground">Pro Anual</CardTitle>
+            <CardTitle className="text-lg text-foreground">Pro Mensal</CardTitle>
             <div>
-              <span className="text-3xl font-bold font-mono text-primary">R$ 97</span>
-              <span className="text-sm text-muted-foreground">/ano</span>
+              <span className="text-3xl font-bold font-mono text-primary">R$ 29,90</span>
+              <span className="text-sm text-muted-foreground">/mês</span>
             </div>
-            <p className="text-xs text-primary">~R$ 8,08/mês</p>
             <p className="text-xs text-muted-foreground">Para profissionais</p>
           </CardHeader>
           <CardContent className="space-y-3">
             {FEATURES.map(f => (
               <div key={f.name} className="flex items-center gap-2 text-sm">
-                {typeof f.anual === "boolean" ? (
-                  f.anual ? <Check size={16} className="text-primary shrink-0" /> : <X size={16} className="text-muted-foreground shrink-0" />
+                {typeof f.mensal === "boolean" ? (
+                  f.mensal ? <Check size={16} className="text-primary shrink-0" /> : <X size={16} className="text-muted-foreground shrink-0" />
                 ) : (
                   <Check size={16} className="text-primary shrink-0" />
                 )}
-                <span className={typeof f.anual === "boolean" && !f.anual ? "text-muted-foreground" : "text-foreground"}>
-                  {f.name} {typeof f.anual === "string" && <span className="text-primary text-xs font-medium">({f.anual})</span>}
+                <span className={typeof f.mensal === "boolean" && !f.mensal ? "text-muted-foreground" : "text-foreground"}>
+                  {f.name} {typeof f.mensal === "string" && <span className="text-primary text-xs font-medium">({f.mensal})</span>}
                 </span>
               </div>
             ))}
-            {isPro ? (
+            {currentPlan === "mensal" ? (
               <Button disabled className="w-full bg-primary text-primary-foreground">Plano atual</Button>
             ) : (
-              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer">
+              <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer">
                 <Button className="w-full bg-primary text-primary-foreground neon-glow">
-                  <Crown size={16} className="mr-2" /> Assinar Anual
+                  <Crown size={16} className="mr-2" /> Assinar Mensal
                 </Button>
               </a>
             )}
           </CardContent>
         </Card>
 
-        {/* Vitalício */}
+        {/* Anual */}
         <Card className="border-primary/50 bg-card relative neon-glow">
           <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
-            <Infinity size={12} className="mr-1" /> Melhor custo-benefício
+            <Star size={12} className="mr-1" /> Melhor custo-benefício
           </Badge>
           <CardHeader>
-            <CardTitle className="text-lg text-foreground">Pro Vitalício</CardTitle>
+            <CardTitle className="text-lg text-foreground">Pro Anual</CardTitle>
             <div>
-              <span className="text-3xl font-bold font-mono text-primary">R$ 197</span>
+              <span className="text-3xl font-bold font-mono text-primary">R$ 239,90</span>
+              <span className="text-sm text-muted-foreground">/ano</span>
             </div>
-            <p className="text-xs text-primary">pagamento único</p>
-            <p className="text-xs text-muted-foreground">Para sempre</p>
+            <p className="text-xs text-primary">~R$ 19,99/mês</p>
+            <p className="text-xs text-muted-foreground">Economia de 33%</p>
           </CardHeader>
           <CardContent className="space-y-3">
             {FEATURES.map(f => (
               <div key={f.name} className="flex items-center gap-2 text-sm">
                 <Check size={16} className="text-primary shrink-0" />
                 <span className="text-foreground">
-                  {f.name} {typeof f.vitalicio === "string" && <span className="text-primary text-xs font-medium">({f.vitalicio})</span>}
+                  {f.name} {typeof f.anual === "string" && <span className="text-primary text-xs font-medium">({f.anual})</span>}
                 </span>
               </div>
             ))}
-            {isPro ? (
+            {currentPlan === "anual" ? (
               <Button disabled className="w-full bg-primary text-primary-foreground">Plano atual</Button>
             ) : (
-              <a href={CHECKOUT_VITALICIO} target="_blank" rel="noopener noreferrer">
+              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer">
                 <Button className="w-full bg-primary text-primary-foreground neon-glow">
-                  <Infinity size={16} className="mr-2" /> Acesso Vitalício
+                  <Star size={16} className="mr-2" /> Assinar Anual
                 </Button>
               </a>
             )}
@@ -149,15 +151,15 @@ export default function PlansPage() {
             <div className="grid grid-cols-4 py-2 text-xs font-medium text-muted-foreground border-b border-border">
               <span>Recurso</span>
               <span className="text-center">Free</span>
+              <span className="text-center">Mensal</span>
               <span className="text-center">Anual</span>
-              <span className="text-center">Vitalício</span>
             </div>
             {FEATURES.map(f => (
               <div key={f.name} className="grid grid-cols-4 py-2.5 text-sm border-b border-border/50">
                 <span className="text-foreground">{f.name}</span>
                 <span className="text-center"><FeatureCell value={f.free} /></span>
+                <span className="text-center"><FeatureCell value={f.mensal} /></span>
                 <span className="text-center"><FeatureCell value={f.anual} /></span>
-                <span className="text-center"><FeatureCell value={f.vitalicio} /></span>
               </div>
             ))}
           </div>

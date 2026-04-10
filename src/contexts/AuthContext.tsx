@@ -16,7 +16,7 @@ interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   isPro: boolean;
-  isVitalicio: boolean;
+  isAnual: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -26,7 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   loading: true,
   isPro: false,
-  isVitalicio: false,
+  isAnual: false,
   signOut: async () => {},
   refreshProfile: async () => {},
 });
