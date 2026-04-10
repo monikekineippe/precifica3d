@@ -6,7 +6,7 @@ interface Profile {
   id: string;
   user_id: string;
   nome: string;
-  plano: "free" | "pro" | "vitalicio";
+  plano: "free" | "mensal" | "anual";
   plano_expiracao: string | null;
   greenn_assinatura_id: string | null;
 }
@@ -81,10 +81,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isVitalicio = profile?.plano === "vitalicio";
+  const isAnual = profile?.plano === "anual" && (
+    !profile.plano_expiracao || new Date(profile.plano_expiracao) > new Date()
+  );
 
-  const isPro = isVitalicio || (
-    profile?.plano === "pro" && (
+  const isPro = isAnual || (
+    profile?.plano === "mensal" && (
       !profile.plano_expiracao || new Date(profile.plano_expiracao) > new Date()
     )
   );
@@ -96,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isPro, isVitalicio, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isPro, isAnual, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
