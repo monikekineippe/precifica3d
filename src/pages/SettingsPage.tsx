@@ -176,6 +176,42 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      {/* Payment Methods */}
+      <Card className="border-border bg-card relative">
+        {!isAnual && (
+          <div className="absolute inset-0 z-10 bg-background/80 backdrop-blur-[2px] rounded-lg flex flex-col items-center justify-center gap-2">
+            <Lock size={24} className="text-muted-foreground" />
+            <p className="text-sm text-muted-foreground font-medium">Exclusivo do plano Anual</p>
+            <Button size="sm" onClick={() => setUpgradeOpen(true)} className="bg-primary text-primary-foreground">
+              <Crown size={14} className="mr-1" /> Fazer Upgrade
+            </Button>
+          </div>
+        )}
+        <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><CreditCard size={16} className="text-primary" />Meios de Pagamento</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-foreground">Desconto para PIX (%)</Label>
+            <Input type="number" step={0.1} value={pixDiscount} onChange={e => setPixDiscount(+e.target.value)} className="bg-muted border-border" disabled={!isAnual} />
+            <p className="text-[10px] text-muted-foreground mt-1">Desconto aplicado sobre o preço sugerido para pagamento via PIX</p>
+          </div>
+          <div>
+            <Label className="text-foreground">Taxa da maquininha/operadora (%)</Label>
+            <Input type="number" step={0.01} value={cardFeePercent} onChange={e => setCardFeePercent(+e.target.value)} className="bg-muted border-border" disabled={!isAnual} />
+            <p className="text-[10px] text-muted-foreground mt-1">Taxa cobrada pela operadora de cartão de crédito</p>
+          </div>
+          <div>
+            <Label className="text-foreground">Máximo de parcelas</Label>
+            <Select value={String(maxInstallments)} onValueChange={v => setMaxInstallments(+v)} disabled={!isAnual}>
+              <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {[1,2,3,4,5,6,7,8,9,10,11,12].map(n => <SelectItem key={n} value={String(n)}>{n}x</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleSave} className="w-full bg-primary text-primary-foreground neon-glow" disabled={!isAnual}>Salvar Configurações</Button>
+        </CardContent>
+      </Card>
+
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
