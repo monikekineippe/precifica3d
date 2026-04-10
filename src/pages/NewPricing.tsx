@@ -68,7 +68,7 @@ interface MarginSuggestion {
 
 export default function NewPricing() {
   const navigate = useNavigate();
-  const { user, isPro } = useAuth();
+  const { user, isPro, isAnual } = useAuth();
   const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
