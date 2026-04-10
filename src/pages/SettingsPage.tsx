@@ -20,8 +20,7 @@ interface PrinterRow {
 }
 
 export default function SettingsPage() {
-  const { user, isPro, profile } = useAuth();
-  const { isAnual } = useAuth();
+  const { user, isPro, isAnual, profile } = useAuth();
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6 });
   const [pixDiscount, setPixDiscount] = useState(0);
   const [cardFeePercent, setCardFeePercent] = useState(4.99);
