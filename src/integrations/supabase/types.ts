@@ -59,6 +59,51 @@ export type Database = {
         }
         Relationships: []
       }
+      inventory: {
+        Row: {
+          brand: string | null
+          color: string | null
+          cost_per_unit: number
+          created_at: string
+          id: string
+          min_stock: number
+          name: string
+          quantity: number
+          type: string
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          brand?: string | null
+          color?: string | null
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          min_stock?: number
+          name: string
+          quantity?: number
+          type?: string
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          brand?: string | null
+          color?: string | null
+          cost_per_unit?: number
+          created_at?: string
+          id?: string
+          min_stock?: number
+          name?: string
+          quantity?: number
+          type?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orcamentos: {
         Row: {
           categoria_ia: string | null
