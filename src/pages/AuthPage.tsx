@@ -84,7 +84,7 @@ export default function AuthPage() {
         <div className="relative z-10 space-y-8">
           {/* Logo */}
           <div className="flex items-center">
-            <img src={logo} alt="Precifica3D" className="h-16 xl:h-20 object-contain" />
+            <img src={logo} alt="Precifica3D" className="h-24 xl:h-32 object-contain" />
           </div>
 
           {/* Headline */}
@@ -120,7 +120,7 @@ export default function AuthPage() {
       {/* Mobile hero block */}
           <div className="lg:hidden space-y-4 text-center mb-6">
             <div className="flex justify-center">
-              <img src={logo} alt="Precifica3D" className="h-12 object-contain" />
+              <img src={logo} alt="Precifica3D" className="h-20 object-contain" />
             </div>
             <h2 className="text-xl font-bold text-foreground leading-tight">
               Precifique suas peças 3D com <span className="text-primary neon-text">inteligência</span>

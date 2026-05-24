@@ -49,7 +49,7 @@ export default function PlansPage() {
           </Button>
         )}
         
-        <img src={logo} alt="Precifica3D" className="h-14 object-contain mb-2" />
+        <img src={logo} alt="Precifica3D" className="h-24 object-contain mb-2" />
         
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
