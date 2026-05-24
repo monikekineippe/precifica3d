@@ -214,14 +214,36 @@ export default function NewPricing() {
     return () => clearTimeout(timer);
   }, [pieceName, filaments[0]?.type]);
 
-  const handlePrinterChange = (id: string) => {
+  const handlePrinterChange = async (id: string) => {
     const hasData = filaments.some(f => f.weightUsed > 0 || f.brand || f.costPerKg > 0);
-    if (hasData) setConfirmReset(id);
-    else { setPrinterId(id); setFilaments([createFilament(0)]); }
+    if (hasData) {
+      setConfirmReset(id);
+    } else {
+      setPrinterId(id);
+      setFilaments([createFilament(0)]);
+      // Save as default
+      if (user) {
+        await supabase.from("user_settings").upsert({ 
+          user_id: user.id, 
+          default_printer_id: id 
+        }, { onConflict: 'user_id' });
+      }
+    }
   };
 
-  const confirmPrinterChange = () => {
-    if (confirmReset) { setPrinterId(confirmReset); setFilaments([createFilament(0)]); setConfirmReset(null); }
+  const confirmPrinterChange = async () => {
+    if (confirmReset) {
+      setPrinterId(confirmReset);
+      setFilaments([createFilament(0)]);
+      // Save as default
+      if (user) {
+        await supabase.from("user_settings").upsert({ 
+          user_id: user.id, 
+          default_printer_id: confirmReset 
+        }, { onConflict: 'user_id' });
+      }
+      setConfirmReset(null);
+    }
   };
 
   const updateFilament = (id: string, updates: Partial<FilamentEntry>) => {
