@@ -214,14 +214,36 @@ export default function NewPricing() {
     return () => clearTimeout(timer);
   }, [pieceName, filaments[0]?.type]);
 
-  const handlePrinterChange = (id: string) => {
+  const handlePrinterChange = async (id: string) => {
     const hasData = filaments.some(f => f.weightUsed > 0 || f.brand || f.costPerKg > 0);
-    if (hasData) setConfirmReset(id);
-    else { setPrinterId(id); setFilaments([createFilament(0)]); }
+    if (hasData) {
+      setConfirmReset(id);
+    } else {
+      setPrinterId(id);
+      setFilaments([createFilament(0)]);
+      // Save as default
+      if (user) {
+        await supabase.from("user_settings").upsert({ 
+          user_id: user.id, 
+          default_printer_id: id 
+        }, { onConflict: 'user_id' });
+      }
+    }
   };
 
-  const confirmPrinterChange = () => {
-    if (confirmReset) { setPrinterId(confirmReset); setFilaments([createFilament(0)]); setConfirmReset(null); }
+  const confirmPrinterChange = async () => {
+    if (confirmReset) {
+      setPrinterId(confirmReset);
+      setFilaments([createFilament(0)]);
+      // Save as default
+      if (user) {
+        await supabase.from("user_settings").upsert({ 
+          user_id: user.id, 
+          default_printer_id: confirmReset 
+        }, { onConflict: 'user_id' });
+      }
+      setConfirmReset(null);
+    }
   };
 
   const updateFilament = (id: string, updates: Partial<FilamentEntry>) => {
@@ -455,7 +477,15 @@ export default function NewPricing() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-foreground">Estado</Label>
-            <Select value={state} onValueChange={v => { setState(v); }}>
+            <Select value={state} onValueChange={async (v) => { 
+              setState(v); 
+              if (user) {
+                await supabase.from("user_settings").upsert({ 
+                  user_id: user.id, 
+                  default_state: v 
+                }, { onConflict: 'user_id' });
+              }
+            }}>
               <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
               <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
             </Select>
