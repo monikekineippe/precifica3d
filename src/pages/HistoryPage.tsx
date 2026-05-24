@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Trash2, Copy, Eye, Download, Lock } from "lucide-react";
+import { Trash2, Copy, Eye, Download, Lock, PackagePlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
@@ -12,11 +14,20 @@ import UpgradeModal from "@/components/UpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function HistoryPage() {
-  const { user, isPro } = useAuth();
+  const { user, isPro, isAnual } = useAuth();
   const { canExport } = usePlanLimits();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [viewing, setViewing] = useState<any>(null);
+  const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
+  const [inventoryForm, setInventoryForm] = useState({
+    name: "",
+    type: "filament",
+    quantity: 0,
+    unit: "g",
+    cost_per_unit: 0,
+    min_stock: 0,
+  });
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   useEffect(() => {
@@ -67,6 +78,54 @@ export default function HistoryPage() {
     toast.success("CSV exportado!");
   };
 
+  const openInventoryDialog = (q: any) => {
+    if (!isAnual) {
+      setUpgradeOpen(true);
+      return;
+    }
+    
+    // Get weights from filaments JSON
+    let totalWeight = 0;
+    let avgCostPerG = 0;
+    
+    try {
+      const filaments = Array.isArray(q.filamentos) ? q.filamentos : [];
+      totalWeight = filaments.reduce((acc: number, f: any) => acc + (Number(f.weightUsed) || 0), 0);
+      const totalCost = filaments.reduce((acc: number, f: any) => acc + (Number(f.computedCost) || 0), 0);
+      if (totalWeight > 0) {
+        avgCostPerG = totalCost / totalWeight;
+      }
+    } catch (e) {
+      console.error("Error parsing filaments", e);
+    }
+
+    setInventoryForm({
+      name: q.nome_peca,
+      type: "other", // Default to other since it's a finished piece
+      quantity: 1,
+      unit: "unit",
+      cost_per_unit: q.custo_total || 0,
+      min_stock: 0,
+    });
+    setInventoryDialogOpen(true);
+  };
+
+  const handleSaveToInventory = async () => {
+    if (!user) return;
+    
+    const { error } = await supabase.from("inventory").insert({
+      ...inventoryForm,
+      user_id: user.id,
+    });
+
+    if (error) {
+      toast.error("Erro ao adicionar ao estoque.");
+    } else {
+      toast.success("Adicionado ao estoque!");
+      setInventoryDialogOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -101,9 +160,10 @@ export default function HistoryPage() {
                     <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{q.margem_lucro}%</Badge>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary"><Eye size={15} /></button>
-                    <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent"><Copy size={15} /></button>
-                    <button onClick={() => handleDelete(q.id)} className="p-1.5 text-muted-foreground hover:text-destructive"><Trash2 size={15} /></button>
+                    <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary" title="Visualizar"><Eye size={15} /></button>
+                    <button onClick={() => openInventoryDialog(q)} className="p-1.5 text-muted-foreground hover:text-green-500" title="Adicionar ao estoque"><PackagePlus size={15} /></button>
+                    <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent" title="Duplicar"><Copy size={15} /></button>
+                    <button onClick={() => handleDelete(q.id)} className="p-1.5 text-muted-foreground hover:text-destructive" title="Excluir"><Trash2 size={15} /></button>
                   </div>
                 </div>
               </CardContent>
@@ -135,6 +195,58 @@ export default function HistoryPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={inventoryDialogOpen} onOpenChange={setInventoryDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Adicionar ao Estoque</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="inv-name">Nome no Estoque</Label>
+              <Input id="inv-name" value={inventoryForm.name} onChange={e => setInventoryForm({...inventoryForm, name: e.target.value})} className="bg-muted border-border" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Tipo</Label>
+                <Select value={inventoryForm.type} onValueChange={v => setInventoryForm({...inventoryForm, type: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="filament">Filamento</SelectItem>
+                    <SelectItem value="resin">Resina</SelectItem>
+                    <SelectItem value="other">Peça Pronta / Outro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label>Unidade</Label>
+                <Select value={inventoryForm.unit} onValueChange={v => setInventoryForm({...inventoryForm, unit: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="g">Gramas (g)</SelectItem>
+                    <SelectItem value="kg">Quilos (kg)</SelectItem>
+                    <SelectItem value="unit">Unidade</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Quantidade</Label>
+                <Input type="number" value={inventoryForm.quantity} onChange={e => setInventoryForm({...inventoryForm, quantity: +e.target.value})} className="bg-muted border-border" />
+              </div>
+              <div className="grid gap-2">
+                <Label>Custo Unitário (R$)</Label>
+                <Input type="number" value={inventoryForm.cost_per_unit} onChange={e => setInventoryForm({...inventoryForm, cost_per_unit: +e.target.value})} className="bg-muted border-border" />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInventoryDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveToInventory}>Adicionar</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
