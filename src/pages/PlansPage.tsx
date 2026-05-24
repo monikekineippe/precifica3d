@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, Crown, Star } from "lucide-react";
+import { Check, X, Crown, Star, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import logo from "@/assets/logo-precifica3d.png";
 
 import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 
@@ -28,15 +30,36 @@ function FeatureCell({ value }: { value: boolean | string }) {
 }
 
 export default function PlansPage() {
-  const { isPro, isAnual, profile } = useAuth();
+  const { isPro, isAnual, profile, user } = useAuth();
+  const navigate = useNavigate();
 
   const currentPlan = profile?.plano || "free";
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-foreground">Planos</h1>
-        <p className="text-muted-foreground text-sm mt-1">Escolha o plano ideal para seu negócio</p>
+    <div className="space-y-8 max-w-5xl mx-auto pb-10">
+      <div className="flex flex-col items-center text-center space-y-4 pt-4">
+        {user && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="self-start gap-2 mb-4" 
+            onClick={() => navigate(-1)}
+          >
+            <ArrowLeft size={16} /> Voltar
+          </Button>
+        )}
+        
+        <img src={logo} alt="Precifica3D" className="h-14 object-contain mb-2" />
+        
+        <div className="space-y-2">
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+            Precifica<span className="text-primary">3D</span>
+          </h1>
+          <p className="text-muted-foreground text-base max-w-2xl">
+            A plataforma completa para gestão e precificação profissional de serviços de impressão 3D.
+            Otimize seus lucros e profissionalize seu negócio hoje mesmo.
+          </p>
+        </div>
       </div>
 
       {/* Cards */}
