@@ -13,6 +13,7 @@ import HistoryPage from "@/pages/HistoryPage";
 import SettingsPage from "@/pages/SettingsPage";
 import PlansPage from "@/pages/PlansPage";
 import ReportsPage from "@/pages/ReportsPage";
+import InventoryPage from "@/pages/InventoryPage";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
