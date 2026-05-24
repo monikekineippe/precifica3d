@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Printer, FileText, Crown } from "lucide-react";
+import { PlusCircle, Printer, FileText, Crown, Package } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +10,11 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
-  const { user, isPro, profile } = useAuth();
+  const { user, isPro, profile, isAnual } = useAuth();
   const { quotesThisMonth, FREE_QUOTE_LIMIT } = usePlanLimits();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [printerCount, setPrinterCount] = useState(0);
+  const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -21,7 +22,17 @@ export default function Dashboard() {
       .then(({ data }) => { if (data) setQuotes(data); });
     supabase.from("impressoras").select("id", { count: "exact", head: true }).eq("user_id", user.id)
       .then(({ count }) => setPrinterCount(count || 0));
-  }, [user]);
+    
+    if (isAnual) {
+      supabase.from("inventory").select("*").eq("user_id", user.id)
+        .then(({ data }) => {
+          if (data) {
+            const low = data.filter((i: any) => i.quantity <= i.min_stock).length;
+            setLowStockCount(low);
+          }
+        });
+    }
+  }, [user, isAnual]);
 
   const avgCostPerGram = quotes.length > 0
     ? quotes.reduce((s, q) => {
@@ -64,7 +75,7 @@ export default function Dashboard() {
       </Card>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="border-border bg-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Orçamentos (mês)</CardTitle>
@@ -99,6 +110,16 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Baixo</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-3xl font-bold font-mono ${lowStockCount > 0 ? 'text-destructive' : 'text-foreground'}`}>
+              {isAnual ? lowStockCount : "—"}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick actions */}
@@ -108,6 +129,9 @@ export default function Dashboard() {
         </Button>
         <Button asChild variant="outline" className="border-border">
           <Link to="/printers"><Printer size={16} className="mr-2" />Gerenciar Impressoras</Link>
+        </Button>
+        <Button asChild variant="outline" className="border-border">
+          <Link to="/inventory"><Package size={16} className="mr-2" />Estoque</Link>
         </Button>
       </div>
 
