@@ -477,7 +477,15 @@ export default function NewPricing() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-foreground">Estado</Label>
-            <Select value={state} onValueChange={v => { setState(v); }}>
+            <Select value={state} onValueChange={async (v) => { 
+              setState(v); 
+              if (user) {
+                await supabase.from("user_settings").upsert({ 
+                  user_id: user.id, 
+                  default_state: v 
+                }, { onConflict: 'user_id' });
+              }
+            }}>
               <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
               <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
             </Select>
