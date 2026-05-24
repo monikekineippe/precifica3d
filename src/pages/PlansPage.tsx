@@ -49,11 +49,11 @@ export default function PlansPage() {
           </Button>
         )}
         
-        <img src={logo} alt="Precifica3D" className="h-24 object-contain mb-2" />
+        <img src={logo} alt="Gestão3D" className="h-24 object-contain mb-2" />
         
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
-            Precifica<span className="text-primary">3D</span>
+            Gestão<span className="text-primary">3D</span>
           </h1>
           <p className="text-muted-foreground text-base max-w-2xl">
             A plataforma completa para gestão e precificação profissional de serviços de impressão 3D.

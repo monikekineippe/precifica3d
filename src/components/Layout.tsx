@@ -41,7 +41,7 @@ export default function Layout() {
         )}
       >
         <div className="flex items-center gap-2 px-5 py-4 border-b border-border">
-          <img src={logo} alt="Precifica3D" className="h-9 object-contain" />
+          <img src={logo} alt="Gestão3D" className="h-9 object-contain" />
           <button className="ml-auto md:hidden text-muted-foreground" onClick={() => setOpen(false)}>
             <X size={20} />
           </button>
@@ -84,7 +84,7 @@ export default function Layout() {
           >
             <LogOut size={16} /> Sair
           </button>
-          <p className="text-[11px] text-muted-foreground">Precifica3D v2.0</p>
+          <p className="text-[11px] text-muted-foreground">Gestão3D v2.0</p>
         </div>
       </aside>
 
@@ -93,7 +93,7 @@ export default function Layout() {
           <button onClick={() => setOpen(true)} className="text-foreground">
             <Menu size={22} />
           </button>
-          <img src={logoIcon} alt="Precifica3D" className="ml-3 h-8 object-contain" />
+          <img src={logoIcon} alt="Gestão3D" className="ml-3 h-8 object-contain" />
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           <Outlet />
