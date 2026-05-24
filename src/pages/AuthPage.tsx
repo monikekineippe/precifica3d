@@ -37,7 +37,7 @@ export default function AuthPage() {
       if (error) {
         toast.error(error.message);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     } else {
       if (password.length < 6) {
@@ -90,7 +90,7 @@ export default function AuthPage() {
           {/* Headline */}
           <div className="space-y-3">
             <h1 className="text-4xl xl:text-5xl font-bold text-foreground leading-tight">
-              Precifique suas peças 3D com <span className="text-primary neon-text">inteligência</span>
+              Controle custos, estoque e preços da sua impressão 3D em uma única plataforma.
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
               Calcule o custo real de cada impressão e descubra o preço ideal de venda com ajuda da IA — em segundos.
@@ -123,7 +123,7 @@ export default function AuthPage() {
               <img src={logo} alt="Gestão3D" className="h-20 object-contain" />
             </div>
             <h2 className="text-xl font-bold text-foreground leading-tight">
-              Precifique suas peças 3D com <span className="text-primary neon-text">inteligência</span>
+              Controle custos, estoque e preços da sua impressão 3D em uma única plataforma.
             </h2>
             <p className="text-sm text-muted-foreground">
               Calcule custos e descubra o preço ideal de venda com IA
