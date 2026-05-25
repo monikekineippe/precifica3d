@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
@@ -54,7 +55,7 @@ const LandingPage = () => {
             <span className="font-bold text-xl hidden sm:block">Gestão<span className="text-primary">3D</span></span>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/planos" className="text-sm font-medium hover:text-primary transition-colors">Planos</Link>
+            <a href="#planos" className="text-sm font-medium hover:text-primary transition-colors">Planos</a>
             <Link to="/login">
               <Button variant="outline" size="sm">Entrar</Button>
             </Link>
@@ -88,11 +89,11 @@ const LandingPage = () => {
                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/planos">
+              <a href="#planos">
                 <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold">
                   Ver Planos
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -258,6 +259,17 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Plans Section */}
+      <section id="planos" className="py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Planos que cabem no seu negócio</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Escolha a melhor opção para profissionalizar sua produção hoje mesmo.</p>
+          </div>
+          <PlansPage isEmbedded={true} />
+        </div>
+      </section>
+
       {/* CTA Footer */}
       <footer className="py-20 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -277,7 +289,7 @@ const LandingPage = () => {
             </div>
             <div className="flex gap-6">
               <Link to="/login" className="hover:text-primary transition-colors">Entrar</Link>
-              <Link to="/planos" className="hover:text-primary transition-colors">Planos</Link>
+              <a href="#planos" className="hover:text-primary transition-colors">Planos</a>
               <a href="#" className="hover:text-primary transition-colors">Termos</a>
               <a href="#" className="hover:text-primary transition-colors">Privacidade</a>
             </div>

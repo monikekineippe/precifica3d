@@ -29,38 +29,40 @@ function FeatureCell({ value }: { value: boolean | string }) {
   return <span className="text-primary text-xs font-medium">{value}</span>;
 }
 
-export default function PlansPage() {
+export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { isPro, isAnual, profile, user } = useAuth();
   const navigate = useNavigate();
 
   const currentPlan = profile?.plano || "free";
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-10">
-      <div className="flex flex-col items-center text-center space-y-4 pt-4">
-        {user && (
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="self-start gap-2 mb-4" 
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft size={16} /> Voltar
-          </Button>
-        )}
-        
-        <img src={logo} alt="Gestão3D" className="h-24 object-contain mb-2" />
-        
-        <div className="space-y-2">
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
-            Gestão<span className="text-primary">3D</span>
-          </h1>
-          <p className="text-muted-foreground text-base max-w-2xl">
-            A plataforma completa para gestão e precificação profissional de serviços de impressão 3D.
-            Otimize seus lucros e profissionalize seu negócio hoje mesmo.
-          </p>
+    <div className={`space-y-8 max-w-5xl mx-auto pb-10 ${isEmbedded ? 'px-0' : ''}`}>
+      {!isEmbedded && (
+        <div className="flex flex-col items-center text-center space-y-4 pt-4">
+          {user && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="self-start gap-2 mb-4" 
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft size={16} /> Voltar
+            </Button>
+          )}
+          
+          <img src={logo} alt="Gestão3D" className="h-24 object-contain mb-2" />
+          
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+              Gestão<span className="text-primary">3D</span>
+            </h1>
+            <p className="text-muted-foreground text-base max-w-2xl">
+              A plataforma completa para gestão e precificação profissional de serviços de impressão 3D.
+              Otimize seus lucros e profissionalize seu negócio hoje mesmo.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
