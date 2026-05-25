@@ -29,15 +29,16 @@ function FeatureCell({ value }: { value: boolean | string }) {
   return <span className="text-primary text-xs font-medium">{value}</span>;
 }
 
-export default function PlansPage() {
+export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const { isPro, isAnual, profile, user } = useAuth();
   const navigate = useNavigate();
 
   const currentPlan = profile?.plano || "free";
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto pb-10">
-      <div className="flex flex-col items-center text-center space-y-4 pt-4">
+    <div className={`space-y-8 max-w-5xl mx-auto pb-10 ${isEmbedded ? 'px-0' : ''}`}>
+      {!isEmbedded && (
+        <div className="flex flex-col items-center text-center space-y-4 pt-4">
         {user && (
           <Button 
             variant="ghost" 
@@ -60,7 +61,7 @@ export default function PlansPage() {
             Otimize seus lucros e profissionalize seu negócio hoje mesmo.
           </p>
         </div>
-      </div>
+      )}
 
       {/* Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
