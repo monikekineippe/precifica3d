@@ -775,14 +775,34 @@ export default function SalesPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="customer">Nome do Cliente</Label>
-              <Input 
-                id="customer" 
-                value={saleForm.customer_name} 
-                onChange={e => setSaleForm({...saleForm, customer_name: e.target.value})} 
-                placeholder="Ex: João Silva" 
-                className="bg-muted border-border" 
-              />
+              <Label>Cliente</Label>
+              <div className="flex gap-2">
+                <Select 
+                  value={saleForm.customer_id} 
+                  onValueChange={v => setSaleForm({...saleForm, customer_id: v})}
+                >
+                  <SelectTrigger className="bg-muted border-border flex-1">
+                    <SelectValue placeholder="Selecione um cliente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Cliente Final (Sem cadastro)</SelectItem>
+                    {clients.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button size="icon" variant="outline" className="border-border shrink-0" onClick={() => setClientDialogOpen(true)}>
+                  <Plus size={16} />
+                </Button>
+              </div>
+              {saleForm.customer_id === "none" && (
+                <Input 
+                  value={saleForm.customer_name} 
+                  onChange={e => setSaleForm({...saleForm, customer_name: e.target.value})} 
+                  placeholder="Nome do cliente (opcional)" 
+                  className="bg-muted border-border mt-1" 
+                />
+              )}
             </div>
             <div className="grid gap-2">
               <Label>Vincular a um Orçamento</Label>
