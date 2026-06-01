@@ -168,17 +168,46 @@ export default function SalesPage() {
       return;
     }
 
+    const grossValue = saleForm.total_amount;
+    const discountAmount = Number(saleForm.discount_amount) || 0;
+    const paymentFeePercent = Number(saleForm.payment_fee_percent) || 0;
+    const paymentFeeAmount = (grossValue - discountAmount) * (paymentFeePercent / 100);
+    const netValue = grossValue - discountAmount - paymentFeeAmount;
+    
+    let productCost = 0;
+    if (saleForm.orcamento_id !== "none") {
+      const quote = quotes.find(q => q.id === saleForm.orcamento_id);
+      if (quote) productCost = Number(quote.custo_total) || 0;
+    } else if (saleForm.inventory_item_id !== "none") {
+      const item = inventory.find(i => i.id === saleForm.inventory_item_id);
+      if (item) productCost = Number(item.cost_per_unit) || 0;
+    }
+    
+    const profitAmount = netValue - productCost;
+    const profitMarginPercent = netValue > 0 ? (profitAmount / netValue) * 100 : 0;
+
+    const saleData = {
+      customer_name: saleForm.customer_name,
+      total_amount: saleForm.total_amount,
+      payment_method: saleForm.payment_method,
+      origin_channel: saleForm.origin_channel,
+      discount_amount: discountAmount,
+      payment_fee_percent: paymentFeePercent,
+      payment_fee_amount: paymentFeeAmount,
+      gross_value: grossValue,
+      net_value: netValue,
+      product_cost: productCost,
+      profit_amount: profitAmount,
+      profit_margin_percent: profitMarginPercent,
+      orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+      inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
+      notes: saleForm.notes,
+    };
+
     if (editingSale) {
       const { error: saleError } = await supabase
         .from("sales")
-        .update({
-          customer_name: saleForm.customer_name,
-          total_amount: saleForm.total_amount,
-          payment_method: saleForm.payment_method,
-          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
-          notes: saleForm.notes,
-        })
+        .update(saleData)
         .eq("id", editingSale.id);
 
       if (saleError) {
@@ -200,13 +229,8 @@ export default function SalesPage() {
       const { data: sale, error: saleError } = await supabase
         .from("sales")
         .insert({
+          ...saleData,
           user_id: user.id,
-          customer_name: saleForm.customer_name,
-          total_amount: saleForm.total_amount,
-          payment_method: saleForm.payment_method,
-          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
-          notes: saleForm.notes,
           status: 'completed'
         })
         .select()
