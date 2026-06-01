@@ -524,39 +524,44 @@ export default function SalesPage() {
             ) : (
               transactions.filter(t => t.category !== 'venda').map(transaction => (
                 <Card key={transaction.id} className="border-border bg-card">
-                  <CardContent className="flex items-center justify-between p-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${transaction.type === 'inflow' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
-                        {transaction.type === 'inflow' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${transaction.type === 'inflow' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+                          {transaction.type === 'inflow' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
+                        </div>
+                        <div>
+                          <p className="font-medium text-foreground text-sm">{transaction.description || "Sem descrição"}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                            {transaction.category}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-foreground text-sm">{transaction.description}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {format(new Date(transaction.created_at), "dd/MM/yyyy HH:mm")} · {transaction.category.toUpperCase()}
+                      <div className="flex items-center gap-3">
+                        <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
+                          {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
                         </p>
+                        <div className="flex items-center">
+                          <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
+                            <Pencil size={16} />
+                          </button>
+                          <button 
+                            onClick={async () => {
+                              if (confirm("Remover esta movimentação?")) {
+                                await supabase.from("cash_transactions").delete().eq("id", transaction.id);
+                                fetchData();
+                              }
+                            }} 
+                            className="p-1.5 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
-                        {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
-                      </p>
-                      <div className="flex items-center">
-                        <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
-                          <Pencil size={16} />
-                        </button>
-                        <button 
-                          onClick={async () => {
-                            if (confirm("Remover esta movimentação?")) {
-                              await supabase.from("cash_transactions").delete().eq("id", transaction.id);
-                              fetchData();
-                            }
-                          }} 
-                          className="p-1.5 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
+                    <p className="text-[10px] text-muted-foreground flex justify-end italic">
+                      {format(new Date(transaction.created_at), "dd/MM/yyyy HH:mm")}
+                    </p>
                   </CardContent>
                 </Card>
               ))
@@ -692,6 +697,8 @@ export default function SalesPage() {
                 <SelectContent>
                   <SelectItem value="venda">Venda</SelectItem>
                   <SelectItem value="material">Material / Filamento</SelectItem>
+                  <SelectItem value="manutencao">Manutenção</SelectItem>
+                  <SelectItem value="maquinario">Maquinário</SelectItem>
                   <SelectItem value="energia">Energia</SelectItem>
                   <SelectItem value="marketing">Marketing / Ads</SelectItem>
                   <SelectItem value="outros">Outros</SelectItem>
