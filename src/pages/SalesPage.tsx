@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock } from "lucide-react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,8 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<CashTransaction | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
