@@ -219,7 +219,7 @@ export default function SalesPage() {
       await supabase
         .from("cash_transactions")
         .update({
-          amount: saleForm.total_amount,
+          amount: netValue,
           description: `Venda para ${saleForm.customer_name || "Cliente"}`,
         })
         .eq("sale_id", editingSale.id);
@@ -245,7 +245,7 @@ export default function SalesPage() {
       await supabase.from("cash_transactions").insert({
         user_id: user.id,
         type: 'inflow',
-        amount: saleForm.total_amount,
+        amount: netValue,
         description: `Venda para ${saleForm.customer_name || "Cliente"}`,
         category: 'venda',
         sale_id: sale.id
