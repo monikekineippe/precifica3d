@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { quotesThisMonth, FREE_QUOTE_LIMIT } = usePlanLimits();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [printerCount, setPrinterCount] = useState(0);
+  const [primaryPrinter, setPrimaryPrinter] = useState<any>(null);
   const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
