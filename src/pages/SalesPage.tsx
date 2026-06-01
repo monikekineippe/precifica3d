@@ -414,7 +414,18 @@ export default function SalesPage() {
           <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
-          <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
+          <Button size="sm" onClick={() => { 
+            setEditingSale(null); 
+            setSaleForm({ 
+              customer_name: "", 
+              orcamento_id: "none", 
+              inventory_item_id: "none",
+              total_amount: 0, 
+              payment_method: "pix", 
+              notes: "" 
+            }); 
+            setSaleDialogOpen(true); 
+          }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
           </Button>
         </div>
