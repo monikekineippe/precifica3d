@@ -548,11 +548,6 @@ export default function SalesPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
-                          {sale.orcamento_id && (
-                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                              {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
-                            </Badge>
-                          )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
