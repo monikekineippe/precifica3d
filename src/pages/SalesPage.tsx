@@ -35,6 +35,16 @@ interface CashTransaction {
   created_at: string;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  venda: "Venda",
+  insumo_estoque: "Insumo / Estoque",
+  despesa_fixa: "Despesa Fixa",
+  despesa_variavel: "Despesa Variável",
+  investimento_equipamento: "Investimento / Equipamento",
+  retirada: "Retirada",
+  outros: "Outros"
+};
+
 export default function SalesPage() {
   const { user, isPro } = useAuth();
   const [searchParams] = useSearchParams();
