@@ -598,7 +598,7 @@ export default function SalesPage() {
                           <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.replace('_', ' ').toUpperCase()} · {sale.origin_channel?.toUpperCase() || 'WHATSAPP'}
                         </p>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {sale.orcamento_id && (
