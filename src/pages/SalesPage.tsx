@@ -696,7 +696,8 @@ export default function SalesPage() {
                 <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="venda">Venda</SelectItem>
-                  <SelectItem value="material">Material / Filamento</SelectItem>
+                  <SelectItem value="filamento">Filamento</SelectItem>
+                  <SelectItem value="acessorios">Acessórios / Materiais</SelectItem>
                   <SelectItem value="manutencao">Manutenção</SelectItem>
                   <SelectItem value="maquinario">Maquinário</SelectItem>
                   <SelectItem value="energia">Energia</SelectItem>
