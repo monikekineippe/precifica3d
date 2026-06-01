@@ -573,7 +573,7 @@ export default function SalesPage() {
                         <div>
                           <p className="font-medium text-foreground text-sm">{transaction.description || "Sem descrição"}</p>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                            {transaction.category}
+                            {CATEGORY_LABELS[transaction.category] || transaction.category}
                           </p>
                         </div>
                       </div>
