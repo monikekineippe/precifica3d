@@ -117,6 +117,9 @@ export default function SalesPage() {
             inventory_item_id: "none",
             total_amount: found.preco_sugerido,
             payment_method: "pix",
+            origin_channel: "whatsapp",
+            discount_amount: 0,
+            payment_fee_percent: 0,
             notes: ""
           });
           setSaleDialogOpen(true);
@@ -275,6 +278,9 @@ export default function SalesPage() {
       inventory_item_id: "none",
       total_amount: 0, 
       payment_method: "pix", 
+      origin_channel: "whatsapp",
+      discount_amount: 0,
+      payment_fee_percent: 0,
       notes: "" 
     });
     fetchData();
@@ -348,6 +354,9 @@ export default function SalesPage() {
       inventory_item_id: sale.inventory_item_id || "none",
       total_amount: sale.total_amount,
       payment_method: sale.payment_method,
+      origin_channel: sale.origin_channel || "whatsapp",
+      discount_amount: sale.discount_amount || 0,
+      payment_fee_percent: sale.payment_fee_percent || 0,
       notes: sale.notes || ""
     });
     setSaleDialogOpen(true);
@@ -434,8 +443,11 @@ export default function SalesPage() {
               inventory_item_id: "none",
               total_amount: 0, 
               payment_method: "pix", 
+              origin_channel: "whatsapp",
+              discount_amount: 0,
+              payment_fee_percent: 0,
               notes: "" 
-            }); 
+            });
             setSaleDialogOpen(true); 
           }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
