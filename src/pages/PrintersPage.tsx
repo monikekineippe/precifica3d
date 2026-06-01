@@ -36,7 +36,7 @@ const EMPTY_FORM = {
 };
 
 export default function PrintersPage() {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { canCreatePrinter, customPrintersCount, FREE_PRINTER_LIMIT, refresh } = usePlanLimits();
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
