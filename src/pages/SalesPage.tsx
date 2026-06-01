@@ -421,8 +421,7 @@ export default function SalesPage() {
   const itemPerformance = sales.reduce((acc: any, sale) => {
     const quote = quotes.find(q => q.id === sale.orcamento_id);
     const itemName = quote ? quote.nome_peca : (sale.notes || "Venda Direta");
-    const cost = quote ? Number(quote.custo_total || 0) : 0;
-    const profit = Number(sale.total_amount) - cost;
+    const profit = Number(sale.profit_amount || 0);
 
     if (!acc[itemName]) {
       acc[itemName] = {
