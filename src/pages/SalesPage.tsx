@@ -622,18 +622,11 @@ export default function SalesPage() {
                         <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
                         <div className="flex flex-col items-end">
                           <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
-                          {(() => {
-                            const quote = quotes.find(q => q.id === sale.orcamento_id);
-                            if (quote) {
-                              const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
-                              return (
-                                <span className="text-[10px] font-bold text-green-500">
-                                  Lucro: R$ {profit.toFixed(2)}
-                                </span>
-                              );
-                            }
-                            return null;
-                          })()}
+                          {sale.profit_amount !== undefined && (
+                            <span className={`text-[10px] font-bold ${sale.profit_amount >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                              Lucro Líquido: R$ {Number(sale.profit_amount).toFixed(2)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center">
