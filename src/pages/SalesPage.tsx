@@ -102,6 +102,7 @@ export default function SalesPage() {
           setSaleForm({
             customer_name: "",
             orcamento_id: quoteIdFromUrl,
+            inventory_item_id: "none",
             total_amount: found.preco_sugerido,
             payment_method: "pix",
             notes: ""
