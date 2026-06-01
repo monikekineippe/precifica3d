@@ -34,14 +34,12 @@ export default function HistoryPage() {
     if (!user) return;
     const query = supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
 
-    if (!isPro) {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      query.gte("created_at", startOfMonth);
-    }
-
+    // History page shows all quotes for the user, regardless of plan.
+    // The usePlanLimits canViewFullHistory property is available but we choose 
+    // to show full history here as requested by users who see items in reports but not here.
+    
     query.then(({ data }) => { if (data) setQuotes(data); });
-  }, [user, isPro]);
+  }, [user]);
 
   const filtered = quotes.filter(q =>
     q.nome_peca.toLowerCase().includes(search.toLowerCase()) ||
