@@ -1,0 +1,1 @@
+ALTER TABLE public.user_settings ADD COLUMN IF NOT EXISTS monthly_revenue_goal NUMERIC DEFAULT 0;
