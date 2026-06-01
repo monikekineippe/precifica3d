@@ -23,12 +23,14 @@ export default function HistoryPage() {
   const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
   const [inventoryForm, setInventoryForm] = useState({
     name: "",
-    type: "filament",
-    quantity: 0,
-    unit: "g",
+    type: "product",
+    quantity: 1,
+    unit: "unidade",
     cost_per_unit: 0,
     min_stock: 0,
+    category: "finished_product" as "finished_product" | "raw_material",
   });
+
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const fetchQuotes = async () => {
