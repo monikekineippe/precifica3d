@@ -776,14 +776,18 @@ export default function SalesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="amount">Valor Total (R$)</Label>
-                <Input 
-                  id="amount" 
-                  type="number" 
-                  value={saleForm.total_amount} 
-                  onChange={e => setSaleForm({...saleForm, total_amount: +e.target.value})} 
-                  className="bg-muted border-border" 
-                />
+                <Label>Canal de Origem</Label>
+                <Select value={saleForm.origin_channel} onValueChange={v => setSaleForm({...saleForm, origin_channel: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="feira_evento">Feira/Evento</SelectItem>
+                    <SelectItem value="indicacao">Indicação</SelectItem>
+                    <SelectItem value="site">Site</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label>Forma de Pagamento</Label>
@@ -791,11 +795,44 @@ export default function SalesPage() {
                   <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
                     <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="cartao_debito">Cartão de Debito</SelectItem>
+                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="grid gap-2">
+                <Label htmlFor="amount">Valor (R$)</Label>
+                <Input 
+                  id="amount" 
+                  type="number" 
+                  value={saleForm.total_amount} 
+                  onChange={e => setSaleForm({...saleForm, total_amount: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="discount">Desc. (R$)</Label>
+                <Input 
+                  id="discount" 
+                  type="number" 
+                  value={saleForm.discount_amount} 
+                  onChange={e => setSaleForm({...saleForm, discount_amount: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="fee">Taxa (%)</Label>
+                <Input 
+                  id="fee" 
+                  type="number" 
+                  value={saleForm.payment_fee_percent} 
+                  onChange={e => setSaleForm({...saleForm, payment_fee_percent: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
               </div>
             </div>
             <div className="grid gap-2">
