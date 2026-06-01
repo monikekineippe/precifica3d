@@ -311,7 +311,23 @@ export default function SalesPage() {
   };
 
   const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
-  const totalOutflow = transactions.filter(t => t.type === 'outflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  
+  // Categorize outflows
+  const operationalCategories = ['despesa_fixa', 'despesa_variavel', 'retirada'];
+  const investmentStockCategories = ['insumo_estoque', 'investimento_equipamento'];
+
+  const totalOperationalOutflow = transactions
+    .filter(t => t.type === 'outflow' && operationalCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const totalInvestmentStockOutflow = transactions
+    .filter(t => t.type === 'outflow' && investmentStockCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + transactions
+    .filter(t => t.type === 'outflow' && !operationalCategories.includes(t.category) && !investmentStockCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
   const balance = totalInflow - totalOutflow;
 
   // Calculate item performance
