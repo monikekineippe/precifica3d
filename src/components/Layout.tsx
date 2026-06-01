@@ -14,6 +14,7 @@ const NAV = [
   { to: "/history", icon: History, label: "Histórico" },
   { to: "/reports", icon: BarChart3, label: "Relatórios" },
   { to: "/inventory", icon: Package, label: "Estoque" },
+  { to: "/clients", icon: Users, label: "Clientes" },
   { to: "/sales", icon: Wallet, label: "Gestão de Caixa" },
   { to: "/planos", icon: Crown, label: "Planos" },
 

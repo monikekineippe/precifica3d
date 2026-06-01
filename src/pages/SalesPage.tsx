@@ -32,8 +32,14 @@ interface Sale {
   status: string;
   orcamento_id?: string;
   inventory_item_id?: string;
+  customer_id?: string;
   notes?: string;
   created_at: string;
+}
+
+interface Client {
+  id: string;
+  name: string;
 }
 
 interface CashTransaction {
@@ -62,8 +68,10 @@ export default function SalesPage() {
   const [transactions, setTransactions] = useState<CashTransaction[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
   const [inventory, setInventory] = useState<any[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [clientDialogOpen, setClientDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
   const [editingSale, setEditingSale] = useState<Sale | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<CashTransaction | null>(null);
@@ -71,6 +79,7 @@ export default function SalesPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [saleForm, setSaleForm] = useState({
+    customer_id: "none",
     customer_name: "",
     orcamento_id: "none",
     inventory_item_id: "none",
@@ -93,16 +102,18 @@ export default function SalesPage() {
     if (!user) return;
     setLoading(true);
 
-    const [salesRes, transRes, quotesRes, invRes] = await Promise.all([
+    const [salesRes, transRes, quotesRes, invRes, clientsRes] = await Promise.all([
       supabase.from("sales").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("cash_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("inventory").select("*").eq("user_id", user.id).order("name", { ascending: true })
+      supabase.from("inventory").select("*").eq("user_id", user.id).order("name", { ascending: true }),
+      supabase.from("clients").select("id, name").eq("user_id", user.id).order("name", { ascending: true })
     ]);
 
     if (salesRes.data) setSales(salesRes.data as Sale[]);
     if (transRes.data) setTransactions(transRes.data as CashTransaction[]);
     if (invRes.data) setInventory(invRes.data);
+    if (clientsRes.data) setClients(clientsRes.data);
     if (quotesRes.data) {
       setQuotes(quotesRes.data);
       
@@ -112,6 +123,7 @@ export default function SalesPage() {
         const found = quotesRes.data.find(q => q.id === quoteIdFromUrl);
         if (found) {
           setSaleForm({
+            customer_id: "none",
             customer_name: "",
             orcamento_id: quoteIdFromUrl,
             inventory_item_id: "none",
@@ -187,7 +199,8 @@ export default function SalesPage() {
     const profitMarginPercent = netValue > 0 ? (profitAmount / netValue) * 100 : 0;
 
     const saleData = {
-      customer_name: saleForm.customer_name,
+      customer_id: saleForm.customer_id === "none" ? null : saleForm.customer_id,
+      customer_name: saleForm.customer_id !== "none" ? clients.find(c => c.id === saleForm.customer_id)?.name : saleForm.customer_name,
       total_amount: saleForm.total_amount,
       payment_method: saleForm.payment_method,
       origin_channel: saleForm.origin_channel,
@@ -220,7 +233,7 @@ export default function SalesPage() {
         .from("cash_transactions")
         .update({
           amount: netValue,
-          description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+          description: `Venda para ${saleData.customer_name || "Cliente"}`,
         })
         .eq("sale_id", editingSale.id);
 
@@ -246,7 +259,7 @@ export default function SalesPage() {
         user_id: user.id,
         type: 'inflow',
         amount: netValue,
-        description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+        description: `Venda para ${saleData.customer_name || "Cliente"}`,
         category: 'venda',
         sale_id: sale.id
       });
@@ -297,6 +310,7 @@ export default function SalesPage() {
     setSaleDialogOpen(false);
     setEditingSale(null);
     setSaleForm({ 
+      customer_id: "none",
       customer_name: "", 
       orcamento_id: "none", 
       inventory_item_id: "none",
@@ -373,6 +387,7 @@ export default function SalesPage() {
   const handleEditSale = (sale: Sale) => {
     setEditingSale(sale);
     setSaleForm({
+      customer_id: sale.customer_id || "none",
       customer_name: sale.customer_name || "",
       orcamento_id: sale.orcamento_id || "none",
       inventory_item_id: sale.inventory_item_id || "none",
@@ -477,6 +492,57 @@ export default function SalesPage() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Novo Cliente Rápido</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label>Nome Completo</Label>
+              <Input 
+                id="quick-client-name"
+                placeholder="Ex: Maria Souza" 
+                className="bg-muted border-border"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>WhatsApp</Label>
+              <Input 
+                id="quick-client-whatsapp"
+                placeholder="(00) 00000-0000" 
+                className="bg-muted border-border"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setClientDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={async () => {
+              const name = (document.getElementById('quick-client-name') as HTMLInputElement)?.value;
+              const whatsapp = (document.getElementById('quick-client-whatsapp') as HTMLInputElement)?.value;
+              if (!name) { toast.error("Nome é obrigatório"); return; }
+              
+              const normalized = name.trim().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+              
+              const { data, error } = await supabase.from("clients").insert({
+                user_id: user.id,
+                name: normalized,
+                whatsapp,
+                preferred_channel: 'whatsapp'
+              }).select().single();
+              
+              if (error) toast.error("Erro ao cadastrar cliente");
+              else {
+                toast.success("Cliente cadastrado!");
+                setClients(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+                setSaleForm(f => ({ ...f, customer_id: data.id }));
+                setClientDialogOpen(false);
+              }
+            }}>Cadastrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-card border-border">
