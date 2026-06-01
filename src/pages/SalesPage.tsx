@@ -723,15 +723,16 @@ export default function SalesPage() {
             <div className="grid gap-2">
               <Label>Categoria</Label>
               <Select value={transactionForm.category} onValueChange={v => setTransactionForm({...transactionForm, category: v})}>
-                <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted border-border">
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="venda">Venda</SelectItem>
-                  <SelectItem value="filamento">Filamento</SelectItem>
-                  <SelectItem value="acessorios">Acessórios / Materiais</SelectItem>
-                  <SelectItem value="manutencao">Manutenção</SelectItem>
-                  <SelectItem value="maquinario">Maquinário</SelectItem>
-                  <SelectItem value="energia">Energia</SelectItem>
-                  <SelectItem value="marketing">Marketing / Ads</SelectItem>
+                  <SelectItem value="insumo_estoque">Insumo / Estoque</SelectItem>
+                  <SelectItem value="despesa_fixa">Despesa Fixa</SelectItem>
+                  <SelectItem value="despesa_variavel">Despesa Variável</SelectItem>
+                  <SelectItem value="investimento_equipamento">Investimento / Equipamento</SelectItem>
+                  <SelectItem value="retirada">Retirada</SelectItem>
                   <SelectItem value="outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
