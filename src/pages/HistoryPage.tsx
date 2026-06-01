@@ -32,15 +32,23 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
+    console.log("HistoryPage: Fetching quotes for user", user.id, "isPro", isPro);
     const query = supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
 
     if (!isPro) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      console.log("HistoryPage: Non-pro user, filtering by date >=", startOfMonth);
       query.gte("created_at", startOfMonth);
     }
 
-    query.then(({ data }) => { if (data) setQuotes(data); });
+    query.then(({ data, error }) => { 
+      if (error) console.error("HistoryPage: Error fetching quotes", error);
+      if (data) {
+        console.log("HistoryPage: Quotes fetched", data.length);
+        setQuotes(data); 
+      }
+    });
   }, [user, isPro]);
 
   const filtered = quotes.filter(q =>
