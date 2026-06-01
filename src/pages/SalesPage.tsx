@@ -52,6 +52,7 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [transactions, setTransactions] = useState<CashTransaction[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -63,6 +64,7 @@ export default function SalesPage() {
   const [saleForm, setSaleForm] = useState({
     customer_name: "",
     orcamento_id: "none",
+    inventory_item_id: "none",
     total_amount: 0,
     payment_method: "pix",
     notes: ""
