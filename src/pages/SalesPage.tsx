@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-
 import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,8 @@ interface CashTransaction {
 }
 
 export default function SalesPage() {
-  const { user, isPro, isAnual } = useAuth();
+  const { user, isPro } = useAuth();
+  const [searchParams] = useSearchParams();
   const [sales, setSales] = useState<Sale[]>([]);
   const [transactions, setTransactions] = useState<CashTransaction[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
@@ -73,7 +73,25 @@ export default function SalesPage() {
 
     if (salesRes.data) setSales(salesRes.data as Sale[]);
     if (transRes.data) setTransactions(transRes.data as CashTransaction[]);
-    if (quotesRes.data) setQuotes(quotesRes.data);
+    if (quotesRes.data) {
+      setQuotes(quotesRes.data);
+      
+      // Handle direct link from history
+      const quoteIdFromUrl = searchParams.get("quoteId");
+      if (quoteIdFromUrl && quotesRes.data.length > 0) {
+        const found = quotesRes.data.find(q => q.id === quoteIdFromUrl);
+        if (found) {
+          setSaleForm({
+            customer_name: "",
+            orcamento_id: quoteIdFromUrl,
+            total_amount: found.preco_sugerido,
+            payment_method: "pix",
+            notes: ""
+          });
+          setSaleDialogOpen(true);
+        }
+      }
+    }
     
     setLoading(false);
   };
@@ -380,7 +398,7 @@ export default function SalesPage() {
                     <SelectItem value="pix">PIX</SelectItem>
                     <SelectItem value="dinheiro">Dinheiro</SelectItem>
                     <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                    <SelectItem value="cartao_debito">Cartão de Debito</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
