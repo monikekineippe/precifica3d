@@ -476,6 +476,7 @@ export default function SalesPage() {
           <Button size="sm" onClick={() => { 
             setEditingSale(null); 
             setSaleForm({ 
+              customer_id: "none",
               customer_name: "", 
               orcamento_id: "none", 
               inventory_item_id: "none",

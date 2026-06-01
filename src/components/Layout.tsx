@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet } from "lucide-react";
+import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet, Users } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
