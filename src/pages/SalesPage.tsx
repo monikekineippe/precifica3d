@@ -20,6 +20,15 @@ interface Sale {
   customer_name: string;
   total_amount: number;
   payment_method: string;
+  origin_channel?: string;
+  discount_amount?: number;
+  payment_fee_percent?: number;
+  payment_fee_amount?: number;
+  gross_value?: number;
+  net_value?: number;
+  product_cost?: number;
+  profit_amount?: number;
+  profit_margin_percent?: number;
   status: string;
   orcamento_id?: string;
   inventory_item_id?: string;
@@ -67,6 +76,9 @@ export default function SalesPage() {
     inventory_item_id: "none",
     total_amount: 0,
     payment_method: "pix",
+    origin_channel: "whatsapp",
+    discount_amount: 0,
+    payment_fee_percent: 0,
     notes: ""
   });
 
@@ -105,6 +117,9 @@ export default function SalesPage() {
             inventory_item_id: "none",
             total_amount: found.preco_sugerido,
             payment_method: "pix",
+            origin_channel: "whatsapp",
+            discount_amount: 0,
+            payment_fee_percent: 0,
             notes: ""
           });
           setSaleDialogOpen(true);
@@ -153,17 +168,46 @@ export default function SalesPage() {
       return;
     }
 
+    const grossValue = saleForm.total_amount;
+    const discountAmount = Number(saleForm.discount_amount) || 0;
+    const paymentFeePercent = Number(saleForm.payment_fee_percent) || 0;
+    const paymentFeeAmount = (grossValue - discountAmount) * (paymentFeePercent / 100);
+    const netValue = grossValue - discountAmount - paymentFeeAmount;
+    
+    let productCost = 0;
+    if (saleForm.orcamento_id !== "none") {
+      const quote = quotes.find(q => q.id === saleForm.orcamento_id);
+      if (quote) productCost = Number(quote.custo_total) || 0;
+    } else if (saleForm.inventory_item_id !== "none") {
+      const item = inventory.find(i => i.id === saleForm.inventory_item_id);
+      if (item) productCost = Number(item.cost_per_unit) || 0;
+    }
+    
+    const profitAmount = netValue - productCost;
+    const profitMarginPercent = netValue > 0 ? (profitAmount / netValue) * 100 : 0;
+
+    const saleData = {
+      customer_name: saleForm.customer_name,
+      total_amount: saleForm.total_amount,
+      payment_method: saleForm.payment_method,
+      origin_channel: saleForm.origin_channel,
+      discount_amount: discountAmount,
+      payment_fee_percent: paymentFeePercent,
+      payment_fee_amount: paymentFeeAmount,
+      gross_value: grossValue,
+      net_value: netValue,
+      product_cost: productCost,
+      profit_amount: profitAmount,
+      profit_margin_percent: profitMarginPercent,
+      orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+      inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
+      notes: saleForm.notes,
+    };
+
     if (editingSale) {
       const { error: saleError } = await supabase
         .from("sales")
-        .update({
-          customer_name: saleForm.customer_name,
-          total_amount: saleForm.total_amount,
-          payment_method: saleForm.payment_method,
-          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
-          notes: saleForm.notes,
-        })
+        .update(saleData)
         .eq("id", editingSale.id);
 
       if (saleError) {
@@ -175,7 +219,7 @@ export default function SalesPage() {
       await supabase
         .from("cash_transactions")
         .update({
-          amount: saleForm.total_amount,
+          amount: netValue,
           description: `Venda para ${saleForm.customer_name || "Cliente"}`,
         })
         .eq("sale_id", editingSale.id);
@@ -185,13 +229,8 @@ export default function SalesPage() {
       const { data: sale, error: saleError } = await supabase
         .from("sales")
         .insert({
+          ...saleData,
           user_id: user.id,
-          customer_name: saleForm.customer_name,
-          total_amount: saleForm.total_amount,
-          payment_method: saleForm.payment_method,
-          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
-          notes: saleForm.notes,
           status: 'completed'
         })
         .select()
@@ -206,7 +245,7 @@ export default function SalesPage() {
       await supabase.from("cash_transactions").insert({
         user_id: user.id,
         type: 'inflow',
-        amount: saleForm.total_amount,
+        amount: netValue,
         description: `Venda para ${saleForm.customer_name || "Cliente"}`,
         category: 'venda',
         sale_id: sale.id
@@ -263,6 +302,9 @@ export default function SalesPage() {
       inventory_item_id: "none",
       total_amount: 0, 
       payment_method: "pix", 
+      origin_channel: "whatsapp",
+      discount_amount: 0,
+      payment_fee_percent: 0,
       notes: "" 
     });
     fetchData();
@@ -336,6 +378,9 @@ export default function SalesPage() {
       inventory_item_id: sale.inventory_item_id || "none",
       total_amount: sale.total_amount,
       payment_method: sale.payment_method,
+      origin_channel: sale.origin_channel || "whatsapp",
+      discount_amount: sale.discount_amount || 0,
+      payment_fee_percent: sale.payment_fee_percent || 0,
       notes: sale.notes || ""
     });
     setSaleDialogOpen(true);
@@ -376,8 +421,7 @@ export default function SalesPage() {
   const itemPerformance = sales.reduce((acc: any, sale) => {
     const quote = quotes.find(q => q.id === sale.orcamento_id);
     const itemName = quote ? quote.nome_peca : (sale.notes || "Venda Direta");
-    const cost = quote ? Number(quote.custo_total || 0) : 0;
-    const profit = Number(sale.total_amount) - cost;
+    const profit = Number(sale.profit_amount || 0);
 
     if (!acc[itemName]) {
       acc[itemName] = {
@@ -422,8 +466,11 @@ export default function SalesPage() {
               inventory_item_id: "none",
               total_amount: 0, 
               payment_method: "pix", 
+              origin_channel: "whatsapp",
+              discount_amount: 0,
+              payment_fee_percent: 0,
               notes: "" 
-            }); 
+            });
             setSaleDialogOpen(true); 
           }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
@@ -550,7 +597,7 @@ export default function SalesPage() {
                           <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.replace('_', ' ').toUpperCase()} · {sale.origin_channel?.toUpperCase() || 'WHATSAPP'}
                         </p>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {sale.orcamento_id && (
@@ -574,18 +621,11 @@ export default function SalesPage() {
                         <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
                         <div className="flex flex-col items-end">
                           <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
-                          {(() => {
-                            const quote = quotes.find(q => q.id === sale.orcamento_id);
-                            if (quote) {
-                              const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
-                              return (
-                                <span className="text-[10px] font-bold text-green-500">
-                                  Lucro: R$ {profit.toFixed(2)}
-                                </span>
-                              );
-                            }
-                            return null;
-                          })()}
+                          {sale.profit_amount !== undefined && (
+                            <span className={`text-[10px] font-bold ${sale.profit_amount >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                              Lucro Líquido: R$ {Number(sale.profit_amount).toFixed(2)}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center">
@@ -728,14 +768,18 @@ export default function SalesPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="amount">Valor Total (R$)</Label>
-                <Input 
-                  id="amount" 
-                  type="number" 
-                  value={saleForm.total_amount} 
-                  onChange={e => setSaleForm({...saleForm, total_amount: +e.target.value})} 
-                  className="bg-muted border-border" 
-                />
+                <Label>Canal de Origem</Label>
+                <Select value={saleForm.origin_channel} onValueChange={v => setSaleForm({...saleForm, origin_channel: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                    <SelectItem value="instagram">Instagram</SelectItem>
+                    <SelectItem value="feira_evento">Feira/Evento</SelectItem>
+                    <SelectItem value="indicacao">Indicação</SelectItem>
+                    <SelectItem value="site">Site</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid gap-2">
                 <Label>Forma de Pagamento</Label>
@@ -743,11 +787,44 @@ export default function SalesPage() {
                   <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pix">PIX</SelectItem>
-                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
                     <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
-                    <SelectItem value="cartao_debito">Cartão de Debito</SelectItem>
+                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="outro">Outro</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="grid gap-2">
+                <Label htmlFor="amount">Valor (R$)</Label>
+                <Input 
+                  id="amount" 
+                  type="number" 
+                  value={saleForm.total_amount} 
+                  onChange={e => setSaleForm({...saleForm, total_amount: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="discount">Desc. (R$)</Label>
+                <Input 
+                  id="discount" 
+                  type="number" 
+                  value={saleForm.discount_amount} 
+                  onChange={e => setSaleForm({...saleForm, discount_amount: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="fee">Taxa (%)</Label>
+                <Input 
+                  id="fee" 
+                  type="number" 
+                  value={saleForm.payment_fee_percent} 
+                  onChange={e => setSaleForm({...saleForm, payment_fee_percent: +e.target.value})} 
+                  className="bg-muted border-border text-xs" 
+                />
               </div>
             </div>
             <div className="grid gap-2">

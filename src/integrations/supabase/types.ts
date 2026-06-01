@@ -465,11 +465,20 @@ export type Database = {
         Row: {
           created_at: string
           customer_name: string | null
+          discount_amount: number | null
+          gross_value: number | null
           id: string
           inventory_item_id: string | null
+          net_value: number | null
           notes: string | null
           orcamento_id: string | null
+          origin_channel: string | null
+          payment_fee_amount: number | null
+          payment_fee_percent: number | null
           payment_method: string | null
+          product_cost: number | null
+          profit_amount: number | null
+          profit_margin_percent: number | null
           status: string
           total_amount: number
           updated_at: string
@@ -478,11 +487,20 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_name?: string | null
+          discount_amount?: number | null
+          gross_value?: number | null
           id?: string
           inventory_item_id?: string | null
+          net_value?: number | null
           notes?: string | null
           orcamento_id?: string | null
+          origin_channel?: string | null
+          payment_fee_amount?: number | null
+          payment_fee_percent?: number | null
           payment_method?: string | null
+          product_cost?: number | null
+          profit_amount?: number | null
+          profit_margin_percent?: number | null
           status?: string
           total_amount?: number
           updated_at?: string
@@ -491,11 +509,20 @@ export type Database = {
         Update: {
           created_at?: string
           customer_name?: string | null
+          discount_amount?: number | null
+          gross_value?: number | null
           id?: string
           inventory_item_id?: string | null
+          net_value?: number | null
           notes?: string | null
           orcamento_id?: string | null
+          origin_channel?: string | null
+          payment_fee_amount?: number | null
+          payment_fee_percent?: number | null
           payment_method?: string | null
+          product_cost?: number | null
+          profit_amount?: number | null
+          profit_margin_percent?: number | null
           status?: string
           total_amount?: number
           updated_at?: string
