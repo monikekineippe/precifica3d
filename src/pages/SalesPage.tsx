@@ -693,6 +693,31 @@ export default function SalesPage() {
               </Select>
               <p className="text-[10px] text-muted-foreground">Vincular um orçamento dará baixa automática no estoque dos filamentos usados.</p>
             </div>
+            <div className="grid gap-2">
+              <Label>Item do Estoque (Peça Pronta)</Label>
+              <Select 
+                value={saleForm.inventory_item_id} 
+                onValueChange={v => {
+                  const item = inventory.find(i => i.id === v);
+                  setSaleForm({
+                    ...saleForm, 
+                    inventory_item_id: v,
+                    total_amount: item ? item.cost_per_unit * 2 : saleForm.total_amount // Sugestão simples de preço
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione um item do estoque" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum item vinculado</SelectItem>
+                  {inventory.filter(i => i.type !== 'filament').map(item => (
+                    <SelectItem key={item.id} value={item.id} disabled={item.quantity <= 0}>
+                      {item.name} ({item.quantity} {item.unit}) {item.quantity <= 0 ? '- ESGOTADO' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Vincular um item reduzirá em 1 a quantidade no estoque.</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="amount">Valor Total (R$)</Label>
