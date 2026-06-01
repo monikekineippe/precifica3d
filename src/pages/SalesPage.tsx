@@ -434,6 +434,7 @@ export default function SalesPage() {
           )}
         </div>
       </div>
+    </div>
 
       {/* Sale Dialog */}
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
