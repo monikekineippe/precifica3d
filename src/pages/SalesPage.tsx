@@ -22,6 +22,7 @@ interface Sale {
   payment_method: string;
   status: string;
   orcamento_id?: string;
+  inventory_item_id?: string;
   notes?: string;
   created_at: string;
 }
