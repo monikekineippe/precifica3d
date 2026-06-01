@@ -130,96 +130,144 @@ export default function SalesPage() {
     );
   }
 
-  const handleCreateSale = async () => {
+  const handleSaveSale = async () => {
     if (!user) return;
     if (saleForm.total_amount <= 0) {
       toast.error("O valor da venda deve ser maior que zero");
       return;
     }
 
-    const { data: sale, error: saleError } = await supabase
-      .from("sales")
-      .insert({
+    if (editingSale) {
+      const { error: saleError } = await supabase
+        .from("sales")
+        .update({
+          customer_name: saleForm.customer_name,
+          total_amount: saleForm.total_amount,
+          payment_method: saleForm.payment_method,
+          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          notes: saleForm.notes,
+        })
+        .eq("id", editingSale.id);
+
+      if (saleError) {
+        toast.error("Erro ao atualizar venda");
+        return;
+      }
+
+      // Update linked transaction if it exists
+      await supabase
+        .from("cash_transactions")
+        .update({
+          amount: saleForm.total_amount,
+          description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+        })
+        .eq("sale_id", editingSale.id);
+
+      toast.success("Venda atualizada com sucesso!");
+    } else {
+      const { data: sale, error: saleError } = await supabase
+        .from("sales")
+        .insert({
+          user_id: user.id,
+          customer_name: saleForm.customer_name,
+          total_amount: saleForm.total_amount,
+          payment_method: saleForm.payment_method,
+          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          notes: saleForm.notes,
+          status: 'completed'
+        })
+        .select()
+        .single();
+
+      if (saleError) {
+        toast.error("Erro ao criar venda");
+        return;
+      }
+
+      // Add to cash transactions
+      await supabase.from("cash_transactions").insert({
         user_id: user.id,
-        customer_name: saleForm.customer_name,
-        total_amount: saleForm.total_amount,
-        payment_method: saleForm.payment_method,
-        orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-        notes: saleForm.notes,
-        status: 'completed'
-      })
-      .select()
-      .single();
+        type: 'inflow',
+        amount: saleForm.total_amount,
+        description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+        category: 'venda',
+        sale_id: sale.id
+      });
 
-    if (saleError) {
-      toast.error("Erro ao criar venda");
-      return;
-    }
-
-    // Add to cash transactions
-    await supabase.from("cash_transactions").insert({
-      user_id: user.id,
-      type: 'inflow',
-      amount: saleForm.total_amount,
-      description: `Venda para ${saleForm.customer_name || "Cliente"}`,
-      category: 'venda',
-      sale_id: sale.id
-    });
-
-    // Automatically manage inventory if orcamento is linked
-    if (saleForm.orcamento_id !== "none") {
-      const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
-      if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
-        for (const fil of selectedQuote.filamentos) {
-          if (fil.id) {
-            // Get current quantity
-            const { data: invItem } = await supabase
-              .from("inventory")
-              .select("quantity")
-              .eq("id", fil.id)
-              .single();
-
-            if (invItem) {
-              const newQty = Math.max(0, invItem.quantity - (Number(fil.weightUsed) || 0));
-              await supabase
+      // Automatically manage inventory if orcamento is linked
+      if (saleForm.orcamento_id !== "none") {
+        const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
+        if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
+          for (const fil of selectedQuote.filamentos) {
+            if (fil.id) {
+              const { data: invItem } = await supabase
                 .from("inventory")
-                .update({ quantity: newQty })
-                .eq("id", fil.id);
+                .select("quantity")
+                .eq("id", fil.id)
+                .single();
+
+              if (invItem) {
+                const newQty = Math.max(0, invItem.quantity - (Number(fil.weightUsed) || 0));
+                await supabase
+                  .from("inventory")
+                  .update({ quantity: newQty })
+                  .eq("id", fil.id);
+              }
             }
           }
+          toast.info("Estoque atualizado automaticamente!");
         }
-        toast.info("Estoque atualizado automaticamente!");
       }
+      toast.success("Venda registrada com sucesso!");
     }
 
-    toast.success("Venda registrada com sucesso!");
     setSaleDialogOpen(false);
+    setEditingSale(null);
     setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" });
     fetchData();
   };
 
-  const handleCreateTransaction = async () => {
+  const handleSaveTransaction = async () => {
     if (!user) return;
     if (transactionForm.amount <= 0) {
       toast.error("O valor deve ser maior que zero");
       return;
     }
 
-    const { error } = await supabase.from("cash_transactions").insert({
-      user_id: user.id,
-      type: transactionForm.type,
-      amount: transactionForm.amount,
-      description: transactionForm.description,
-      category: transactionForm.category
-    });
+    if (editingTransaction) {
+      const { error } = await supabase
+        .from("cash_transactions")
+        .update({
+          type: transactionForm.type,
+          amount: transactionForm.amount,
+          description: transactionForm.description,
+          category: transactionForm.category
+        })
+        .eq("id", editingTransaction.id);
 
-    if (error) {
-      toast.error("Erro ao registrar transação");
-      return;
+      if (error) {
+        toast.error("Erro ao atualizar transação");
+        return;
+      }
+      toast.success("Transação atualizada!");
+    } else {
+      const { error } = await supabase.from("cash_transactions").insert({
+        user_id: user.id,
+        type: transactionForm.type,
+        amount: transactionForm.amount,
+        description: transactionForm.description,
+        category: transactionForm.category
+      });
+
+      if (error) {
+        toast.error("Erro ao registrar transação");
+        return;
+      }
+      toast.success("Transação registrada!");
     }
 
-    toast.success("Transação registrada!");
     setTransactionDialogOpen(false);
+    setEditingTransaction(null);
     setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" });
     fetchData();
   };
