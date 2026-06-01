@@ -55,6 +55,39 @@ export type Database = {
           },
         ]
       }
+      clients: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          preferred_channel: string | null
+          updated_at: string
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          preferred_channel?: string | null
+          updated_at?: string
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          preferred_channel?: string | null
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       impressoras: {
         Row: {
           cinematica: string
@@ -464,6 +497,7 @@ export type Database = {
       sales: {
         Row: {
           created_at: string
+          customer_id: string | null
           customer_name: string | null
           discount_amount: number | null
           gross_value: number | null
@@ -486,6 +520,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           discount_amount?: number | null
           gross_value?: number | null
@@ -508,6 +543,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          customer_id?: string | null
           customer_name?: string | null
           discount_amount?: number | null
           gross_value?: number | null
@@ -529,6 +565,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_inventory_item_id_fkey"
             columns: ["inventory_item_id"]
