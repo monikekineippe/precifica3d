@@ -460,6 +460,7 @@ export type Database = {
           created_at: string
           customer_name: string | null
           id: string
+          inventory_item_id: string | null
           notes: string | null
           orcamento_id: string | null
           payment_method: string | null
@@ -472,6 +473,7 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           id?: string
+          inventory_item_id?: string | null
           notes?: string | null
           orcamento_id?: string | null
           payment_method?: string | null
@@ -484,6 +486,7 @@ export type Database = {
           created_at?: string
           customer_name?: string | null
           id?: string
+          inventory_item_id?: string | null
           notes?: string | null
           orcamento_id?: string | null
           payment_method?: string | null
@@ -493,6 +496,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "sales_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sales_orcamento_id_fkey"
             columns: ["orcamento_id"]

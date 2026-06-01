@@ -22,6 +22,7 @@ interface Sale {
   payment_method: string;
   status: string;
   orcamento_id?: string;
+  inventory_item_id?: string;
   notes?: string;
   created_at: string;
 }
@@ -51,6 +52,7 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [transactions, setTransactions] = useState<CashTransaction[]>([]);
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
@@ -62,6 +64,7 @@ export default function SalesPage() {
   const [saleForm, setSaleForm] = useState({
     customer_name: "",
     orcamento_id: "none",
+    inventory_item_id: "none",
     total_amount: 0,
     payment_method: "pix",
     notes: ""
@@ -78,14 +81,16 @@ export default function SalesPage() {
     if (!user) return;
     setLoading(true);
 
-    const [salesRes, transRes, quotesRes] = await Promise.all([
+    const [salesRes, transRes, quotesRes, invRes] = await Promise.all([
       supabase.from("sales").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("cash_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
+      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("inventory").select("*").eq("user_id", user.id).order("name", { ascending: true })
     ]);
 
     if (salesRes.data) setSales(salesRes.data as Sale[]);
     if (transRes.data) setTransactions(transRes.data as CashTransaction[]);
+    if (invRes.data) setInventory(invRes.data);
     if (quotesRes.data) {
       setQuotes(quotesRes.data);
       
@@ -97,6 +102,7 @@ export default function SalesPage() {
           setSaleForm({
             customer_name: "",
             orcamento_id: quoteIdFromUrl,
+            inventory_item_id: "none",
             total_amount: found.preco_sugerido,
             payment_method: "pix",
             notes: ""
@@ -155,6 +161,7 @@ export default function SalesPage() {
           total_amount: saleForm.total_amount,
           payment_method: saleForm.payment_method,
           orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
           notes: saleForm.notes,
         })
         .eq("id", editingSale.id);
@@ -183,6 +190,7 @@ export default function SalesPage() {
           total_amount: saleForm.total_amount,
           payment_method: saleForm.payment_method,
           orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
           notes: saleForm.notes,
           status: 'completed'
         })
@@ -204,7 +212,23 @@ export default function SalesPage() {
         sale_id: sale.id
       });
 
-      // Automatically manage inventory if orcamento is linked
+      // Automatically manage inventory if orcamento or inventory item is linked
+      if (saleForm.inventory_item_id !== "none") {
+        const selectedItem = inventory.find(i => i.id === saleForm.inventory_item_id);
+        if (selectedItem) {
+          if (selectedItem.quantity <= 0) {
+            toast.warning(`Estoque zerado para ${selectedItem.name}, mas a venda foi registrada.`);
+          } else {
+            const { error: invError } = await supabase
+              .from("inventory")
+              .update({ quantity: Math.max(0, selectedItem.quantity - 1) })
+              .eq("id", selectedItem.id);
+            
+            if (!invError) toast.info(`Estoque de ${selectedItem.name} atualizado!`);
+          }
+        }
+      }
+
       if (saleForm.orcamento_id !== "none") {
         const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
         if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
@@ -225,7 +249,7 @@ export default function SalesPage() {
               }
             }
           }
-          toast.info("Estoque atualizado automaticamente!");
+          toast.info("Estoque de filamentos atualizado automaticamente!");
         }
       }
       toast.success("Venda registrada com sucesso!");
@@ -233,7 +257,14 @@ export default function SalesPage() {
 
     setSaleDialogOpen(false);
     setEditingSale(null);
-    setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" });
+    setSaleForm({ 
+      customer_name: "", 
+      orcamento_id: "none", 
+      inventory_item_id: "none",
+      total_amount: 0, 
+      payment_method: "pix", 
+      notes: "" 
+    });
     fetchData();
   };
 
@@ -302,6 +333,7 @@ export default function SalesPage() {
     setSaleForm({
       customer_name: sale.customer_name || "",
       orcamento_id: sale.orcamento_id || "none",
+      inventory_item_id: sale.inventory_item_id || "none",
       total_amount: sale.total_amount,
       payment_method: sale.payment_method,
       notes: sale.notes || ""
@@ -382,7 +414,18 @@ export default function SalesPage() {
           <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
-          <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
+          <Button size="sm" onClick={() => { 
+            setEditingSale(null); 
+            setSaleForm({ 
+              customer_name: "", 
+              orcamento_id: "none", 
+              inventory_item_id: "none",
+              total_amount: 0, 
+              payment_method: "pix", 
+              notes: "" 
+            }); 
+            setSaleDialogOpen(true); 
+          }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
           </Button>
         </div>
@@ -505,15 +548,22 @@ export default function SalesPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
-                          {sale.orcamento_id && (
-                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                              {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
-                            </Badge>
-                          )}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
                         </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {sale.orcamento_id && (
+                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
+                              Orçamento: {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
+                            </Badge>
+                          )}
+                          {sale.inventory_item_id && (
+                            <Badge variant="outline" className="text-[10px] py-0 h-4 border-blue-500/30 text-blue-500">
+                              Estoque: {inventory.find(i => i.id === sale.inventory_item_id)?.name}
+                            </Badge>
+                          )}
+                        </div>
                         {sale.notes && (
                           <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
                         )}
@@ -649,6 +699,31 @@ export default function SalesPage() {
                 </SelectContent>
               </Select>
               <p className="text-[10px] text-muted-foreground">Vincular um orçamento dará baixa automática no estoque dos filamentos usados.</p>
+            </div>
+            <div className="grid gap-2">
+              <Label>Item do Estoque (Peça Pronta)</Label>
+              <Select 
+                value={saleForm.inventory_item_id} 
+                onValueChange={v => {
+                  const item = inventory.find(i => i.id === v);
+                  setSaleForm({
+                    ...saleForm, 
+                    inventory_item_id: v,
+                    total_amount: item ? item.cost_per_unit * 2 : saleForm.total_amount // Sugestão simples de preço
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione um item do estoque" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum item vinculado</SelectItem>
+                  {inventory.filter(i => i.type !== 'filament').map(item => (
+                    <SelectItem key={item.id} value={item.id} disabled={item.quantity <= 0}>
+                      {item.name} ({item.quantity} {item.unit}) {item.quantity <= 0 ? '- ESGOTADO' : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Vincular um item reduzirá em 1 a quantidade no estoque.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
