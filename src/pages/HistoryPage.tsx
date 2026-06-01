@@ -23,12 +23,14 @@ export default function HistoryPage() {
   const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
   const [inventoryForm, setInventoryForm] = useState({
     name: "",
-    type: "filament",
-    quantity: 0,
-    unit: "g",
+    type: "product",
+    quantity: 1,
+    unit: "unidade",
     cost_per_unit: 0,
     min_stock: 0,
+    category: "finished_product" as "finished_product" | "raw_material",
   });
+
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const fetchQuotes = async () => {
@@ -119,12 +121,14 @@ export default function HistoryPage() {
 
     setInventoryForm({
       name: q.nome_peca,
-      type: "other", // Default to other since it's a finished piece
+      type: "product", // Default to product since it's a finished piece
       quantity: 1,
-      unit: "unit",
+      unit: "unidade",
       cost_per_unit: q.custo_total || 0,
       min_stock: 0,
+      category: "finished_product",
     });
+
     setInventoryDialogOpen(true);
   };
 

@@ -36,8 +36,9 @@ export default function Dashboard() {
       supabase.from("inventory").select("*").eq("user_id", user.id)
         .then(({ data }) => {
           if (data) {
-            const low = data.filter((i: any) => i.quantity <= i.min_stock).length;
+            const low = data.filter((i: any) => i.category === 'raw_material' && i.quantity <= i.min_stock).length;
             setLowStockCount(low);
+
           }
         });
     }
