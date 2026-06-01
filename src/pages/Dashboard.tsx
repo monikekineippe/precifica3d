@@ -22,7 +22,15 @@ export default function Dashboard() {
     supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => { if (data) setQuotes(data); });
     supabase.from("impressoras").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-      .then(({ count }) => setPrinterCount(count || 0));
+      .then(({ count }) => {
+        // If user has custom printers, count them. Otherwise we check if they have a primary selected (which could be a preset)
+        setPrinterCount(count || (profile?.primary_printer_id ? 1 : 0));
+      });
+    
+    if (profile?.primary_printer_id) {
+      supabase.from("impressoras").select("*").eq("id", profile.primary_printer_id).single()
+        .then(({ data }) => { if (data) setPrimaryPrinter(data); });
+    }
     
     if (isAnual) {
       supabase.from("inventory").select("*").eq("user_id", user.id)
