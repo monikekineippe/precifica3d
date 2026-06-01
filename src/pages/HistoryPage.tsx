@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Copy, Eye, Download, Lock, PackagePlus } from "lucide-react";
+import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -161,7 +161,9 @@ export default function HistoryPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => setViewing(q)} className="p-1.5 text-muted-foreground hover:text-primary" title="Visualizar"><Eye size={15} /></button>
+                    <button onClick={() => window.location.href = `/sales?quoteId=${q.id}`} className="p-1.5 text-muted-foreground hover:text-green-500" title="Vender Peça"><ShoppingCart size={15} /></button>
                     <button onClick={() => openInventoryDialog(q)} className="p-1.5 text-muted-foreground hover:text-green-500" title="Adicionar ao estoque"><PackagePlus size={15} /></button>
+
                     <button onClick={() => handleDuplicate(q)} className="p-1.5 text-muted-foreground hover:text-accent" title="Duplicar"><Copy size={15} /></button>
                     <button onClick={() => handleDelete(q.id)} className="p-1.5 text-muted-foreground hover:text-destructive" title="Excluir"><Trash2 size={15} /></button>
                   </div>
