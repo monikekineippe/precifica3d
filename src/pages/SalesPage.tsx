@@ -61,7 +61,7 @@ export default function SalesPage() {
     type: "inflow" as "inflow" | "outflow",
     amount: 0,
     description: "",
-    category: "venda"
+    category: ""
   });
 
   const fetchData = async () => {
