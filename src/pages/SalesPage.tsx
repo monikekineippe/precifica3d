@@ -22,6 +22,7 @@ interface Sale {
   payment_method: string;
   status: string;
   orcamento_id?: string;
+  notes?: string;
   created_at: string;
 }
 
@@ -235,8 +236,35 @@ export default function SalesPage() {
   const totalOutflow = transactions.filter(t => t.type === 'outflow').reduce((acc, t) => acc + Number(t.amount), 0);
   const balance = totalInflow - totalOutflow;
 
+  // Calculate item performance
+  const itemPerformance = sales.reduce((acc: any, sale) => {
+    const quote = quotes.find(q => q.id === sale.orcamento_id);
+    const itemName = quote ? quote.nome_peca : (sale.notes || "Venda Direta");
+    const cost = quote ? Number(quote.custo_total || 0) : 0;
+    const profit = Number(sale.total_amount) - cost;
+
+    if (!acc[itemName]) {
+      acc[itemName] = {
+        name: itemName,
+        salesCount: 0,
+        totalRevenue: 0,
+        totalProfit: 0,
+        description: quote ? `Orçamento: ${quote.nome_peca}` : sale.notes
+      };
+    }
+    
+    acc[itemName].salesCount += 1;
+    acc[itemName].totalRevenue += Number(sale.total_amount);
+    acc[itemName].totalProfit += profit;
+    
+    return acc;
+  }, {});
+
+  const performanceList = Object.values(itemPerformance).sort((a: any, b: any) => b.totalProfit - a.totalProfit);
+
   const filteredSales = sales.filter(s => 
-    (s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+    (s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (s.notes?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -289,7 +317,51 @@ export default function SalesPage() {
         </Card>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-4">
+          <Card className="bg-card border-border">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-foreground uppercase flex items-center gap-2">
+                <ShoppingCart size={16} className="text-primary" /> Desempenho por Item
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-muted-foreground border-b border-border">
+                      <th className="text-left pb-2 font-medium">Item / Descrição</th>
+                      <th className="text-center pb-2 font-medium">Vendas</th>
+                      <th className="text-right pb-2 font-medium">Receita</th>
+                      <th className="text-right pb-2 font-medium">Lucro Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {performanceList.length === 0 ? (
+                      <tr>
+                        <td colSpan={4} className="py-4 text-center text-muted-foreground">Nenhum dado disponível</td>
+                      </tr>
+                    ) : (
+                      performanceList.map((item: any, i) => (
+                        <tr key={i} className="hover:bg-muted/50 transition-colors">
+                          <td className="py-3">
+                            <div className="font-medium text-foreground">{item.name}</div>
+                            <div className="text-xs text-muted-foreground line-clamp-1">{item.description || "Sem descrição"}</div>
+                          </td>
+                          <td className="py-3 text-center">{item.salesCount}</td>
+                          <td className="py-3 text-right font-mono text-foreground">R$ {item.totalRevenue.toFixed(2)}</td>
+                          <td className="py-3 text-right font-mono font-bold text-green-500">R$ {item.totalProfit.toFixed(2)}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
@@ -317,16 +389,40 @@ export default function SalesPage() {
                       <ShoppingCart size={20} />
                     </div>
                     <div>
-                      <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
+                        {sale.orcamento_id && (
+                          <Badge variant="secondary" className="text-[10px] py-0 h-4">
+                            {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
                       </p>
+                      {sale.notes && (
+                        <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
-                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase">{sale.status}</Badge>
+                      <div className="flex flex-col items-end">
+                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
+                        {(() => {
+                          const quote = quotes.find(q => q.id === sale.orcamento_id);
+                          if (quote) {
+                            const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
+                            return (
+                              <span className="text-[10px] font-bold text-green-500">
+                                Lucro: R$ {profit.toFixed(2)}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
                     <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
                       <Trash2 size={18} />
@@ -338,6 +434,7 @@ export default function SalesPage() {
           )}
         </div>
       </div>
+    </div>
 
       {/* Sale Dialog */}
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
