@@ -161,7 +161,11 @@ export default function HistoryPage() {
 
       <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome ou impressora..." className="bg-muted border-border max-w-md" />
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+      ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm py-12 text-center">Nenhum orçamento encontrado.</p>
       ) : (
         <div className="space-y-2">
