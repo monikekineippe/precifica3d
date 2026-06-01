@@ -1,0 +1,464 @@
+import { useState, useEffect } from "react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import UpgradeModal from "@/components/UpgradeModal";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
+interface Sale {
+  id: string;
+  customer_name: string;
+  total_amount: number;
+  payment_method: string;
+  status: string;
+  orcamento_id?: string;
+  created_at: string;
+}
+
+interface CashTransaction {
+  id: string;
+  type: 'inflow' | 'outflow';
+  amount: number;
+  description: string;
+  category: string;
+  created_at: string;
+}
+
+export default function SalesPage() {
+  const { user, isPro, isAnual } = useAuth();
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [transactions, setTransactions] = useState<CashTransaction[]>([]);
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saleDialogOpen, setSaleDialogOpen] = useState(false);
+  const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const [saleForm, setSaleForm] = useState({
+    customer_name: "",
+    orcamento_id: "none",
+    total_amount: 0,
+    payment_method: "pix",
+    notes: ""
+  });
+
+  const [transactionForm, setTransactionForm] = useState({
+    type: "inflow" as "inflow" | "outflow",
+    amount: 0,
+    description: "",
+    category: "venda"
+  });
+
+  const fetchData = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    const [salesRes, transRes, quotesRes] = await Promise.all([
+      supabase.from("sales").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("cash_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
+    ]);
+
+    if (salesRes.data) setSales(salesRes.data as Sale[]);
+    if (transRes.data) setTransactions(transRes.data as CashTransaction[]);
+    if (quotesRes.data) setQuotes(quotesRes.data);
+    
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  if (!isPro) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <h1 className="text-2xl font-bold text-foreground">Gestão de Caixa</h1>
+        <div className="relative">
+          <div className="filter blur-sm pointer-events-none opacity-50">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map(i => <Card key={i} className="h-32" />)}
+            </div>
+            <div className="mt-6 h-64 bg-card rounded-xl" />
+          </div>
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/20 rounded-xl">
+            <Lock size={40} className="text-muted-foreground mb-3" />
+            <p className="text-foreground font-medium mb-1">Recurso exclusivo do Plano Pro e Anual</p>
+            <p className="text-muted-foreground text-sm mb-4 text-center max-w-sm">
+              Controle suas vendas, fluxo de caixa e tenha baixa automática no estoque ao realizar vendas.
+            </p>
+            <Button onClick={() => setUpgradeOpen(true)} className="bg-primary text-primary-foreground neon-glow">
+               Fazer Upgrade agora
+            </Button>
+          </div>
+        </div>
+        <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      </div>
+    );
+  }
+
+  const handleCreateSale = async () => {
+    if (!user) return;
+    if (saleForm.total_amount <= 0) {
+      toast.error("O valor da venda deve ser maior que zero");
+      return;
+    }
+
+    const { data: sale, error: saleError } = await supabase
+      .from("sales")
+      .insert({
+        user_id: user.id,
+        customer_name: saleForm.customer_name,
+        total_amount: saleForm.total_amount,
+        payment_method: saleForm.payment_method,
+        orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+        notes: saleForm.notes,
+        status: 'completed'
+      })
+      .select()
+      .single();
+
+    if (saleError) {
+      toast.error("Erro ao criar venda");
+      return;
+    }
+
+    // Add to cash transactions
+    await supabase.from("cash_transactions").insert({
+      user_id: user.id,
+      type: 'inflow',
+      amount: saleForm.total_amount,
+      description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+      category: 'venda',
+      sale_id: sale.id
+    });
+
+    // Automatically manage inventory if orcamento is linked
+    if (saleForm.orcamento_id !== "none") {
+      const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
+      if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
+        for (const fil of selectedQuote.filamentos) {
+          if (fil.id) {
+            // Get current quantity
+            const { data: invItem } = await supabase
+              .from("inventory")
+              .select("quantity")
+              .eq("id", fil.id)
+              .single();
+
+            if (invItem) {
+              const newQty = Math.max(0, invItem.quantity - (Number(fil.weightUsed) || 0));
+              await supabase
+                .from("inventory")
+                .update({ quantity: newQty })
+                .eq("id", fil.id);
+            }
+          }
+        }
+        toast.info("Estoque atualizado automaticamente!");
+      }
+    }
+
+    toast.success("Venda registrada com sucesso!");
+    setSaleDialogOpen(false);
+    setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" });
+    fetchData();
+  };
+
+  const handleCreateTransaction = async () => {
+    if (!user) return;
+    if (transactionForm.amount <= 0) {
+      toast.error("O valor deve ser maior que zero");
+      return;
+    }
+
+    const { error } = await supabase.from("cash_transactions").insert({
+      user_id: user.id,
+      type: transactionForm.type,
+      amount: transactionForm.amount,
+      description: transactionForm.description,
+      category: transactionForm.category
+    });
+
+    if (error) {
+      toast.error("Erro ao registrar transação");
+      return;
+    }
+
+    toast.success("Transação registrada!");
+    setTransactionDialogOpen(false);
+    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" });
+    fetchData();
+  };
+
+  const handleDeleteSale = async (id: string) => {
+    if (!confirm("Tem certeza que deseja remover esta venda? As transações de caixa vinculadas também serão removidas.")) return;
+    const { error } = await supabase.from("sales").delete().eq("id", id);
+    if (error) toast.error("Erro ao remover venda");
+    else {
+      toast.success("Venda removida");
+      fetchData();
+    }
+  };
+
+  const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  const totalOutflow = transactions.filter(t => t.type === 'outflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  const balance = totalInflow - totalOutflow;
+
+  const filteredSales = sales.filter(s => 
+    (s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  return (
+    <div className="space-y-6 max-w-5xl">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Gestão de Caixa</h1>
+          <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
+        </div>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => setTransactionDialogOpen(true)} className="border-border">
+            <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
+          </Button>
+          <Button size="sm" onClick={() => setSaleDialogOpen(true)} className="bg-primary text-primary-foreground neon-glow">
+            <ShoppingCart size={14} className="mr-1" /> Nova Venda
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saldo Geral</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold font-mono ${balance >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+              R$ {balance.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Entradas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-green-500">
+              R$ {totalInflow.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saídas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-destructive">
+              R$ {totalOutflow.toFixed(2)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+            <Input 
+              value={searchTerm} 
+              onChange={e => setSearchTerm(e.target.value)} 
+              placeholder="Buscar por cliente..." 
+              className="pl-9 bg-muted border-border" 
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {filteredSales.length === 0 ? (
+            <div className="py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
+              <Wallet size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
+              <p className="text-muted-foreground">Nenhuma venda registrada.</p>
+            </div>
+          ) : (
+            filteredSales.map(sale => (
+              <Card key={sale.id} className="border-border bg-card">
+                <CardContent className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <ShoppingCart size={20} />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
+                      <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase">{sale.status}</Badge>
+                    </div>
+                    <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Sale Dialog */}
+      <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Registrar Nova Venda</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="customer">Nome do Cliente</Label>
+              <Input 
+                id="customer" 
+                value={saleForm.customer_name} 
+                onChange={e => setSaleForm({...saleForm, customer_name: e.target.value})} 
+                placeholder="Ex: João Silva" 
+                className="bg-muted border-border" 
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Vincular a um Orçamento</Label>
+              <Select 
+                value={saleForm.orcamento_id} 
+                onValueChange={v => {
+                  const q = quotes.find(q => q.id === v);
+                  setSaleForm({
+                    ...saleForm, 
+                    orcamento_id: v,
+                    total_amount: q ? q.preco_sugerido : saleForm.total_amount
+                  });
+                }}
+              >
+                <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum orçamento</SelectItem>
+                  {quotes.map(q => (
+                    <SelectItem key={q.id} value={q.id}>{q.nome_peca} (R$ {Number(q.preco_sugerido).toFixed(2)})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">Vincular um orçamento dará baixa automática no estoque dos filamentos usados.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="amount">Valor Total (R$)</Label>
+                <Input 
+                  id="amount" 
+                  type="number" 
+                  value={saleForm.total_amount} 
+                  onChange={e => setSaleForm({...saleForm, total_amount: +e.target.value})} 
+                  className="bg-muted border-border" 
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label>Forma de Pagamento</Label>
+                <Select value={saleForm.payment_method} onValueChange={v => setSaleForm({...saleForm, payment_method: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pix">PIX</SelectItem>
+                    <SelectItem value="dinheiro">Dinheiro</SelectItem>
+                    <SelectItem value="cartao_credito">Cartão de Crédito</SelectItem>
+                    <SelectItem value="cartao_debito">Cartão de Débito</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notas / Observações</Label>
+              <Input 
+                id="notes" 
+                value={saleForm.notes} 
+                onChange={e => setSaleForm({...saleForm, notes: e.target.value})} 
+                className="bg-muted border-border" 
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateSale} className="bg-primary text-primary-foreground">Finalizar Venda</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Transaction Dialog */}
+      <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Lançar Movimentação</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Tipo</Label>
+                <Select value={transactionForm.type} onValueChange={(v: any) => setTransactionForm({...transactionForm, type: v})}>
+                  <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inflow">Entrada (+)</SelectItem>
+                    <SelectItem value="outflow">Saída (-)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="t-amount">Valor (R$)</Label>
+                <Input 
+                  id="t-amount" 
+                  type="number" 
+                  value={transactionForm.amount} 
+                  onChange={e => setTransactionForm({...transactionForm, amount: +e.target.value})} 
+                  className="bg-muted border-border" 
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="desc">Descrição</Label>
+              <Input 
+                id="desc" 
+                value={transactionForm.description} 
+                onChange={e => setTransactionForm({...transactionForm, description: e.target.value})} 
+                placeholder="Ex: Compra de carretel de filamento" 
+                className="bg-muted border-border" 
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Categoria</Label>
+              <Select value={transactionForm.category} onValueChange={v => setTransactionForm({...transactionForm, category: v})}>
+                <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="venda">Venda</SelectItem>
+                  <SelectItem value="material">Material / Filamento</SelectItem>
+                  <SelectItem value="energia">Energia</SelectItem>
+                  <SelectItem value="marketing">Marketing / Ads</SelectItem>
+                  <SelectItem value="outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTransactionDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleCreateTransaction} className="bg-primary text-primary-foreground">Registrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
