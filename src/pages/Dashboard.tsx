@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { quotesThisMonth, FREE_QUOTE_LIMIT } = usePlanLimits();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [printerCount, setPrinterCount] = useState(0);
+  const [primaryPrinter, setPrimaryPrinter] = useState<any>(null);
   const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
@@ -21,7 +22,15 @@ export default function Dashboard() {
     supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
       .then(({ data }) => { if (data) setQuotes(data); });
     supabase.from("impressoras").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-      .then(({ count }) => setPrinterCount(count || 0));
+      .then(({ count }) => {
+        // If user has custom printers, count them. Otherwise we check if they have a primary selected (which could be a preset)
+        setPrinterCount(count || (profile?.primary_printer_id ? 1 : 0));
+      });
+    
+    if (profile?.primary_printer_id) {
+      supabase.from("impressoras").select("*").eq("id", profile.primary_printer_id).single()
+        .then(({ data }) => { if (data) setPrimaryPrinter(data); });
+    }
     
     if (isAnual) {
       supabase.from("inventory").select("*").eq("user_id", user.id)
@@ -165,6 +174,32 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Primary Printer Card */}
+      {primaryPrinter && (
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Printer size={16} className="text-primary" /> Impressora Principal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-foreground">{primaryPrinter.nome}</p>
+                <div className="flex gap-2 mt-1">
+                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{primaryPrinter.cinematica}</Badge>
+                  <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{primaryPrinter.consumo_watts}W</Badge>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase">Depreciação/h</p>
+                <p className="font-mono text-primary font-bold">R$ {(primaryPrinter.custo_aquisicao / (primaryPrinter.vida_util_horas || 1)).toFixed(2)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

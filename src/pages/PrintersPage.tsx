@@ -36,7 +36,7 @@ const EMPTY_FORM = {
 };
 
 export default function PrintersPage() {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { canCreatePrinter, customPrintersCount, FREE_PRINTER_LIMIT, refresh } = usePlanLimits();
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -110,6 +110,21 @@ export default function PrintersPage() {
     refresh();
   };
 
+  const handleSetPrimary = async (printerId: string) => {
+    if (!user || !profile) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ primary_printer_id: printerId } as any)
+      .eq("user_id", user.id);
+    
+    if (error) {
+      toast.error("Erro ao selecionar impressora principal.");
+    } else {
+      await refreshProfile();
+      toast.success("Impressora principal selecionada!");
+    }
+  };
+
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const computed = computePrinterFields({
@@ -160,6 +175,16 @@ export default function PrintersPage() {
                 <div className="flex justify-between"><span>Consumo</span><span className="font-mono text-foreground">{p.consumo_watts}W</span></div>
                 <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Manutenção/h</span><span className="font-mono text-primary">R$ {maintPerHour.toFixed(2)}</span></div>
+                <div className="pt-2">
+                  <Button 
+                    variant={profile?.primary_printer_id === p.id ? "default" : "outline"} 
+                    size="sm" 
+                    className="w-full text-[11px] h-8"
+                    onClick={() => handleSetPrimary(p.id)}
+                  >
+                    {profile?.primary_printer_id === p.id ? "Impressora Principal" : "Usar esta impressora"}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           );

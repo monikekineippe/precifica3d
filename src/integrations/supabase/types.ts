@@ -316,6 +316,7 @@ export type Database = {
           nome: string
           plano: string
           plano_expiracao: string | null
+          primary_printer_id: string | null
           telefone: string
           updated_at: string
           user_id: string
@@ -329,6 +330,7 @@ export type Database = {
           nome?: string
           plano?: string
           plano_expiracao?: string | null
+          primary_printer_id?: string | null
           telefone?: string
           updated_at?: string
           user_id: string
@@ -342,11 +344,20 @@ export type Database = {
           nome?: string
           plano?: string
           plano_expiracao?: string | null
+          primary_printer_id?: string | null
           telefone?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_primary_printer_id_fkey"
+            columns: ["primary_printer_id"]
+            isOneToOne: false
+            referencedRelation: "impressoras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quotes: {
         Row: {
