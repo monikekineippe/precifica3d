@@ -175,6 +175,16 @@ export default function PrintersPage() {
                 <div className="flex justify-between"><span>Consumo</span><span className="font-mono text-foreground">{p.consumo_watts}W</span></div>
                 <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Manutenção/h</span><span className="font-mono text-primary">R$ {maintPerHour.toFixed(2)}</span></div>
+                <div className="pt-2">
+                  <Button 
+                    variant={profile?.primary_printer_id === p.id ? "default" : "outline"} 
+                    size="sm" 
+                    className="w-full text-[11px] h-8"
+                    onClick={() => handleSetPrimary(p.id)}
+                  >
+                    {profile?.primary_printer_id === p.id ? "Impressora Principal" : "Usar esta impressora"}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           );
