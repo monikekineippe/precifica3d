@@ -76,6 +76,9 @@ export default function SalesPage() {
     inventory_item_id: "none",
     total_amount: 0,
     payment_method: "pix",
+    origin_channel: "whatsapp",
+    discount_amount: 0,
+    payment_fee_percent: 0,
     notes: ""
   });
 
