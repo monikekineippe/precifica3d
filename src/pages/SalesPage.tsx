@@ -341,8 +341,7 @@ export default function SalesPage() {
   );
 
   return (
-    <>
-      <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Gestão de Caixa</h1>
@@ -706,6 +705,6 @@ export default function SalesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
