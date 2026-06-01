@@ -21,7 +21,7 @@ interface PrinterRow {
 
 export default function SettingsPage() {
   const { user, isPro, isAnual, profile } = useAuth();
-  const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6 });
+  const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 50, defaultTaxRate: 6, monthlyRevenueGoal: 0 });
   const [pixDiscount, setPixDiscount] = useState(0);
   const [cardFeePercent, setCardFeePercent] = useState(4.99);
   const [maxInstallments, setMaxInstallments] = useState(12);
@@ -42,7 +42,12 @@ export default function SettingsPage() {
     supabase.from("user_settings").select("*").eq("user_id", user.id).single()
       .then(({ data }) => {
         if (data) {
-          setSettings({ defaultTariff: data.default_tariff, defaultMargin: data.default_margin, defaultTaxRate: data.default_tax_rate });
+          setSettings({ 
+            defaultTariff: data.default_tariff, 
+            defaultMargin: data.default_margin, 
+            defaultTaxRate: data.default_tax_rate,
+            monthlyRevenueGoal: (data as any).monthly_revenue_goal || 0
+          });
           setDefaultPrinterId((data as any).default_printer_id || "");
           setDefaultState((data as any).default_state || "");
           setDefaultCity((data as any).default_city || "");
@@ -78,6 +83,7 @@ export default function SettingsPage() {
       pix_discount: pixDiscount,
       card_fee_percent: cardFeePercent,
       max_installments: maxInstallments,
+      monthly_revenue_goal: settings.monthlyRevenueGoal,
     };
     const { data: existing } = await supabase.from("user_settings").select("id").eq("user_id", user.id).single();
     if (existing) {
@@ -170,6 +176,10 @@ export default function SettingsPage() {
           <div>
             <Label className="text-foreground">Taxa de imposto padrão (%)</Label>
             <Input type="number" value={settings.defaultTaxRate} onChange={e => update('defaultTaxRate', +e.target.value)} className="bg-muted border-border" />
+          </div>
+          <div>
+            <Label className="text-foreground">Meta de faturamento mensal (R$)</Label>
+            <Input type="number" value={settings.monthlyRevenueGoal} onChange={e => update('monthlyRevenueGoal', +e.target.value)} className="bg-muted border-border" />
           </div>
           <Button onClick={handleSave} className="w-full bg-primary text-primary-foreground neon-glow">Salvar Configurações</Button>
         </CardContent>

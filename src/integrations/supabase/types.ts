@@ -557,6 +557,7 @@ export type Database = {
           default_tax_rate: number
           id: string
           max_installments: number
+          monthly_revenue_goal: number | null
           pix_discount: number
           updated_at: string
           user_id: string
@@ -572,6 +573,7 @@ export type Database = {
           default_tax_rate?: number
           id?: string
           max_installments?: number
+          monthly_revenue_goal?: number | null
           pix_discount?: number
           updated_at?: string
           user_id: string
@@ -587,6 +589,7 @@ export type Database = {
           default_tax_rate?: number
           id?: string
           max_installments?: number
+          monthly_revenue_goal?: number | null
           pix_discount?: number
           updated_at?: string
           user_id?: string

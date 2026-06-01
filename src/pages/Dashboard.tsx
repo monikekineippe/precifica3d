@@ -1,206 +1,384 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Printer, FileText, Crown, Package } from "lucide-react";
+import { 
+  PlusCircle, 
+  Printer, 
+  Package, 
+  TrendingUp, 
+  DollarSign, 
+  ShoppingCart, 
+  Target, 
+  AlertTriangle,
+  ChevronRight,
+  ArrowUpRight,
+  ArrowDownRight
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { supabase } from "@/integrations/supabase/client";
+import { format, startOfMonth, endOfMonth, subDays, eachDayOfInterval, isSameDay } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
-  const { user, isPro, profile, isAnual } = useAuth();
-  const { quotesThisMonth, FREE_QUOTE_LIMIT } = usePlanLimits();
-  const [quotes, setQuotes] = useState<any[]>([]);
-  const [printerCount, setPrinterCount] = useState(0);
-  const [primaryPrinter, setPrimaryPrinter] = useState<any>(null);
-  const [lowStockCount, setLowStockCount] = useState(0);
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    monthlyRevenue: 0,
+    monthlyGrossProfit: 0,
+    monthlyGoal: 0,
+    monthlySalesCount: 0,
+    ticketMedio: 0,
+    criticalStock: 0,
+    operationalExpenses: 0,
+    materialExpenses: 0,
+    investmentExpenses: 0
+  });
+  const [recentSales, setRecentSales] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5)
-      .then(({ data }) => { if (data) setQuotes(data); });
-    supabase.from("impressoras").select("id", { count: "exact", head: true }).eq("user_id", user.id)
-      .then(({ count }) => {
-        // If user has custom printers, count them. Otherwise we check if they have a primary selected (which could be a preset)
-        setPrinterCount(count || (profile?.primary_printer_id ? 1 : 0));
-      });
-    
-    if (profile?.primary_printer_id) {
-      supabase.from("impressoras").select("*").eq("id", profile.primary_printer_id).single()
-        .then(({ data }) => { if (data) setPrimaryPrinter(data); });
-    }
-    
-    if (isAnual) {
-      supabase.from("inventory").select("*").eq("user_id", user.id)
-        .then(({ data }) => {
-          if (data) {
-            const low = data.filter((i: any) => i.category === 'raw_material' && i.quantity <= i.min_stock).length;
-            setLowStockCount(low);
 
+    const fetchData = async () => {
+      setLoading(true);
+      const now = new Date();
+      const firstDay = startOfMonth(now);
+      const lastDay = endOfMonth(now);
+
+      // 1. Get Monthly Sales
+      const { data: sales } = await supabase
+        .from("sales")
+        .select("*")
+        .eq("user_id", user.id)
+        .gte("created_at", firstDay.toISOString())
+        .lte("created_at", lastDay.toISOString());
+
+      // 2. Get Revenue Goal
+      const { data: userSettings } = await supabase
+        .from("user_settings")
+        .select("monthly_revenue_goal")
+        .eq("user_id", user.id)
+        .single();
+
+      // 3. Get Critical Stock
+      const { data: inventory } = await supabase
+        .from("inventory")
+        .select("*")
+        .eq("user_id", user.id);
+      
+      const criticalCount = inventory ? inventory.filter((i: any) => i.quantity <= i.min_stock).length : 0;
+
+      // 4. Get Monthly Expenses
+      const { data: expenses } = await supabase
+        .from("cash_transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("type", "expense")
+        .gte("created_at", firstDay.toISOString())
+        .lte("created_at", lastDay.toISOString());
+
+      // 5. Recent 5 Sales
+      const { data: recent } = await supabase
+        .from("sales")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      // 6. Last 30 days evolution
+      const last30Days = eachDayOfInterval({
+        start: subDays(now, 29),
+        end: now
+      });
+
+      const { data: last30Sales } = await supabase
+        .from("sales")
+        .select("created_at, net_value")
+        .eq("user_id", user.id)
+        .gte("created_at", subDays(now, 29).toISOString());
+
+      const chartDataFormatted = last30Days.map(day => {
+        const daySales = last30Sales ? last30Sales.filter(s => isSameDay(new Date(s.created_at), day)) : [];
+        const total = daySales.reduce((sum, s) => sum + Number(s.net_value || 0), 0);
+        return {
+          date: format(day, "dd/MM"),
+          valor: total
+        };
+      });
+
+      // Processing Sales Stats
+      const revenue = sales ? sales.reduce((sum, s) => sum + Number(s.gross_value || 0), 0) : 0;
+      const profit = sales ? sales.reduce((sum, s) => sum + Number(s.profit_amount || 0), 0) : 0;
+      const count = sales ? sales.length : 0;
+      const ticket = count > 0 ? revenue / count : 0;
+
+      // Processing Expenses
+      let operational = 0;
+      let material = 0;
+      let investment = 0;
+
+      if (expenses) {
+        expenses.forEach((e: any) => {
+          if (e.category === "Despesa Fixa" || e.category === "Despesa Variável" || e.category === "Retirada") {
+            operational += Number(e.amount || 0);
+          } else if (e.category === "Insumo/Estoque") {
+            material += Number(e.amount || 0);
+          } else if (e.category === "Investimento/Equipamento") {
+            investment += Number(e.amount || 0);
           }
         });
-    }
-  }, [user, isAnual]);
+      }
 
-  const avgCostPerGram = quotes.length > 0
-    ? quotes.reduce((s, q) => {
-        const filaments = Array.isArray(q.filamentos) ? q.filamentos : [];
-        const totalWeight = filaments.reduce((w: number, f: any) => w + (f.weightUsed || 0), 0);
-        const totalFilamentCost = filaments.reduce((c: number, f: any) => c + (f.computedCost || 0), 0);
-        return s + (totalWeight > 0 ? totalFilamentCost / totalWeight : 0);
-      }, 0) / quotes.length
+      setStats({
+        monthlyRevenue: revenue,
+        monthlyGrossProfit: profit,
+        monthlyGoal: userSettings?.monthly_revenue_goal || 0,
+        monthlySalesCount: count,
+        ticketMedio: ticket,
+        criticalStock: criticalCount,
+        operationalExpenses: operational,
+        materialExpenses: material,
+        investmentExpenses: investment
+      });
+      setRecentSales(recent || []);
+      setChartData(chartDataFormatted);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [user]);
+
+  const goalCompletion = stats.monthlyGoal > 0 
+    ? Math.min(Math.round((stats.monthlyRevenue / stats.monthlyGoal) * 100), 100) 
     : 0;
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground text-sm mt-1">Visão geral da sua operação 3D</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground text-sm mt-1">Gestão real do seu negócio 3D</p>
+        </div>
+        <div className="hidden sm:flex gap-3">
+          <Button asChild size="sm" variant="outline" className="border-border">
+            <Link to="/settings"><Target size={14} className="mr-2" /> Ajustar Meta</Link>
+          </Button>
+        </div>
       </div>
 
-      {/* Plan status */}
-      <Card className="border-border bg-card">
-        <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 py-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge variant="outline" className={isPro ? "border-primary/50 text-primary" : "border-border text-muted-foreground"}>
-              {isPro ? <><Crown size={12} className="mr-1" /> Pro</> : "Free"}
-            </Badge>
-            {!isPro && (
-              <div className="flex items-center gap-3">
-                <div className="text-xs text-muted-foreground">
-                  Orçamentos: <span className="font-mono text-foreground">{quotesThisMonth}/{FREE_QUOTE_LIMIT}</span>
-                </div>
-                <Progress value={(quotesThisMonth / FREE_QUOTE_LIMIT) * 100} className="w-24 h-1.5" />
+      {/* Main Stats (Line 1) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2 space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+              Faturamento (Mês)
+              <DollarSign size={14} className="text-primary" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-foreground">
+              R$ {stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2 space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+              Lucro Bruto (Mês)
+              <TrendingUp size={14} className="text-green-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-green-500">
+              R$ {stats.monthlyGrossProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2 space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+              Meta Mensal
+              <span className="text-[10px] text-primary">{goalCompletion}%</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="text-2xl font-bold font-mono text-foreground">
+              R$ {stats.monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+            </div>
+            <Progress value={goalCompletion} className="h-1.5" />
+          </CardContent>
+        </Card>
+
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2 space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+              Ticket Médio
+              <ArrowUpRight size={14} className="text-primary" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-foreground">
+              R$ {stats.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Secondary Stats (Line 2) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card className="border-border bg-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Vendas no Mês</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div className="text-3xl font-bold font-mono text-foreground">{stats.monthlySalesCount}</div>
+            <ShoppingCart size={24} className="text-muted-foreground opacity-20" />
+          </CardContent>
+        </Card>
+
+        <Link to="/inventory">
+          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Crítico</CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between">
+              <div className={`text-3xl font-bold font-mono ${stats.criticalStock > 0 ? 'text-destructive' : 'text-foreground'}`}>
+                {stats.criticalStock}
               </div>
-            )}
-          </div>
-          {!isPro && (
-            <Button asChild size="sm" className="bg-primary text-primary-foreground w-full sm:w-auto">
-              <Link to="/planos"><Crown size={14} className="mr-1" /> Upgrade</Link>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+              <AlertTriangle size={24} className={stats.criticalStock > 0 ? 'text-destructive' : 'text-muted-foreground opacity-20'} />
+            </CardContent>
+          </Card>
+        </Link>
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="border-border bg-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Orçamentos (mês)</CardTitle>
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Saídas do Mês</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold font-mono text-foreground">{quotesThisMonth}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Impressoras</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold font-mono text-foreground">{printerCount}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Custo médio/g</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold font-mono text-primary">R$ {avgCostPerGram.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Receita potencial</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold font-mono text-primary">
-              R$ {quotes.reduce((s, q) => s + (q.preco_sugerido || 0), 0).toFixed(0)}
+          <CardContent className="space-y-1.5">
+            <div className="flex justify-between text-[11px]">
+              <span className="text-muted-foreground">Operacional:</span>
+              <span className="font-mono text-destructive">R$ {stats.operationalExpenses.toFixed(2)}</span>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Baixo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-3xl font-bold font-mono ${lowStockCount > 0 ? 'text-destructive' : 'text-foreground'}`}>
-              {isAnual ? lowStockCount : "—"}
+            <div className="flex justify-between text-[11px]">
+              <span className="text-muted-foreground">Material/Estoque:</span>
+              <span className="font-mono text-destructive">R$ {stats.materialExpenses.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-[11px]">
+              <span className="text-muted-foreground">Investimento:</span>
+              <span className="font-mono text-destructive">R$ {stats.investmentExpenses.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Quick actions */}
+      {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
         <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow">
           <Link to="/new"><PlusCircle size={16} className="mr-2" />Nova Precificação</Link>
         </Button>
-        <Button asChild variant="outline" className="border-border">
-          <Link to="/printers"><Printer size={16} className="mr-2" />Gerenciar Impressoras</Link>
+        <Button asChild variant="secondary">
+          <Link to="/sales"><ShoppingCart size={16} className="mr-2" />Nova Venda</Link>
         </Button>
         <Button asChild variant="outline" className="border-border">
           <Link to="/inventory"><Package size={16} className="mr-2" />Estoque</Link>
         </Button>
       </div>
 
-      {/* Recent quotes */}
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-            <FileText size={16} className="text-primary" /> Últimos Orçamentos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {quotes.length === 0 ? (
-            <p className="text-muted-foreground text-sm py-8 text-center">
-              Nenhum orçamento ainda. <Link to="/new" className="text-primary hover:underline">Crie o primeiro!</Link>
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {quotes.map(q => (
-                <div key={q.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-muted/50 border border-border">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm text-foreground truncate">{q.nome_peca}</p>
-                    <p className="text-xs text-muted-foreground">{q.impressora_nome} · {new Date(q.created_at).toLocaleDateString('pt-BR')}</p>
-                  </div>
-                  <div className="text-left sm:text-right">
-                    <p className="font-bold font-mono text-primary text-sm">R$ {(q.preco_sugerido || 0).toFixed(2)}</p>
-                    <p className="text-[10px] text-muted-foreground">Margem {q.margem_lucro}%</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Primary Printer Card */}
-      {primaryPrinter && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Sales Chart */}
         <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Printer size={16} className="text-primary" /> Impressora Principal
+              <TrendingUp size={16} className="text-primary" /> Evolução (Últimos 30 dias)
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-foreground">{primaryPrinter.nome}</p>
-                <div className="flex gap-2 mt-1">
-                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{primaryPrinter.cinematica}</Badge>
-                  <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{primaryPrinter.consumo_watts}W</Badge>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground uppercase">Depreciação/h</p>
-                <p className="font-mono text-primary font-bold">R$ {(primaryPrinter.custo_aquisicao / (primaryPrinter.vida_util_horas || 1)).toFixed(2)}</p>
-              </div>
-            </div>
+          <CardContent className="h-[250px] pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#666', fontSize: 10}}
+                  minTickGap={20}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#666', fontSize: 10}}
+                  tickFormatter={(val) => `R$${val}`}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
+                  itemStyle={{ color: '#00D1FF' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="valor" 
+                  stroke="#00D1FF" 
+                  strokeWidth={2} 
+                  dot={false}
+                  activeDot={{ r: 4, fill: '#00D1FF' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
-      )}
+
+        {/* Recent Sales List */}
+        <Card className="border-border bg-card">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+              <ShoppingCart size={16} className="text-primary" /> Últimas 5 Vendas
+            </CardTitle>
+            <Button asChild variant="ghost" size="sm" className="text-xs h-8 text-muted-foreground hover:text-primary">
+              <Link to="/sales">Ver todas <ChevronRight size={12} className="ml-1" /></Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {recentSales.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-muted-foreground text-sm">Nenhuma venda registrada ainda.</p>
+                <Button asChild variant="link" className="text-primary text-xs mt-2">
+                  <Link to="/sales">Registrar minha primeira venda</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentSales.map(sale => (
+                  <div key={sale.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 group hover:border-primary/30 transition-colors">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-foreground truncate">{sale.customer_name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="outline" className="text-[9px] py-0 px-1 border-primary/20 text-primary uppercase">
+                          {sale.origin_channel || 'Geral'}
+                        </Badge>
+                        <span className="text-[10px] text-muted-foreground">
+                          {format(new Date(sale.created_at), "dd/MM")}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.gross_value || 0).toFixed(2)}</p>
+                      <div className="flex items-center justify-end gap-1 text-[10px] text-green-500 font-medium">
+                        <ArrowUpRight size={10} />
+                        R$ {Number(sale.profit_amount || 0).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
