@@ -161,6 +161,7 @@ export default function SalesPage() {
           total_amount: saleForm.total_amount,
           payment_method: saleForm.payment_method,
           orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          inventory_item_id: saleForm.inventory_item_id === "none" ? null : saleForm.inventory_item_id,
           notes: saleForm.notes,
         })
         .eq("id", editingSale.id);
