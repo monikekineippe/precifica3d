@@ -16,8 +16,15 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (isPro && user) {
+      console.log("ReportsPage: Fetching quotes for user", user.id);
       supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: true })
-        .then(({ data }) => { if (data) setQuotes(data); });
+        .then(({ data, error }) => { 
+          if (error) console.error("ReportsPage: Error fetching quotes", error);
+          if (data) {
+            console.log("ReportsPage: Quotes fetched", data.length);
+            setQuotes(data); 
+          }
+        });
     }
   }, [isPro, user]);
 
