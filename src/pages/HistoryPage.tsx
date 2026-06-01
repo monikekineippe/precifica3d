@@ -32,24 +32,14 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!user) return;
-    console.log("HistoryPage: Fetching quotes for user", user.id, "isPro", isPro);
     const query = supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
 
-    if (!isPro) {
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      console.log("HistoryPage: Non-pro user, filtering by date >=", startOfMonth);
-      query.gte("created_at", startOfMonth);
-    }
-
-    query.then(({ data, error }) => { 
-      if (error) console.error("HistoryPage: Error fetching quotes", error);
-      if (data) {
-        console.log("HistoryPage: Quotes fetched", data.length);
-        setQuotes(data); 
-      }
-    });
-  }, [user, isPro]);
+    // History page shows all quotes for the user, regardless of plan.
+    // The usePlanLimits canViewFullHistory property is available but we choose 
+    // to show full history here as requested by users who see items in reports but not here.
+    
+    query.then(({ data }) => { if (data) setQuotes(data); });
+  }, [user]);
 
   const filtered = quotes.filter(q =>
     q.nome_peca.toLowerCase().includes(search.toLowerCase()) ||
