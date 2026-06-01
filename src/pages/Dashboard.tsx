@@ -242,8 +242,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer" asChild>
-          <Link to="/inventory">
+        <Link to="/inventory">
+          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Crítico</CardTitle>
             </CardHeader>
@@ -253,8 +253,8 @@ export default function Dashboard() {
               </div>
               <AlertTriangle size={24} className={stats.criticalStock > 0 ? 'text-destructive' : 'text-muted-foreground opacity-20'} />
             </CardContent>
-          </Link>
-        </Card>
+          </Card>
+        </Link>
 
         <Card className="border-border bg-card">
           <CardHeader className="pb-2">
