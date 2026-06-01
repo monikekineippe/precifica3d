@@ -81,14 +81,16 @@ export default function SalesPage() {
     if (!user) return;
     setLoading(true);
 
-    const [salesRes, transRes, quotesRes] = await Promise.all([
+    const [salesRes, transRes, quotesRes, invRes] = await Promise.all([
       supabase.from("sales").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("cash_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false })
+      supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("inventory").select("*").eq("user_id", user.id).order("name", { ascending: true })
     ]);
 
     if (salesRes.data) setSales(salesRes.data as Sale[]);
     if (transRes.data) setTransactions(transRes.data as CashTransaction[]);
+    if (invRes.data) setInventory(invRes.data);
     if (quotesRes.data) {
       setQuotes(quotesRes.data);
       
