@@ -403,9 +403,18 @@ export default function SalesPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saídas</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-destructive">
-              R$ {totalOutflow.toFixed(2)}
+          <CardContent className="space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase">Operacional</span>
+              <span className="text-sm font-bold font-mono text-destructive">R$ {totalOperationalOutflow.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase">Estoque/Invest.</span>
+              <span className="text-sm font-bold font-mono text-blue-500">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+            </div>
+            <div className="pt-1 border-t border-border flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
+              <span className="text-lg font-bold font-mono text-destructive">R$ {totalOutflow.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
