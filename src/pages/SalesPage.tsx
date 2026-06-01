@@ -212,7 +212,23 @@ export default function SalesPage() {
         sale_id: sale.id
       });
 
-      // Automatically manage inventory if orcamento is linked
+      // Automatically manage inventory if orcamento or inventory item is linked
+      if (saleForm.inventory_item_id !== "none") {
+        const selectedItem = inventory.find(i => i.id === saleForm.inventory_item_id);
+        if (selectedItem) {
+          if (selectedItem.quantity <= 0) {
+            toast.warning(`Estoque zerado para ${selectedItem.name}, mas a venda foi registrada.`);
+          } else {
+            const { error: invError } = await supabase
+              .from("inventory")
+              .update({ quantity: Math.max(0, selectedItem.quantity - 1) })
+              .eq("id", selectedItem.id);
+            
+            if (!invError) toast.info(`Estoque de ${selectedItem.name} atualizado!`);
+          }
+        }
+      }
+
       if (saleForm.orcamento_id !== "none") {
         const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
         if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
@@ -233,7 +249,7 @@ export default function SalesPage() {
               }
             }
           }
-          toast.info("Estoque atualizado automaticamente!");
+          toast.info("Estoque de filamentos atualizado automaticamente!");
         }
       }
       toast.success("Venda registrada com sucesso!");
@@ -241,7 +257,14 @@ export default function SalesPage() {
 
     setSaleDialogOpen(false);
     setEditingSale(null);
-    setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" });
+    setSaleForm({ 
+      customer_name: "", 
+      orcamento_id: "none", 
+      inventory_item_id: "none",
+      total_amount: 0, 
+      payment_method: "pix", 
+      notes: "" 
+    });
     fetchData();
   };
 
