@@ -569,7 +569,6 @@ export default function SalesPage() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTransactionDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleCreateTransaction} className="bg-primary text-primary-foreground">Registrar</Button>
