@@ -35,6 +35,16 @@ interface CashTransaction {
   created_at: string;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  venda: "Venda",
+  insumo_estoque: "Insumo / Estoque",
+  despesa_fixa: "Despesa Fixa",
+  despesa_variavel: "Despesa Variável",
+  investimento_equipamento: "Investimento / Equipamento",
+  retirada: "Retirada",
+  outros: "Outros"
+};
+
 export default function SalesPage() {
   const { user, isPro } = useAuth();
   const [searchParams] = useSearchParams();
@@ -61,7 +71,7 @@ export default function SalesPage() {
     type: "inflow" as "inflow" | "outflow",
     amount: 0,
     description: "",
-    category: "venda"
+    category: ""
   });
 
   const fetchData = async () => {
@@ -234,6 +244,11 @@ export default function SalesPage() {
       return;
     }
 
+    if (!transactionForm.category) {
+      toast.error("Por favor, selecione uma categoria");
+      return;
+    }
+
     if (editingTransaction) {
       const { error } = await supabase
         .from("cash_transactions")
@@ -306,7 +321,23 @@ export default function SalesPage() {
   };
 
   const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
-  const totalOutflow = transactions.filter(t => t.type === 'outflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  
+  // Categorize outflows
+  const operationalCategories = ['despesa_fixa', 'despesa_variavel', 'retirada'];
+  const investmentStockCategories = ['insumo_estoque', 'investimento_equipamento'];
+
+  const totalOperationalOutflow = transactions
+    .filter(t => t.type === 'outflow' && operationalCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const totalInvestmentStockOutflow = transactions
+    .filter(t => t.type === 'outflow' && investmentStockCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
+  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + transactions
+    .filter(t => t.type === 'outflow' && !operationalCategories.includes(t.category) && !investmentStockCategories.includes(t.category))
+    .reduce((acc, t) => acc + Number(t.amount), 0);
+
   const balance = totalInflow - totalOutflow;
 
   // Calculate item performance
@@ -348,7 +379,7 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
@@ -382,9 +413,18 @@ export default function SalesPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saídas</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-destructive">
-              R$ {totalOutflow.toFixed(2)}
+          <CardContent className="space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase">Operacional</span>
+              <span className="text-sm font-bold font-mono text-destructive">R$ {totalOperationalOutflow.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase">Estoque/Invest.</span>
+              <span className="text-sm font-bold font-mono text-blue-500">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+            </div>
+            <div className="pt-1 border-t border-border flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
+              <span className="text-lg font-bold font-mono text-destructive">R$ {totalOutflow.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
@@ -533,7 +573,7 @@ export default function SalesPage() {
                         <div>
                           <p className="font-medium text-foreground text-sm">{transaction.description || "Sem descrição"}</p>
                           <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                            {transaction.category}
+                            {CATEGORY_LABELS[transaction.category] || transaction.category}
                           </p>
                         </div>
                       </div>
@@ -693,15 +733,16 @@ export default function SalesPage() {
             <div className="grid gap-2">
               <Label>Categoria</Label>
               <Select value={transactionForm.category} onValueChange={v => setTransactionForm({...transactionForm, category: v})}>
-                <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-muted border-border">
+                  <SelectValue placeholder="Selecione uma categoria" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="venda">Venda</SelectItem>
-                  <SelectItem value="filamento">Filamento</SelectItem>
-                  <SelectItem value="acessorios">Acessórios / Materiais</SelectItem>
-                  <SelectItem value="manutencao">Manutenção</SelectItem>
-                  <SelectItem value="maquinario">Maquinário</SelectItem>
-                  <SelectItem value="energia">Energia</SelectItem>
-                  <SelectItem value="marketing">Marketing / Ads</SelectItem>
+                  <SelectItem value="insumo_estoque">Insumo / Estoque</SelectItem>
+                  <SelectItem value="despesa_fixa">Despesa Fixa</SelectItem>
+                  <SelectItem value="despesa_variavel">Despesa Variável</SelectItem>
+                  <SelectItem value="investimento_equipamento">Investimento / Equipamento</SelectItem>
+                  <SelectItem value="retirada">Retirada</SelectItem>
                   <SelectItem value="outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
