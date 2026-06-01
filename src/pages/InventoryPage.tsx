@@ -1,17 +1,18 @@
 import { useState, useEffect } from "react";
-import { Package, Plus, Trash2, Edit2, Lock, AlertTriangle } from "lucide-react";
+import { Package, Plus, Trash2, Edit2, Lock, AlertTriangle, TrendingUp, History } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { usePlanLimits } from "@/hooks/usePlanLimits";
-import UpgradeModal from "@/components/UpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
+import UpgradeModal from "@/components/UpgradeModal";
+import { format } from "date-fns";
 
 interface InventoryItem {
   id: string;
@@ -24,12 +25,16 @@ interface InventoryItem {
   color?: string;
   brand?: string;
   user_id: string;
+  category: 'raw_material' | 'finished_product';
+  last_purchase_date?: string;
 }
 
 const EMPTY_FORM = {
-  name: '', type: 'filament', quantity: 0, unit: 'g',
+  name: '', type: 'filament', quantity: 0, unit: 'unit',
   cost_per_unit: 0, min_stock: 0, color: '', brand: '',
+  category: 'raw_material' as const,
 };
+
 
 export default function InventoryPage() {
   const { user, isAnual } = useAuth();
