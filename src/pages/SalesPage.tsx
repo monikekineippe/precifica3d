@@ -20,6 +20,15 @@ interface Sale {
   customer_name: string;
   total_amount: number;
   payment_method: string;
+  origin_channel?: string;
+  discount_amount?: number;
+  payment_fee_percent?: number;
+  payment_fee_amount?: number;
+  gross_value?: number;
+  net_value?: number;
+  product_cost?: number;
+  profit_amount?: number;
+  profit_margin_percent?: number;
   status: string;
   orcamento_id?: string;
   inventory_item_id?: string;
