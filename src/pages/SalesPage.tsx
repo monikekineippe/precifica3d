@@ -557,6 +557,18 @@ export default function SalesPage() {
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
                         </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {sale.orcamento_id && (
+                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
+                              Orçamento: {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
+                            </Badge>
+                          )}
+                          {sale.inventory_item_id && (
+                            <Badge variant="outline" className="text-[10px] py-0 h-4 border-blue-500/30 text-blue-500">
+                              Estoque: {inventory.find(i => i.id === sale.inventory_item_id)?.name}
+                            </Badge>
+                          )}
+                        </div>
                         {sale.notes && (
                           <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
                         )}
