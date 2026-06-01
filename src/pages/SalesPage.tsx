@@ -369,7 +369,7 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
