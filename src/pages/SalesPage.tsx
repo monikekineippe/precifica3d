@@ -716,11 +716,12 @@ export default function SalesPage() {
                 <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione um item do estoque" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Nenhum item vinculado</SelectItem>
-                  {inventory.filter(i => i.type !== 'filament').map(item => (
+                  {inventory.filter(i => i.category === 'finished_product').map(item => (
                     <SelectItem key={item.id} value={item.id} disabled={item.quantity <= 0}>
                       {item.name} ({item.quantity} {item.unit}) {item.quantity <= 0 ? '- ESGOTADO' : ''}
                     </SelectItem>
                   ))}
+
                 </SelectContent>
               </Select>
               <p className="text-[10px] text-muted-foreground">Vincular um item reduzirá em 1 a quantidade no estoque.</p>
