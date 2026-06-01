@@ -562,7 +562,7 @@ export default function SalesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateSale} className="bg-primary text-primary-foreground">Finalizar Venda</Button>
+            <Button onClick={handleSaveSale} className="bg-primary text-primary-foreground">{editingSale ? "Salvar Alterações" : "Finalizar Venda"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -622,7 +622,7 @@ export default function SalesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setTransactionDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateTransaction} className="bg-primary text-primary-foreground">Registrar</Button>
+            <Button onClick={handleSaveTransaction} className="bg-primary text-primary-foreground">{editingTransaction ? "Salvar Alterações" : "Registrar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
