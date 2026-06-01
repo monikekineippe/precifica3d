@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart } from "lucide-react";
+import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
