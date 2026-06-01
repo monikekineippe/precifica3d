@@ -150,7 +150,7 @@ export default function HistoryPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Histórico</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isPro ? `${quotes.length} orçamentos` : "Orçamentos do mês atual"}
+            {loading ? "Carregando..." : (isPro ? `${quotes.length} orçamentos` : "Orçamentos do mês atual")}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={exportCSV} className="border-border">
