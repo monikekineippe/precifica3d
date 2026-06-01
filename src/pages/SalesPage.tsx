@@ -435,81 +435,133 @@ export default function SalesPage() {
         </div>
 
         <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-            <Input 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              placeholder="Buscar por cliente..." 
-              className="pl-9 bg-muted border-border" 
-            />
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground">Vendas Recentes</h2>
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <Input 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                placeholder="Buscar por cliente..." 
+                className="pl-9 bg-muted border-border" 
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {filteredSales.length === 0 ? (
+              <div className="py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
+                <Wallet size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
+                <p className="text-muted-foreground">Nenhuma venda registrada.</p>
+              </div>
+            ) : (
+              filteredSales.map(sale => (
+                <Card key={sale.id} className="border-border bg-card">
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <ShoppingCart size={20} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
+                          {sale.orcamento_id && (
+                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
+                              {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                        </p>
+                        {sale.notes && (
+                          <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
+                        <div className="flex flex-col items-end">
+                          <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
+                          {(() => {
+                            const quote = quotes.find(q => q.id === sale.orcamento_id);
+                            if (quote) {
+                              const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
+                              return (
+                                <span className="text-[10px] font-bold text-green-500">
+                                  Lucro: R$ {profit.toFixed(2)}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <button onClick={() => handleEditSale(sale)} className="p-2 text-muted-foreground hover:text-primary">
+                          <Pencil size={18} />
+                        </button>
+                        <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          {filteredSales.length === 0 ? (
-            <div className="py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
-              <Wallet size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
-              <p className="text-muted-foreground">Nenhuma venda registrada.</p>
-            </div>
-          ) : (
-            filteredSales.map(sale => (
-              <Card key={sale.id} className="border-border bg-card">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      <ShoppingCart size={20} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
-                        {sale.orcamento_id && (
-                          <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                            {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
-                          </Badge>
-                        )}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-foreground">Outras Movimentações</h2>
+          <div className="space-y-2">
+            {transactions.filter(t => t.category !== 'venda').length === 0 ? (
+              <div className="py-8 text-center bg-muted/20 rounded-xl border border-dashed border-border">
+                <p className="text-muted-foreground text-sm">Nenhuma outra movimentação registrada.</p>
+              </div>
+            ) : (
+              transactions.filter(t => t.category !== 'venda').map(transaction => (
+                <Card key={transaction.id} className="border-border bg-card">
+                  <CardContent className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${transaction.type === 'inflow' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+                        {transaction.type === 'inflow' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{transaction.description}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {format(new Date(transaction.created_at), "dd/MM/yyyy HH:mm")} · {transaction.category.toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
+                        {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
                       </p>
-                      {sale.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
-                      <div className="flex flex-col items-end">
-                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
-                        {(() => {
-                          const quote = quotes.find(q => q.id === sale.orcamento_id);
-                          if (quote) {
-                            const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
-                            return (
-                              <span className="text-[10px] font-bold text-green-500">
-                                Lucro: R$ {profit.toFixed(2)}
-                              </span>
-                            );
-                          }
-                          return null;
-                        })()}
+                      <div className="flex items-center">
+                        <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
+                          <Pencil size={16} />
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (confirm("Remover esta movimentação?")) {
+                              await supabase.from("cash_transactions").delete().eq("id", transaction.id);
+                              fetchData();
+                            }
+                          }} 
+                          className="p-1.5 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <button onClick={() => handleEditSale(sale)} className="p-2 text-muted-foreground hover:text-primary">
-                        <Pencil size={18} />
-                      </button>
-                      <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
