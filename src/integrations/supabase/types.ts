@@ -103,10 +103,12 @@ export type Database = {
       inventory: {
         Row: {
           brand: string | null
+          category: string
           color: string | null
           cost_per_unit: number
           created_at: string
           id: string
+          last_purchase_date: string | null
           min_stock: number
           name: string
           quantity: number
@@ -117,10 +119,12 @@ export type Database = {
         }
         Insert: {
           brand?: string | null
+          category?: string
           color?: string | null
           cost_per_unit?: number
           created_at?: string
           id?: string
+          last_purchase_date?: string | null
           min_stock?: number
           name: string
           quantity?: number
@@ -131,10 +135,12 @@ export type Database = {
         }
         Update: {
           brand?: string | null
+          category?: string
           color?: string | null
           cost_per_unit?: number
           created_at?: string
           id?: string
+          last_purchase_date?: string | null
           min_stock?: number
           name?: string
           quantity?: number
