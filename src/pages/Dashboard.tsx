@@ -174,6 +174,32 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Primary Printer Card */}
+      {primaryPrinter && (
+        <Card className="border-border bg-card">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+              <Printer size={16} className="text-primary" /> Impressora Principal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-bold text-foreground">{primaryPrinter.nome}</p>
+                <div className="flex gap-2 mt-1">
+                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{primaryPrinter.cinematica}</Badge>
+                  <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{primaryPrinter.consumo_watts}W</Badge>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground uppercase">Depreciação/h</p>
+                <p className="font-mono text-primary font-bold">R$ {(primaryPrinter.custo_aquisicao / (primaryPrinter.vida_util_horas || 1)).toFixed(2)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
