@@ -333,6 +333,7 @@ export default function SalesPage() {
     setSaleForm({
       customer_name: sale.customer_name || "",
       orcamento_id: sale.orcamento_id || "none",
+      inventory_item_id: sale.inventory_item_id || "none",
       total_amount: sale.total_amount,
       payment_method: sale.payment_method,
       notes: sale.notes || ""
