@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart } from "lucide-react";
+import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ export default function HistoryPage() {
   const { user, isPro, isAnual } = useAuth();
   const { canExport } = usePlanLimits();
   const [quotes, setQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [viewing, setViewing] = useState<any>(null);
   const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
@@ -30,21 +31,40 @@ export default function HistoryPage() {
   });
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
-  useEffect(() => {
+  const fetchQuotes = async () => {
     if (!user) return;
-    const query = supabase.from("orcamentos").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+    setLoading(true);
+    try {
+      // Fetching all quotes. RLS will ensure the user only sees their own.
+      const { data, error } = await supabase
+        .from("orcamentos")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
-    // History page shows all quotes for the user, regardless of plan.
-    // The usePlanLimits canViewFullHistory property is available but we choose 
-    // to show full history here as requested by users who see items in reports but not here.
-    
-    query.then(({ data }) => { if (data) setQuotes(data); });
+      if (error) {
+        console.error("HistoryPage: Error fetching quotes:", error);
+        toast.error("Erro ao carregar histórico");
+        return;
+      }
+
+      setQuotes(data || []);
+    } catch (err) {
+      console.error("HistoryPage: Unexpected error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuotes();
   }, [user]);
 
-  const filtered = quotes.filter(q =>
-    q.nome_peca.toLowerCase().includes(search.toLowerCase()) ||
-    q.impressora_nome.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = quotes.filter(q => {
+    const pieceMatch = q.nome_peca?.toLowerCase().includes(search.toLowerCase()) ?? false;
+    const printerMatch = q.impressora_nome?.toLowerCase().includes(search.toLowerCase()) ?? false;
+    return pieceMatch || printerMatch;
+  });
 
   const handleDelete = async (id: string) => {
     await supabase.from("orcamentos").delete().eq("id", id);
@@ -130,7 +150,7 @@ export default function HistoryPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Histórico</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isPro ? `${quotes.length} orçamentos` : "Orçamentos do mês atual"}
+            {loading ? "Carregando..." : (isPro ? `${quotes.length} orçamentos` : "Orçamentos do mês atual")}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={exportCSV} className="border-border">
@@ -141,7 +161,11 @@ export default function HistoryPage() {
 
       <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome ou impressora..." className="bg-muted border-border max-w-md" />
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+      ) : filtered.length === 0 ? (
         <p className="text-muted-foreground text-sm py-12 text-center">Nenhum orçamento encontrado.</p>
       ) : (
         <div className="space-y-2">
