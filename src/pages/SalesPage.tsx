@@ -282,6 +282,29 @@ export default function SalesPage() {
     }
   };
 
+  const handleEditSale = (sale: Sale) => {
+    setEditingSale(sale);
+    setSaleForm({
+      customer_name: sale.customer_name || "",
+      orcamento_id: sale.orcamento_id || "none",
+      total_amount: sale.total_amount,
+      payment_method: sale.payment_method,
+      notes: sale.notes || ""
+    });
+    setSaleDialogOpen(true);
+  };
+
+  const handleEditTransaction = (transaction: CashTransaction) => {
+    setEditingTransaction(transaction);
+    setTransactionForm({
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
+      category: transaction.category
+    });
+    setTransactionDialogOpen(true);
+  };
+
   const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
   const totalOutflow = transactions.filter(t => t.type === 'outflow').reduce((acc, t) => acc + Number(t.amount), 0);
   const balance = totalInflow - totalOutflow;
@@ -474,9 +497,14 @@ export default function SalesPage() {
                         })()}
                       </div>
                     </div>
-                    <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex items-center">
+                      <button onClick={() => handleEditSale(sale)} className="p-2 text-muted-foreground hover:text-primary">
+                        <Pencil size={18} />
+                      </button>
+                      <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -490,7 +518,7 @@ export default function SalesPage() {
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Registrar Nova Venda</DialogTitle>
+            <DialogTitle className="text-foreground">{editingSale ? "Editar Venda" : "Registrar Nova Venda"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -571,7 +599,7 @@ export default function SalesPage() {
       <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Lançar Movimentação</DialogTitle>
+            <DialogTitle className="text-foreground">{editingTransaction ? "Editar Movimentação" : "Lançar Movimentação"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
