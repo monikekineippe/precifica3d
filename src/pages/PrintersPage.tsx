@@ -110,6 +110,21 @@ export default function PrintersPage() {
     refresh();
   };
 
+  const handleSetPrimary = async (printerId: string) => {
+    if (!user || !profile) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ primary_printer_id: printerId } as any)
+      .eq("user_id", user.id);
+    
+    if (error) {
+      toast.error("Erro ao selecionar impressora principal.");
+    } else {
+      await refreshProfile();
+      toast.success("Impressora principal selecionada!");
+    }
+  };
+
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
   const computed = computePrinterFields({
