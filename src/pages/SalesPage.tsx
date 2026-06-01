@@ -348,10 +348,10 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setTransactionDialogOpen(true)} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
-          <Button size="sm" onClick={() => setSaleDialogOpen(true)} className="bg-primary text-primary-foreground neon-glow">
+          <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
           </Button>
         </div>
@@ -640,7 +640,7 @@ export default function SalesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setSaleDialogOpen(false); setEditingSale(null); }}>Cancelar</Button>
             <Button onClick={handleSaveSale} className="bg-primary text-primary-foreground">{editingSale ? "Salvar Alterações" : "Finalizar Venda"}</Button>
           </DialogFooter>
         </DialogContent>
@@ -700,7 +700,7 @@ export default function SalesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTransactionDialogOpen(false)}>Cancelar</Button>
+            <Button variant="outline" onClick={() => { setTransactionDialogOpen(false); setEditingTransaction(null); }}>Cancelar</Button>
             <Button onClick={handleSaveTransaction} className="bg-primary text-primary-foreground">{editingTransaction ? "Salvar Alterações" : "Registrar"}</Button>
           </DialogFooter>
         </DialogContent>
