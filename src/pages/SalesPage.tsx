@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock } from "lucide-react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +44,8 @@ export default function SalesPage() {
   const [loading, setLoading] = useState(true);
   const [saleDialogOpen, setSaleDialogOpen] = useState(false);
   const [transactionDialogOpen, setTransactionDialogOpen] = useState(false);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<CashTransaction | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -128,96 +130,144 @@ export default function SalesPage() {
     );
   }
 
-  const handleCreateSale = async () => {
+  const handleSaveSale = async () => {
     if (!user) return;
     if (saleForm.total_amount <= 0) {
       toast.error("O valor da venda deve ser maior que zero");
       return;
     }
 
-    const { data: sale, error: saleError } = await supabase
-      .from("sales")
-      .insert({
+    if (editingSale) {
+      const { error: saleError } = await supabase
+        .from("sales")
+        .update({
+          customer_name: saleForm.customer_name,
+          total_amount: saleForm.total_amount,
+          payment_method: saleForm.payment_method,
+          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          notes: saleForm.notes,
+        })
+        .eq("id", editingSale.id);
+
+      if (saleError) {
+        toast.error("Erro ao atualizar venda");
+        return;
+      }
+
+      // Update linked transaction if it exists
+      await supabase
+        .from("cash_transactions")
+        .update({
+          amount: saleForm.total_amount,
+          description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+        })
+        .eq("sale_id", editingSale.id);
+
+      toast.success("Venda atualizada com sucesso!");
+    } else {
+      const { data: sale, error: saleError } = await supabase
+        .from("sales")
+        .insert({
+          user_id: user.id,
+          customer_name: saleForm.customer_name,
+          total_amount: saleForm.total_amount,
+          payment_method: saleForm.payment_method,
+          orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
+          notes: saleForm.notes,
+          status: 'completed'
+        })
+        .select()
+        .single();
+
+      if (saleError) {
+        toast.error("Erro ao criar venda");
+        return;
+      }
+
+      // Add to cash transactions
+      await supabase.from("cash_transactions").insert({
         user_id: user.id,
-        customer_name: saleForm.customer_name,
-        total_amount: saleForm.total_amount,
-        payment_method: saleForm.payment_method,
-        orcamento_id: saleForm.orcamento_id === "none" ? null : saleForm.orcamento_id,
-        notes: saleForm.notes,
-        status: 'completed'
-      })
-      .select()
-      .single();
+        type: 'inflow',
+        amount: saleForm.total_amount,
+        description: `Venda para ${saleForm.customer_name || "Cliente"}`,
+        category: 'venda',
+        sale_id: sale.id
+      });
 
-    if (saleError) {
-      toast.error("Erro ao criar venda");
-      return;
-    }
-
-    // Add to cash transactions
-    await supabase.from("cash_transactions").insert({
-      user_id: user.id,
-      type: 'inflow',
-      amount: saleForm.total_amount,
-      description: `Venda para ${saleForm.customer_name || "Cliente"}`,
-      category: 'venda',
-      sale_id: sale.id
-    });
-
-    // Automatically manage inventory if orcamento is linked
-    if (saleForm.orcamento_id !== "none") {
-      const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
-      if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
-        for (const fil of selectedQuote.filamentos) {
-          if (fil.id) {
-            // Get current quantity
-            const { data: invItem } = await supabase
-              .from("inventory")
-              .select("quantity")
-              .eq("id", fil.id)
-              .single();
-
-            if (invItem) {
-              const newQty = Math.max(0, invItem.quantity - (Number(fil.weightUsed) || 0));
-              await supabase
+      // Automatically manage inventory if orcamento is linked
+      if (saleForm.orcamento_id !== "none") {
+        const selectedQuote = quotes.find(q => q.id === saleForm.orcamento_id);
+        if (selectedQuote && Array.isArray(selectedQuote.filamentos)) {
+          for (const fil of selectedQuote.filamentos) {
+            if (fil.id) {
+              const { data: invItem } = await supabase
                 .from("inventory")
-                .update({ quantity: newQty })
-                .eq("id", fil.id);
+                .select("quantity")
+                .eq("id", fil.id)
+                .single();
+
+              if (invItem) {
+                const newQty = Math.max(0, invItem.quantity - (Number(fil.weightUsed) || 0));
+                await supabase
+                  .from("inventory")
+                  .update({ quantity: newQty })
+                  .eq("id", fil.id);
+              }
             }
           }
+          toast.info("Estoque atualizado automaticamente!");
         }
-        toast.info("Estoque atualizado automaticamente!");
       }
+      toast.success("Venda registrada com sucesso!");
     }
 
-    toast.success("Venda registrada com sucesso!");
     setSaleDialogOpen(false);
+    setEditingSale(null);
     setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" });
     fetchData();
   };
 
-  const handleCreateTransaction = async () => {
+  const handleSaveTransaction = async () => {
     if (!user) return;
     if (transactionForm.amount <= 0) {
       toast.error("O valor deve ser maior que zero");
       return;
     }
 
-    const { error } = await supabase.from("cash_transactions").insert({
-      user_id: user.id,
-      type: transactionForm.type,
-      amount: transactionForm.amount,
-      description: transactionForm.description,
-      category: transactionForm.category
-    });
+    if (editingTransaction) {
+      const { error } = await supabase
+        .from("cash_transactions")
+        .update({
+          type: transactionForm.type,
+          amount: transactionForm.amount,
+          description: transactionForm.description,
+          category: transactionForm.category
+        })
+        .eq("id", editingTransaction.id);
 
-    if (error) {
-      toast.error("Erro ao registrar transação");
-      return;
+      if (error) {
+        toast.error("Erro ao atualizar transação");
+        return;
+      }
+      toast.success("Transação atualizada!");
+    } else {
+      const { error } = await supabase.from("cash_transactions").insert({
+        user_id: user.id,
+        type: transactionForm.type,
+        amount: transactionForm.amount,
+        description: transactionForm.description,
+        category: transactionForm.category
+      });
+
+      if (error) {
+        toast.error("Erro ao registrar transação");
+        return;
+      }
+      toast.success("Transação registrada!");
     }
 
-    toast.success("Transação registrada!");
     setTransactionDialogOpen(false);
+    setEditingTransaction(null);
     setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" });
     fetchData();
   };
@@ -230,6 +280,29 @@ export default function SalesPage() {
       toast.success("Venda removida");
       fetchData();
     }
+  };
+
+  const handleEditSale = (sale: Sale) => {
+    setEditingSale(sale);
+    setSaleForm({
+      customer_name: sale.customer_name || "",
+      orcamento_id: sale.orcamento_id || "none",
+      total_amount: sale.total_amount,
+      payment_method: sale.payment_method,
+      notes: sale.notes || ""
+    });
+    setSaleDialogOpen(true);
+  };
+
+  const handleEditTransaction = (transaction: CashTransaction) => {
+    setEditingTransaction(transaction);
+    setTransactionForm({
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
+      category: transaction.category
+    });
+    setTransactionDialogOpen(true);
   };
 
   const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
@@ -275,10 +348,10 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setTransactionDialogOpen(true)} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
           </Button>
-          <Button size="sm" onClick={() => setSaleDialogOpen(true)} className="bg-primary text-primary-foreground neon-glow">
+          <Button size="sm" onClick={() => { setEditingSale(null); setSaleForm({ customer_name: "", orcamento_id: "none", total_amount: 0, payment_method: "pix", notes: "" }); setSaleDialogOpen(true); }} className="bg-primary text-primary-foreground neon-glow">
             <ShoppingCart size={14} className="mr-1" /> Nova Venda
           </Button>
         </div>
@@ -362,85 +435,141 @@ export default function SalesPage() {
         </div>
 
         <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-            <Input 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              placeholder="Buscar por cliente..." 
-              className="pl-9 bg-muted border-border" 
-            />
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground">Vendas Recentes</h2>
+            <div className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+              <Input 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                placeholder="Buscar por cliente..." 
+                className="pl-9 bg-muted border-border" 
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {filteredSales.length === 0 ? (
+              <div className="py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
+                <Wallet size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
+                <p className="text-muted-foreground">Nenhuma venda registrada.</p>
+              </div>
+            ) : (
+              filteredSales.map(sale => (
+                <Card key={sale.id} className="border-border bg-card">
+                  <CardContent className="flex items-center justify-between p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                        <ShoppingCart size={20} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
+                          {sale.orcamento_id && (
+                            <Badge variant="secondary" className="text-[10px] py-0 h-4">
+                              {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                        </p>
+                        {sale.notes && (
+                          <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
+                        <div className="flex flex-col items-end">
+                          <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
+                          {(() => {
+                            const quote = quotes.find(q => q.id === sale.orcamento_id);
+                            if (quote) {
+                              const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
+                              return (
+                                <span className="text-[10px] font-bold text-green-500">
+                                  Lucro: R$ {profit.toFixed(2)}
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        <button onClick={() => handleEditSale(sale)} className="p-2 text-muted-foreground hover:text-primary">
+                          <Pencil size={18} />
+                        </button>
+                        <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          {filteredSales.length === 0 ? (
-            <div className="py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
-              <Wallet size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
-              <p className="text-muted-foreground">Nenhuma venda registrada.</p>
-            </div>
-          ) : (
-            filteredSales.map(sale => (
-              <Card key={sale.id} className="border-border bg-card">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      <ShoppingCart size={20} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-foreground">{sale.customer_name || "Cliente Final"}</p>
-                        {sale.orcamento_id && (
-                          <Badge variant="secondary" className="text-[10px] py-0 h-4">
-                            {quotes.find(q => q.id === sale.orcamento_id)?.nome_peca}
-                          </Badge>
-                        )}
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-foreground">Outras Movimentações</h2>
+          <div className="space-y-2">
+            {transactions.filter(t => t.category !== 'venda').length === 0 ? (
+              <div className="py-8 text-center bg-muted/20 rounded-xl border border-dashed border-border">
+                <p className="text-muted-foreground text-sm">Nenhuma outra movimentação registrada.</p>
+              </div>
+            ) : (
+              transactions.filter(t => t.category !== 'venda').map(transaction => (
+                <Card key={transaction.id} className="border-border bg-card">
+                  <CardContent className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${transaction.type === 'inflow' ? 'bg-green-500/10 text-green-500' : 'bg-destructive/10 text-destructive'}`}>
+                        {transaction.type === 'inflow' ? <ArrowUpRight size={16} /> : <ArrowDownLeft size={16} />}
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(sale.created_at), "dd 'de' MMMM, HH:mm", { locale: ptBR })} · {sale.payment_method.toUpperCase()}
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{transaction.description}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {format(new Date(transaction.created_at), "dd/MM/yyyy HH:mm")} · {transaction.category.toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
+                        {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
                       </p>
-                      {sale.notes && (
-                        <p className="text-xs text-muted-foreground mt-1 italic">"{sale.notes}"</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="font-bold font-mono text-foreground text-lg">R$ {Number(sale.total_amount).toFixed(2)}</p>
-                      <div className="flex flex-col items-end">
-                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
-                        {(() => {
-                          const quote = quotes.find(q => q.id === sale.orcamento_id);
-                          if (quote) {
-                            const profit = Number(sale.total_amount) - Number(quote.custo_total || 0);
-                            return (
-                              <span className="text-[10px] font-bold text-green-500">
-                                Lucro: R$ {profit.toFixed(2)}
-                              </span>
-                            );
-                          }
-                          return null;
-                        })()}
+                      <div className="flex items-center">
+                        <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
+                          <Pencil size={16} />
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (confirm("Remover esta movimentação?")) {
+                              await supabase.from("cash_transactions").delete().eq("id", transaction.id);
+                              fetchData();
+                            }
+                          }} 
+                          className="p-1.5 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
-                    <button onClick={() => handleDeleteSale(sale.id)} className="p-2 text-muted-foreground hover:text-destructive">
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Sale Dialog */}
       <Dialog open={saleDialogOpen} onOpenChange={setSaleDialogOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Registrar Nova Venda</DialogTitle>
+            <DialogTitle className="text-foreground">{editingSale ? "Editar Venda" : "Registrar Nova Venda"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
@@ -511,8 +640,8 @@ export default function SalesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setSaleDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateSale} className="bg-primary text-primary-foreground">Finalizar Venda</Button>
+            <Button variant="outline" onClick={() => { setSaleDialogOpen(false); setEditingSale(null); }}>Cancelar</Button>
+            <Button onClick={handleSaveSale} className="bg-primary text-primary-foreground">{editingSale ? "Salvar Alterações" : "Finalizar Venda"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -521,7 +650,7 @@ export default function SalesPage() {
       <Dialog open={transactionDialogOpen} onOpenChange={setTransactionDialogOpen}>
         <DialogContent className="bg-card border-border max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-foreground">Lançar Movimentação</DialogTitle>
+            <DialogTitle className="text-foreground">{editingTransaction ? "Editar Movimentação" : "Lançar Movimentação"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -571,8 +700,8 @@ export default function SalesPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setTransactionDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleCreateTransaction} className="bg-primary text-primary-foreground">Registrar</Button>
+            <Button variant="outline" onClick={() => { setTransactionDialogOpen(false); setEditingTransaction(null); }}>Cancelar</Button>
+            <Button onClick={handleSaveTransaction} className="bg-primary text-primary-foreground">{editingTransaction ? "Salvar Alterações" : "Registrar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
