@@ -8,6 +8,7 @@ interface Profile {
   nome: string;
   plano: "free" | "mensal" | "anual";
   plano_expiracao: string | null;
+  primary_printer_id: string | null;
   greenn_assinatura_id: string | null;
 }
 
