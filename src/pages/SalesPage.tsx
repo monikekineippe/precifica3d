@@ -234,6 +234,11 @@ export default function SalesPage() {
       return;
     }
 
+    if (!transactionForm.category) {
+      toast.error("Por favor, selecione uma categoria");
+      return;
+    }
+
     if (editingTransaction) {
       const { error } = await supabase
         .from("cash_transactions")
