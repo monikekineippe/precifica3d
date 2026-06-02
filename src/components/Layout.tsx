@@ -39,7 +39,7 @@ export default function Layout() {
 
       <aside
         className={cn(
-          "fixed z-50 md:static flex flex-col w-64 h-full bg-card border-r border-border transition-transform duration-200",
+          "fixed z-50 md:static flex flex-col w-64 h-full bg-[#111827] border-r border-white/5 transition-transform duration-200",,
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
@@ -69,7 +69,7 @@ export default function Layout() {
                 cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-primary/10 text-primary neon-text"
+                    ? "bg-[#00D4FF]/10 text-[#00D4FF] neon-text"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )
               }
