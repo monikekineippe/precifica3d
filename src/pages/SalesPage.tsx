@@ -471,7 +471,7 @@ export default function SalesPage() {
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
-            <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
+            <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
             setEditingSale(null); 
@@ -546,39 +546,39 @@ export default function SalesPage() {
       </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card border-border border-t-4 border-gray-400 p-6">
+        <Card className="bg-card border-border border-t-4 border-white/40 p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saldo Geral</p>
-            <div className={`text-4xl font-bold font-mono tracking-tight ${balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-4xl font-bold font-mono tracking-tight ${balance >= 0 ? 'text-profit' : 'text-alert'}`}>
               R$ {balance.toFixed(2)}
             </div>
           </div>
         </Card>
 
-        <Card className="bg-card border-border border-t-4 border-green-500 p-6">
+        <Card className="bg-card border-border border-t-4 border-profit p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Entradas</p>
-            <div className="text-4xl font-bold font-mono text-green-400 tracking-tight">
+            <div className="text-4xl font-bold font-mono text-profit tracking-tight">
               R$ {totalInflow.toFixed(2)}
             </div>
           </div>
         </Card>
 
-        <Card className="bg-card border-border border-t-4 border-red-500 p-6">
+        <Card className="bg-card border-border border-t-4 border-alert p-6">
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saídas</p>
             <div className="space-y-2">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground uppercase font-medium tracking-wider">Operacional</span>
-                <span className="font-bold font-mono text-red-400">R$ {totalOperationalOutflow.toFixed(2)}</span>
+                <span className="font-bold font-mono text-alert">R$ {totalOperationalOutflow.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground uppercase font-medium tracking-wider">Estoque/Invest.</span>
-                <span className="font-bold font-mono text-blue-400">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+                <span className="font-bold font-mono text-cyan">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
               </div>
               <div className="pt-2 border-t border-border flex justify-between items-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Total</span>
-                <span className="text-3xl font-bold font-mono text-red-400 tracking-tight">R$ {totalOutflow.toFixed(2)}</span>
+                <span className="text-3xl font-bold font-mono text-alert tracking-tight">R$ {totalOutflow.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -618,7 +618,7 @@ export default function SalesPage() {
                           </td>
                           <td className="py-3 text-center">{item.salesCount}</td>
                           <td className="py-3 text-right font-mono text-foreground">R$ {item.totalRevenue.toFixed(2)}</td>
-                          <td className="py-3 text-right font-mono font-bold text-green-500">R$ {item.totalProfit.toFixed(2)}</td>
+                          <td className="py-3 text-right font-mono font-bold text-profit">R$ {item.totalProfit.toFixed(2)}</td>
                         </tr>
                       ))
                     )}
@@ -671,7 +671,7 @@ export default function SalesPage() {
                             </Badge>
                           )}
                           {sale.inventory_item_id && (
-                            <Badge variant="outline" className="text-[10px] py-0 h-4 border-blue-500/30 text-blue-500">
+                            <Badge variant="outline" className="text-[10px] py-0 h-4 border-cyan/30 text-cyan">
                               Estoque: {inventory.find(i => i.id === sale.inventory_item_id)?.name}
                             </Badge>
                           )}
@@ -687,7 +687,7 @@ export default function SalesPage() {
                         <div className="flex flex-col items-end">
                           <Badge variant="outline" className="text-[10px] border-primary/20 text-primary uppercase mb-1">{sale.status}</Badge>
                           {sale.profit_amount !== undefined && (
-                            <span className={`text-[10px] font-bold ${sale.profit_amount >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+                            <span className={`text-[10px] font-bold ${sale.profit_amount >= 0 ? 'text-profit' : 'text-alert'}`}>
                               Lucro Líquido: R$ {Number(sale.profit_amount).toFixed(2)}
                             </span>
                           )}

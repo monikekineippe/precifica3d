@@ -51,9 +51,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        teal: {
-          DEFAULT: "hsl(178 70% 42%)",
-          light: "hsl(178 65% 55%)",
+        cyan: {
+          DEFAULT: "#00D4FF",
+        },
+        ai: {
+          DEFAULT: "#7C3AED",
+        },
+        profit: {
+          DEFAULT: "#22C55E",
+        },
+        alert: {
+          DEFAULT: "#EF4444",
         },
         neon: {
           glow: "hsl(var(--neon-glow))",

@@ -172,7 +172,7 @@ export default function Dashboard() {
 
       {/* Main Stats (Line 1) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card border-border border-t-4 border-gray-400 p-6">
+        <Card className="bg-card border-border border-t-4 border-white/40 p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
               Faturamento (Mês)
@@ -184,13 +184,13 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className="bg-card border-border border-t-4 border-green-500 p-6">
+        <Card className="bg-card border-border border-t-4 border-profit p-6">
           <div className="space-y-2">
             <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
               Lucro Bruto (Mês)
-              <TrendingUp size={14} className="text-green-500/40" />
+              <TrendingUp size={14} className="text-profit/40" />
             </p>
-            <div className="text-3xl font-bold font-mono text-green-400 tracking-tight">
+            <div className="text-3xl font-bold font-mono text-profit tracking-tight">
               R$ {stats.monthlyGrossProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </div>
@@ -241,10 +241,10 @@ export default function Dashboard() {
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Crítico</p>
               <div className="flex items-center justify-between">
-                <div className={`text-3xl font-bold font-mono ${stats.criticalStock > 0 ? 'text-red-400' : 'text-foreground'}`}>
+                <div className={`text-3xl font-bold font-mono ${stats.criticalStock > 0 ? 'text-alert' : 'text-foreground'}`}>
                   {stats.criticalStock}
                 </div>
-                <AlertTriangle size={24} className={stats.criticalStock > 0 ? 'text-red-400' : 'text-muted-foreground opacity-20'} />
+                <AlertTriangle size={24} className={stats.criticalStock > 0 ? 'text-alert' : 'text-muted-foreground opacity-20'} />
               </div>
             </div>
           </Card>
@@ -256,15 +256,15 @@ export default function Dashboard() {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Operacional:</span>
-                <span className="font-mono text-red-400">R$ {stats.operationalExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">R$ {stats.operationalExpenses.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Material/Estoque:</span>
-                <span className="font-mono text-red-400">R$ {stats.materialExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">R$ {stats.materialExpenses.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Investimento:</span>
-                <span className="font-mono text-red-400">R$ {stats.investmentExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">R$ {stats.investmentExpenses.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
-        <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow">
+        <Button asChild className="bg-primary text-[#0B1020] font-bold hover:bg-primary/90 neon-glow">
           <Link to="/new"><PlusCircle size={16} className="mr-2" />Nova Precificação</Link>
         </Button>
         <Button asChild variant="secondary">
@@ -311,15 +311,15 @@ export default function Dashboard() {
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
-                  itemStyle={{ color: '#00D1FF' }}
+                  itemStyle={{ color: '#00D4FF' }}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="valor" 
-                  stroke="#00D1FF" 
+                  stroke="#00D4FF" 
                   strokeWidth={2} 
                   dot={false}
-                  activeDot={{ r: 4, fill: '#00D1FF' }}
+                  activeDot={{ r: 4, fill: '#00D4FF' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -361,7 +361,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.gross_value || 0).toFixed(2)}</p>
-                      <div className="flex items-center justify-end gap-1 text-[10px] text-green-500 font-medium">
+                      <div className="flex items-center justify-end gap-1 text-[10px] text-profit font-medium">
                         <ArrowUpRight size={10} />
                         R$ {Number(sale.profit_amount || 0).toFixed(2)}
                       </div>

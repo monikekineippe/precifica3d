@@ -50,7 +50,7 @@ const LandingPage = () => {
       </script>
 
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <nav className="fixed top-0 w-full z-50 bg-[#0B1020]/80 backdrop-blur-md border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img src={logo} alt="Software de gestão para impressão 3D com controle de estoque, custos e precificação inteligente" className="h-10 object-contain" />
@@ -74,7 +74,7 @@ const LandingPage = () => {
           className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none"
           style={{ backgroundImage: `url(${printerBg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/80 to-background pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B1020] via-[#0B1020]/95 to-[#0f172a] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-[1.22fr_1fr] gap-12 items-center">
             <div className="text-left">
@@ -100,11 +100,11 @@ const LandingPage = () => {
             </div>
 
             <div className="relative group">
-              <div className="absolute -inset-1 bg-teal-500/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-              <div className="relative bg-[#1a1a2e] border border-teal-400/30 rounded-xl shadow-2xl overflow-hidden p-6">
+              <div className="absolute -inset-1 bg-[#00D4FF]/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-[#111827] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <Badge variant="outline" className="bg-teal-500/10 text-teal-400 border-teal-400/30 gap-1.5 py-1 px-3">
-                    <Circle className="w-1.5 h-1.5 fill-teal-400 animate-pulse" />
+                  <Badge variant="outline" className="bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30 gap-1.5 py-1 px-3">
+                    <Circle className="w-1.5 h-1.5 fill-[#00D4FF] animate-pulse" />
                     Dashboard ao vivo
                   </Badge>
                   <div className="flex gap-1.5">
@@ -120,12 +120,12 @@ const LandingPage = () => {
                     <div className="text-sm font-bold text-white">R$ 1.840</div>
                   </div>
                   <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 text-green-400/80">Lucro</div>
-                    <div className="text-sm font-bold text-green-400">R$ 720</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 text-profit">Lucro</div>
+                    <div className="text-sm font-bold text-profit">R$ 720</div>
                   </div>
                   <div className="bg-white/5 p-3 rounded-lg border border-white/10">
                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Margem</div>
-                    <div className="text-sm font-bold text-teal-400">39%</div>
+                    <div className="text-sm font-bold text-[#00D4FF]">39%</div>
                   </div>
                 </div>
 
@@ -138,12 +138,12 @@ const LandingPage = () => {
                   ].map((item, i) => (
                     <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-teal-500/10 rounded-md">
-                          <item.icon className="w-3.5 h-3.5 text-teal-400" />
+                        <div className="p-1.5 bg-[#00D4FF]/10 rounded-md">
+                          <item.icon className="w-3.5 h-3.5 text-[#00D4FF]" />
                         </div>
                         <div>
                           <div className="text-[11px] font-medium text-white/90">{item.label}</div>
-                          <div className="text-[9px] text-muted-foreground">Lucro: <span className="text-green-400">{item.profit}</span></div>
+                          <div className="text-[9px] text-muted-foreground">Lucro: <span className="text-profit">{item.profit}</span></div>
                         </div>
                       </div>
                       <div className="text-[11px] font-bold text-white">{item.value}</div>
@@ -211,7 +211,7 @@ const LandingPage = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Calculator className="text-primary" />
               </div>
@@ -219,7 +219,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Cálculo automático considerando filamento, energia, mão de obra e manutenção da máquina.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Package className="text-primary" />
               </div>
@@ -227,7 +227,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Gerencie seus filamentos, cores e tipos de material. Saiba exatamente quando repor.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <LayoutDashboard className="text-primary" />
               </div>
@@ -235,15 +235,16 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Organize suas encomendas e prazos em um dashboard intuitivo e profissional.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-[#7C3AED]/20 bg-[#111827] hover:border-[#7C3AED]/50 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#7C3AED] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">IA</div>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Brain className="text-primary" />
               </div>
-              <h3 className="text-xl font-bold mb-3">IA Sugere Margem</h3>
+              <h3 className="text-xl font-bold mb-3 flex items-center gap-2">IA Sugere Margem <Badge variant="secondary" className="bg-ai text-white text-[10px]">IA</Badge></h3>
               <p className="text-muted-foreground">Nossa inteligência artificial analisa o cenário e sugere a melhor margem de lucro.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Zap className="text-primary" />
               </div>
@@ -251,7 +252,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Busca automática das tarifas de energia atualizadas diretamente da sua distribuidora.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <CheckCircle2 className="text-primary" />
               </div>
@@ -285,7 +286,7 @@ const LandingPage = () => {
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
                   <div className="space-y-4">
                     <div 
-                      className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden min-h-[220px] relative group cursor-pointer"
+                      className="aspect-video bg-[#111827] border border-white/10 rounded-xl shadow-lg overflow-hidden min-h-[220px] relative group cursor-pointer"
                       onClick={() => setSelectedImage(card.image)}
                     >
                       <img 
@@ -502,14 +503,14 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Footer */}
-      <footer className="py-20 border-t border-border bg-card">
+      <footer className="py-20 border-t border-white/5 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Pronto para profissionalizar seu negócio 3D?</h2>
           <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
             Junte-se a centenas de impressores que já estão lucrando mais com o Gestão3D.
           </p>
           <Link to="/signup">
-            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-primary-foreground neon-glow">
+            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-[#0B1020] neon-glow">
               Criar Minha Conta Grátis
             </Button>
           </Link>
