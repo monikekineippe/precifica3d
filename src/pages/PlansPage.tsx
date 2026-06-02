@@ -75,24 +75,45 @@ export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean
             </div>
             <p className="text-xs text-muted-foreground">Para quem está começando</p>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {FEATURES.map(f => (
-              <div key={f.name} className="flex items-center gap-2 text-sm">
-                {typeof f.free === "boolean" ? (
-                  f.free ? <Check size={16} className="text-primary shrink-0" /> : <X size={16} className="text-muted-foreground shrink-0" />
-                ) : (
-                  <Check size={16} className="text-primary shrink-0" />
-                )}
-                <span className={typeof f.free === "boolean" && !f.free ? "text-muted-foreground" : "text-foreground"}>
-                  {f.name} {typeof f.free === "string" && <span className="text-muted-foreground text-xs">({f.free})</span>}
-                </span>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Check size={16} className="text-primary shrink-0" />
+                <span className="text-foreground">2 orçamentos por mês</span>
               </div>
-            ))}
-            {currentPlan === "free" ? (
-              <Button disabled className="w-full" variant="outline">Plano atual</Button>
-            ) : (
-              <Button disabled className="w-full" variant="outline">—</Button>
-            )}
+              <div className="flex items-center gap-2 text-sm">
+                <Check size={16} className="text-primary shrink-0" />
+                <span className="text-foreground">1 impressora personalizada</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check size={16} className="text-primary shrink-0" />
+                <span className="text-foreground">Todas as impressoras pré-cadastradas</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check size={16} className="text-primary shrink-0" />
+                <span className="text-foreground">Cálculos em tempo real</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check size={16} className="text-primary shrink-0" />
+                <span className="text-foreground">Busca automática de tarifa de energia</span>
+              </div>
+              <div className="pt-2 border-t border-border/50">
+                <p className="text-xs text-muted-foreground italic">
+                  Histórico, relatórios, estoque e exportações disponíveis no Pro
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              {currentPlan === "free" ? (
+                <Button disabled className="w-full" variant="outline">Plano atual</Button>
+              ) : (
+                <Button disabled className="w-full" variant="outline">—</Button>
+              )}
+              <p className="text-[10px] text-center text-muted-foreground">
+                Perfeito para testar sem compromisso
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -191,6 +212,9 @@ export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean
               ))}
             </div>
           </div>
+          <p className="mt-4 text-[10px] text-muted-foreground italic">
+            * Plano Free ideal para conhecer a plataforma antes de assinar
+          </p>
         </CardContent>
       </Card>
     </div>
