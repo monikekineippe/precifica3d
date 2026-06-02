@@ -75,9 +75,8 @@ const LandingPage = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/80 to-background pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
-            <div className="lg:col-span-7 text-left">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.22fr_1fr] gap-12 items-center">
+            <div className="text-left">
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
                 Descubra o custo real de cada peça e <span className="text-primary">pare de trabalhar no prejuízo</span>
               </h1>
@@ -99,62 +98,57 @@ const LandingPage = () => {
               </div>
             </div>
 
-            <div className="lg:col-span-5 relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-              <div className="relative bg-card/40 backdrop-blur-xl border border-primary/30 rounded-2xl shadow-2xl overflow-hidden p-6">
-                {/* Mockup Interface Header */}
-                <div className="flex items-center justify-between mb-8 border-b border-border/50 pb-4">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-destructive/50" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/50" />
-                  </div>
-                  <div className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-3 py-1 rounded-full border border-border/50">
-                    dashboard.gestao3d.com
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-teal-500/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-[#1a1a2e] border border-teal-400/30 rounded-xl shadow-2xl overflow-hidden p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <Badge variant="outline" className="bg-teal-500/10 text-teal-400 border-teal-400/30 gap-1.5 py-1 px-3">
+                    <Circle className="w-1.5 h-1.5 fill-teal-400 animate-pulse" />
+                    Dashboard ao vivo
+                  </Badge>
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
                   </div>
                 </div>
 
-                {/* Mockup Metrics Grid */}
                 <div className="grid grid-cols-3 gap-3 mb-8">
-                  <div className="bg-background/60 p-3 rounded-xl border border-border/50">
-                    <TrendingUp className="w-4 h-4 text-primary mb-2" />
-                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Receita</div>
-                    <div className="text-xs font-bold text-foreground">R$ 2.450</div>
+                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Receita</div>
+                    <div className="text-sm font-bold text-white">R$ 1.840</div>
                   </div>
-                  <div className="bg-background/60 p-3 rounded-xl border border-border/50">
-                    <Wallet className="w-4 h-4 text-destructive/70 mb-2" />
-                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Custo</div>
-                    <div className="text-xs font-bold text-foreground">R$ 842</div>
+                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 text-green-400/80">Lucro</div>
+                    <div className="text-sm font-bold text-green-400">R$ 720</div>
                   </div>
-                  <div className="bg-background/60 p-3 rounded-xl border border-primary/30 ring-1 ring-primary/20">
-                    <Zap className="w-4 h-4 text-green-400 mb-2" />
-                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Lucro</div>
-                    <div className="text-xs font-bold text-green-400">R$ 1.608</div>
+                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Margem</div>
+                    <div className="text-sm font-bold text-teal-400">39%</div>
                   </div>
                 </div>
 
-                {/* Mockup List Simulation */}
                 <div className="space-y-3">
-                  <div className="h-2 w-24 bg-muted rounded mb-4" />
+                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Vendas Recentes</div>
                   {[
-                    { label: "Action Figure Articulado", value: "+ R$ 145,00", icon: Box },
-                    { label: "Suporte Headset Gamer", value: "+ R$ 89,90", icon: Package },
-                    { label: "Vaso Decorativo Low Poly", value: "+ R$ 55,00", icon: ShoppingCart },
+                    { label: "Action Figure Yoda", value: "R$ 120,00", profit: "R$ 45,00", icon: Box },
+                    { label: "Engrenagem Industrial", value: "R$ 85,00", profit: "R$ 32,00", icon: Package },
+                    { label: "Suporte Alexa Echo", value: "R$ 45,00", profit: "R$ 18,00", icon: ShoppingCart },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-border/30">
+                    <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors">
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-muted/50 rounded flex items-center justify-center">
-                          <item.icon className="w-3 h-3 text-muted-foreground" />
+                        <div className="p-1.5 bg-teal-500/10 rounded-md">
+                          <item.icon className="w-3.5 h-3.5 text-teal-400" />
                         </div>
-                        <div className="text-[10px] font-medium text-foreground/80">{item.label}</div>
+                        <div>
+                          <div className="text-[11px] font-medium text-white/90">{item.label}</div>
+                          <div className="text-[9px] text-muted-foreground">Lucro: <span className="text-green-400">{item.profit}</span></div>
+                        </div>
                       </div>
-                      <div className="text-[10px] font-bold text-primary">{item.value}</div>
+                      <div className="text-[11px] font-bold text-white">{item.value}</div>
                     </div>
                   ))}
                 </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl -z-10" />
               </div>
             </div>
           </div>
