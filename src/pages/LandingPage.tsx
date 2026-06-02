@@ -288,7 +288,7 @@ const LandingPage = () => {
                 <Tag className="text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-3">Lojas de Personalizados</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Você trabalha com volume e variedade. O Gestão3D controla cada peça, cada filamento e cada venda — sem planilha, sem achismo.</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">Você trabalha com volume e variedade. O Gestão3D controla cada peça, cada filamento e cada venda, sem planilha, sem achismo.</p>
             </div>
           </div>
         </div>
