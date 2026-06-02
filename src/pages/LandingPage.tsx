@@ -17,7 +17,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Qual o melhor software para precificar impressão 3D?",
-    answer: "O melhor software é aquele que considera todos os custos reais da sua operação — não só o filamento. O Gestão3D é o único que busca automaticamente a tarifa de energia da sua distribuidora local, calcula depreciação por modelo de impressora e ainda usa IA para sugerir a margem ideal por tipo de peça."
+    answer: "O melhor software é aquele que considera todos os custos reais da sua operação, não só o filamento. O Gestão3D é o único que busca automaticamente a tarifa de energia da sua distribuidora local, calcula depreciação por modelo de impressora e ainda usa IA para sugerir a margem ideal por tipo de peça."
   },
   {
     question: "Como saber se estou tendo lucro com impressão 3D?",
