@@ -78,7 +78,7 @@ const LandingPage = () => {
           <div className="grid lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 text-left">
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                Descubra o custo real de cada peça — e <span className="text-primary">pare de trabalhar no prejuízo</span>
+                Descubra o custo real de cada peça e <span className="text-primary">pare de trabalhar no prejuízo</span>
               </h1>
               <p className="text-xl text-muted-foreground mb-10 max-w-2xl">
                 O Gestão3D calcula automaticamente filamento, energia, mão de obra e depreciação da sua impressora. Saiba exatamente quanto cobrar e quanto está lucrando em cada venda.
