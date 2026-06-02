@@ -212,6 +212,9 @@ export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean
               ))}
             </div>
           </div>
+          <p className="mt-4 text-[10px] text-muted-foreground italic">
+            * Plano Free ideal para conhecer a plataforma antes de assinar
+          </p>
         </CardContent>
       </Card>
     </div>
