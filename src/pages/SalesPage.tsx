@@ -471,7 +471,7 @@ export default function SalesPage() {
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
-            <ArrowDownLeft size={14} className="mr-1 text-destructive" /> Lançar Gasto
+            <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
             setEditingSale(null); 

@@ -39,7 +39,7 @@ export default function Layout() {
 
       <aside
         className={cn(
-          "fixed z-50 md:static flex flex-col w-64 h-full bg-[#111827] border-r border-white/5 transition-transform duration-200",,
+          "fixed z-50 md:static flex flex-col w-64 h-full bg-[#111827] border-r border-white/5 transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}
       >
