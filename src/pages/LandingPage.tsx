@@ -21,7 +21,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Como saber se estou tendo lucro com impressão 3D?",
-    answer: "Você tem lucro quando o preço de venda cobre todos os custos (filamento, energia, manutenção, mão de obra) e ainda sobra margem. O erro mais comum é calcular só o custo do filamento e ignorar os outros. O Gestão3D registra o lucro real de cada venda e mostra seu resultado financeiro do mês no dashboard — sem planilha, sem achismo."
+    answer: "Você tem lucro quando o preço de venda cobre todos os custos (filamento, energia, manutenção, mão de obra) e ainda sobra margem. O erro mais comum é calcular só o custo do filamento e ignorar os outros. O Gestão3D registra o lucro real de cada venda e mostra seu resultado financeiro do mês no dashboard, sem planilha, sem achismo."
   }
 ];
 
