@@ -9,19 +9,19 @@ import { useState } from "react";
 const FAQ_ITEMS = [
   {
     question: "Como calcular o preço de uma impressão 3D?",
-    answer: "O preço deve considerar filamento, energia, tempo de impressão, mão de obra, manutenção, margem de lucro e complexidade da peça. Nossa plataforma automatiza todo esse cálculo para você."
+    answer: "O preço correto de uma impressão 3D deve incluir: custo do filamento usado, consumo de energia da impressora, depreciação do equipamento, manutenção, mão de obra e embalagem. Somar apenas o filamento é o erro mais comum — e o que mais destrói o lucro. O Gestão3D calcula todos esses componentes automaticamente assim que você informa o tempo de impressão e o peso da peça."
   },
   {
     question: "Como controlar estoque de filamento para impressão 3D?",
-    answer: "Com um sistema de gestão, é possível acompanhar entrada e saída de filamentos, cores, tipos de material, consumo por peça e necessidade de reposição de forma automática."
+    answer: "O controle de estoque de filamento deve registrar o peso total de cada rolo, a quantidade usada em cada impressão e o custo por kg de cada compra. Com isso você sabe quanto material tem disponível e quando precisa repor. O Gestão3D tem um módulo de estoque de matéria-prima com alertas automáticos quando o filamento está abaixo do mínimo configurado."
   },
   {
     question: "Qual o melhor software para precificar impressão 3D?",
-    answer: "O ideal é usar uma plataforma que calcule custos reais, sugira margens com IA e ajude a controlar estoque, pedidos e lucratividade em um único lugar."
+    answer: "O melhor software é aquele que considera todos os custos reais da sua operação — não só o filamento. O Gestão3D é o único que busca automaticamente a tarifa de energia da sua distribuidora local, calcula depreciação por modelo de impressora e ainda usa IA para sugerir a margem ideal por tipo de peça."
   },
   {
     question: "Como saber se estou tendo lucro com impressão 3D?",
-    answer: "Você precisa comparar o custo total de produção com o preço de venda, considerando material, energia, tempo, manutenção e margem. O Gestão3D oferece relatórios detalhados para garantir sua saúde financeira."
+    answer: "Você tem lucro quando o preço de venda cobre todos os custos (filamento, energia, manutenção, mão de obra) e ainda sobra margem. O erro mais comum é calcular só o custo do filamento e ignorar os outros. O Gestão3D registra o lucro real de cada venda e mostra seu resultado financeiro do mês no dashboard — sem planilha, sem achismo."
   }
 ];
 
