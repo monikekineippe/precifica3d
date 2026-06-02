@@ -185,6 +185,22 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Interstitial CTA */}
+      <section className="py-20 bg-primary/10 border-y border-primary/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Pronto para saber o preço certo de cada peça?</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Crie sua conta grátis agora. Sem cartão de crédito, sem compromisso.
+          </p>
+          <Link to="/signup">
+            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-primary-foreground neon-glow group">
+              Criar Conta Grátis
+              <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+
       {/* Target Audience */}
       <section className="py-20 bg-muted/30 text-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
