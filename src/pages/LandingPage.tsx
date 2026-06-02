@@ -115,7 +115,7 @@ const LandingPage = () => {
 
                 <div className="grid grid-cols-3 gap-3 mb-8">
                   <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Receita</div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Receita do Mês</div>
                     <div className="text-sm font-bold text-white">R$ 1.840</div>
                   </div>
                   <div className="bg-white/5 p-3 rounded-lg border border-white/10">
