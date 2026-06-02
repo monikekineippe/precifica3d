@@ -77,10 +77,10 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-              Gerencie, precifique e controle seu negócio de <span className="text-primary">impressão 3D</span> com inteligência
+              Descubra o custo real de cada peça — e <span className="text-primary">pare de trabalhar no prejuízo</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Controle custos, estoque e preços da sua impressão 3D em uma única plataforma. A solução definitiva para makers e empresas.
+            <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
+              O Gestão3D calcula automaticamente filamento, energia, mão de obra e depreciação da sua impressora. Saiba exatamente quanto cobrar e quanto está lucrando em cada venda.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/signup">
