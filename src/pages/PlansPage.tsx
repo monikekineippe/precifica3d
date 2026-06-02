@@ -16,10 +16,10 @@ const FEATURES = [
   { name: "Histórico completo", free: false, mensal: true, anual: true },
   { name: "Relatórios e gráficos", free: false, mensal: true, anual: true },
   { name: "Busca automática de tarifa", free: true, mensal: true, anual: true },
-  { name: "Controle de estoque", free: false, mensal: false, anual: true },
-  { name: "Exportar PDF", free: false, mensal: false, anual: true },
-  { name: "Exportar CSV", free: false, mensal: false, anual: true },
-  { name: "Todas as atualizações futuras", free: false, mensal: false, anual: true },
+  { name: "Controle de estoque", free: false, mensal: true, anual: true },
+  { name: "Exportar PDF", free: false, mensal: true, anual: true },
+  { name: "Exportar CSV", free: false, mensal: true, anual: true },
+  { name: "Todas as atualizações futuras", free: false, mensal: true, anual: true },
 ];
 
 function FeatureCell({ value }: { value: boolean | string }) {
