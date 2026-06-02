@@ -216,7 +216,7 @@ const LandingPage = () => {
             
             <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Box className="text-primary" />
+                <Package className="text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-3">Oficinas e Negócios 3D</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">Você já vende, mas não sabe se está lucrando de verdade. O Gestão3D organiza seus custos, estoque e vendas em um só lugar.</p>
@@ -224,7 +224,7 @@ const LandingPage = () => {
             
             <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Store className="text-primary" />
+                <Tag className="text-primary" />
               </div>
               <h3 className="text-xl font-bold mb-3">Lojas de Personalizados</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">Você trabalha com volume e variedade. O Gestão3D controla cada peça, cada filamento e cada venda — sem planilha, sem achismo.</p>
