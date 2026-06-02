@@ -463,8 +463,8 @@ const LandingPage = () => {
       <section id="planos" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Planos que cabem no seu negócio</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Escolha a melhor opção para profissionalizar sua produção hoje mesmo.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Comece grátis. Escale quando quiser.</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Sem cartão de crédito para começar. Cancele quando quiser.</p>
           </div>
           <PlansPage isEmbedded={true} />
         </div>
