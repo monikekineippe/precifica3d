@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart, Circle } from "lucide-react";
+import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart, Circle, ZoomIn, X } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
 import { useState } from "react";
@@ -28,6 +28,7 @@ const FAQ_ITEMS = [
 
 const LandingPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
