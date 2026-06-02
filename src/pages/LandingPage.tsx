@@ -100,7 +100,7 @@ const LandingPage = () => {
             </div>
 
             <div className="relative group">
-              <div className="absolute -inset-1 bg-cyan/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="absolute -inset-1 bg-[#00D4FF]/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
               <div className="relative bg-[#111827] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-6">
                 <div className="flex items-center justify-between mb-6">
                   <Badge variant="outline" className="bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30 gap-1.5 py-1 px-3">
@@ -211,7 +211,7 @@ const LandingPage = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Calculator className="text-primary" />
               </div>
@@ -219,7 +219,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Cálculo automático considerando filamento, energia, mão de obra e manutenção da máquina.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Package className="text-primary" />
               </div>
@@ -227,7 +227,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Gerencie seus filamentos, cores e tipos de material. Saiba exatamente quando repor.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <LayoutDashboard className="text-primary" />
               </div>
@@ -235,7 +235,8 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Organize suas encomendas e prazos em um dashboard intuitivo e profissional.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-[#7C3AED]/20 bg-[#111827] hover:border-[#7C3AED]/50 transition-colors group relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-[#7C3AED] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">IA</div>
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Brain className="text-primary" />
               </div>
@@ -243,7 +244,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Nossa inteligência artificial analisa o cenário e sugere a melhor margem de lucro.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <Zap className="text-primary" />
               </div>
@@ -251,7 +252,7 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Busca automática das tarifas de energia atualizadas diretamente da sua distribuidora.</p>
             </div>
             
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group">
+            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
                 <CheckCircle2 className="text-primary" />
               </div>
@@ -502,14 +503,14 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Footer */}
-      <footer className="py-20 border-t border-border bg-card">
+      <footer className="py-20 border-t border-white/5 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-6">Pronto para profissionalizar seu negócio 3D?</h2>
           <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
             Junte-se a centenas de impressores que já estão lucrando mais com o Gestão3D.
           </p>
           <Link to="/signup">
-            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-primary-foreground neon-glow">
+            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-[#0B1020] neon-glow">
               Criar Minha Conta Grátis
             </Button>
           </Link>
