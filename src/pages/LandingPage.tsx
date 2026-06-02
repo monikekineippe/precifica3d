@@ -9,7 +9,7 @@ import { useState } from "react";
 const FAQ_ITEMS = [
   {
     question: "Como calcular o preço de uma impressão 3D?",
-    answer: "O preço correto de uma impressão 3D deve incluir: custo do filamento usado, consumo de energia da impressora, depreciação do equipamento, manutenção, mão de obra e embalagem. Somar apenas o filamento é o erro mais comum — e o que mais destrói o lucro. O Gestão3D calcula todos esses componentes automaticamente assim que você informa o tempo de impressão e o peso da peça."
+    answer: "O preço correto de uma impressão 3D deve incluir: custo do filamento usado, consumo de energia da impressora, depreciação do equipamento, manutenção, mão de obra e embalagem. Somar apenas o filamento é o erro mais comum e o que mais destrói o lucro. O Gestão3D calcula todos esses componentes automaticamente assim que você informa o tempo de impressão e o peso da peça."
   },
   {
     question: "Como controlar estoque de filamento para impressão 3D?",
