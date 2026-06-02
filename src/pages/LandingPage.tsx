@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag } from "lucide-react";
+import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
 import { useState } from "react";
@@ -75,25 +75,86 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/80 to-background pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-              Descubra o custo real de cada peça — e <span className="text-primary">pare de trabalhar no prejuízo</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              O Gestão3D calcula automaticamente filamento, energia, mão de obra e depreciação da sua impressora. Saiba exatamente quanto cobrar e quanto está lucrando em cada venda.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/signup">
-                <Button size="lg" className="h-14 px-8 text-lg font-bold bg-primary text-primary-foreground neon-glow group">
-                  Começar Agora Grátis
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <a href="#planos">
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold">
-                  Ver Planos
-                </Button>
-              </a>
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 text-left">
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+                Descubra o custo real de cada peça — e <span className="text-primary">pare de trabalhar no prejuízo</span>
+              </h1>
+              <p className="text-xl text-muted-foreground mb-10 max-w-2xl">
+                O Gestão3D calcula automaticamente filamento, energia, mão de obra e depreciação da sua impressora. Saiba exatamente quanto cobrar e quanto está lucrando em cada venda.
+              </p>
+              <div className="flex flex-col sm:flex-row items-start gap-4">
+                <Link to="/signup">
+                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-primary text-primary-foreground neon-glow group">
+                    Começar Agora Grátis
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <a href="#planos">
+                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold">
+                    Ver Planos
+                  </Button>
+                </a>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-accent/30 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-card/40 backdrop-blur-xl border border-primary/30 rounded-2xl shadow-2xl overflow-hidden p-6">
+                {/* Mockup Interface Header */}
+                <div className="flex items-center justify-between mb-8 border-b border-border/50 pb-4">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-destructive/50" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/50" />
+                  </div>
+                  <div className="text-[10px] text-muted-foreground font-mono bg-muted/50 px-3 py-1 rounded-full border border-border/50">
+                    dashboard.gestao3d.com
+                  </div>
+                </div>
+
+                {/* Mockup Metrics Grid */}
+                <div className="grid grid-cols-3 gap-3 mb-8">
+                  <div className="bg-background/60 p-3 rounded-xl border border-border/50">
+                    <TrendingUp className="w-4 h-4 text-primary mb-2" />
+                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Receita</div>
+                    <div className="text-xs font-bold text-foreground">R$ 2.450</div>
+                  </div>
+                  <div className="bg-background/60 p-3 rounded-xl border border-border/50">
+                    <Wallet className="w-4 h-4 text-destructive/70 mb-2" />
+                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Custo</div>
+                    <div className="text-xs font-bold text-foreground">R$ 842</div>
+                  </div>
+                  <div className="bg-background/60 p-3 rounded-xl border border-primary/30 ring-1 ring-primary/20">
+                    <Zap className="w-4 h-4 text-green-400 mb-2" />
+                    <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-1">Lucro</div>
+                    <div className="text-xs font-bold text-green-400">R$ 1.608</div>
+                  </div>
+                </div>
+
+                {/* Mockup List Simulation */}
+                <div className="space-y-3">
+                  <div className="h-2 w-24 bg-muted rounded mb-4" />
+                  {[
+                    { label: "Action Figure Articulado", value: "+ R$ 145,00", icon: Box },
+                    { label: "Suporte Headset Gamer", value: "+ R$ 89,90", icon: Package },
+                    { label: "Vaso Decorativo Low Poly", value: "+ R$ 55,00", icon: ShoppingCart },
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-background/40 rounded-lg border border-border/30">
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-muted/50 rounded flex items-center justify-center">
+                          <item.icon className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                        <div className="text-[10px] font-medium text-foreground/80">{item.label}</div>
+                      </div>
+                      <div className="text-[10px] font-bold text-primary">{item.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Decorative Elements */}
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl -z-10" />
+              </div>
             </div>
           </div>
         </div>
