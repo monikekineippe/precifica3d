@@ -9,7 +9,7 @@ import logo from "@/assets/logo-precifica3d.png";
 import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 
 const FEATURES = [
-  { name: "Orçamentos por mês", free: "2", mensal: "Ilimitados", anual: "Ilimitados" },
+  { name: "Orçamentos por mês", free: "Ilimitados", mensal: "Ilimitados", anual: "Ilimitados" },
   { name: "Impressoras personalizadas", free: "1", mensal: "Ilimitadas", anual: "Ilimitadas" },
   { name: "Impressoras pré-cadastradas", free: true, mensal: true, anual: true },
   { name: "Cálculos em tempo real", free: true, mensal: true, anual: true },
@@ -79,7 +79,7 @@ export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <Check size={16} className="text-primary shrink-0" />
-                <span className="text-foreground">2 orçamentos por mês</span>
+                <span className="text-foreground">Orçamentos ilimitados</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check size={16} className="text-primary shrink-0" />
