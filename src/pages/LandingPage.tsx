@@ -258,6 +258,30 @@ const LandingPage = () => {
               <p className="text-muted-foreground">Compare cenários de venda e descubra como aumentar sua rentabilidade em cada peça.</p>
             </div>
           </div>
+
+          {/* Subseção: Veja o sistema em ação */}
+          <div className="mt-24">
+            <h3 className="text-2xl font-bold text-center mb-10">Veja o sistema em ação</h3>
+            
+            <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
+              {[
+                { title: "Tela de Precificação", subtitle: "Calcule o custo real em segundos" },
+                { title: "Gestão de Caixa", subtitle: "Controle entradas, saídas e lucro" },
+                { title: "Relatórios", subtitle: "Veja quais produtos mais lucram" }
+              ].map((card, i) => (
+                <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
+                  <div className="space-y-4">
+                    <div className="aspect-video bg-[#1e293b] border border-border rounded-xl shadow-lg flex items-center justify-center p-6 text-center">
+                      <span className="text-muted-foreground font-medium">{card.title}</span>
+                    </div>
+                    <p className="text-sm text-center text-muted-foreground font-medium">
+                      {card.subtitle}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
