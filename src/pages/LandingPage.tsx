@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown } from "lucide-react";
+import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
 import { useState } from "react";
@@ -202,15 +202,33 @@ const LandingPage = () => {
       </section>
 
       {/* Target Audience */}
-      <section className="py-20 bg-muted/30 text-center">
+      <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-12">Para quem é o Gestão3D?</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["Makers", "Oficinas 3D", "Negócios de Impressão", "Prestadores de Serviço", "Lojas de Personalizados"].map(item => (
-              <span key={item} className="px-6 py-3 rounded-full bg-background border border-border font-medium text-lg">
-                {item}
-              </span>
-            ))}
+          <h2 className="text-3xl font-bold mb-12 text-center">Para quem é o Gestão3D?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                <Printer className="text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Makers e Hobbistas</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Você imprime por paixão mas quer transformar em renda. O Gestão3D te mostra exatamente quanto cobrar para não trabalhar de graça.</p>
+            </div>
+            
+            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                <Box className="text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Oficinas e Negócios 3D</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Você já vende, mas não sabe se está lucrando de verdade. O Gestão3D organiza seus custos, estoque e vendas em um só lugar.</p>
+            </div>
+            
+            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                <Store className="text-primary" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Lojas de Personalizados</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">Você trabalha com volume e variedade. O Gestão3D controla cada peça, cada filamento e cada venda — sem planilha, sem achismo.</p>
+            </div>
           </div>
         </div>
       </section>
