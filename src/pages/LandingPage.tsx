@@ -155,6 +155,26 @@ const LandingPage = () => {
         </div>
       </header>
 
+      {/* Trust/Social Proof Banner */}
+      <section className="py-10 bg-muted/50 border-y border-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 text-center">
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-primary">+300</div>
+              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">impressores cadastrados</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-primary">+5.000</div>
+              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">orçamentos gerados</div>
+            </div>
+            <div className="space-y-1">
+              <div className="text-4xl font-extrabold text-white">R$ 0</div>
+              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">para começar</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Problem & Solution */}
       <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
