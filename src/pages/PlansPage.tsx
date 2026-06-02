@@ -73,7 +73,7 @@ export default function PlansPage({ isEmbedded = false }: { isEmbedded?: boolean
             <div>
               <span className="text-3xl font-bold font-mono text-foreground">R$ 0</span>
             </div>
-            <p className="text-xs text-muted-foreground">Para quem está começando</p>
+            <p className="text-xs text-muted-foreground">Orçamentos ilimitados para sempre</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
