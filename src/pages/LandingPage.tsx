@@ -482,16 +482,17 @@ const LandingPage = () => {
               Criar Minha Conta Grátis
             </Button>
           </Link>
-          <div className="mt-20 flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-border/50 text-sm text-muted-foreground">
+          <div className="mt-20 pt-8 border-t border-border/20 flex flex-col md:flex-row items-center justify-between gap-8 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <img src={logo} alt="Gestão3D" className="h-6 object-contain grayscale opacity-50" />
               <span>© 2026 Gestão3D. Todos os direitos reservados.</span>
             </div>
-            <div className="flex gap-6">
+            <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
               <Link to="/login" className="hover:text-primary transition-colors">Entrar</Link>
+              <Link to="/signup" className="hover:text-primary transition-colors">Criar Conta Grátis</Link>
               <a href="#planos" className="hover:text-primary transition-colors">Planos</a>
-              <a href="#" className="hover:text-primary transition-colors">Termos</a>
-              <a href="#" className="hover:text-primary transition-colors">Privacidade</a>
+              <a href="#" className="hover:text-primary transition-colors">Termos de Uso</a>
+              <a href="#" className="hover:text-primary transition-colors">Política de Privacidade</a>
             </div>
           </div>
         </div>
