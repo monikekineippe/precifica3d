@@ -546,49 +546,42 @@ export default function SalesPage() {
       </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card border-border overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-muted-foreground/20" />
-          <CardHeader className="p-6 pb-0">
-            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Saldo Geral</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 pt-2">
-            <div className={`text-4xl font-bold font-mono tracking-tight ${balance >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+        <Card className="bg-card border-border border-t-4 border-gray-400 p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saldo Geral</p>
+            <div className={`text-4xl font-bold font-mono tracking-tight ${balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
               R$ {balance.toFixed(2)}
             </div>
-          </CardContent>
+          </div>
         </Card>
 
-        <Card className="bg-card border-border overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
-          <CardHeader className="p-6 pb-0">
-            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Entradas</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 pt-2">
-            <div className="text-4xl font-bold font-mono text-green-500 tracking-tight">
+        <Card className="bg-card border-border border-t-4 border-green-500 p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Entradas</p>
+            <div className="text-4xl font-bold font-mono text-green-400 tracking-tight">
               R$ {totalInflow.toFixed(2)}
             </div>
-          </CardContent>
+          </div>
         </Card>
 
-        <Card className="bg-card border-border overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-destructive" />
-          <CardHeader className="p-6 pb-0">
-            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Saídas</CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 pt-2 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground/60 uppercase font-bold tracking-wider">Operacional</span>
-              <span className="text-sm font-bold font-mono text-destructive">R$ {totalOperationalOutflow.toFixed(2)}</span>
+        <Card className="bg-card border-border border-t-4 border-red-500 p-6">
+          <div className="space-y-4">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saídas</p>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground uppercase font-medium tracking-wider">Operacional</span>
+                <span className="font-bold font-mono text-red-400">R$ {totalOperationalOutflow.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground uppercase font-medium tracking-wider">Estoque/Invest.</span>
+                <span className="font-bold font-mono text-blue-400">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+              </div>
+              <div className="pt-2 border-t border-border flex justify-between items-center">
+                <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Total</span>
+                <span className="text-3xl font-bold font-mono text-red-400 tracking-tight">R$ {totalOutflow.toFixed(2)}</span>
+              </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground/60 uppercase font-bold tracking-wider">Estoque/Invest.</span>
-              <span className="text-sm font-bold font-mono text-blue-500">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
-            </div>
-            <div className="pt-2 border-t border-border flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground/80 uppercase font-extrabold tracking-widest">Total</span>
-              <span className="text-2xl font-bold font-mono text-destructive tracking-tight">R$ {totalOutflow.toFixed(2)}</span>
-            </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
 
