@@ -278,7 +278,7 @@ const LandingPage = () => {
                 { 
                   title: "Gestão de Caixa", 
                   subtitle: "Controle entradas, saídas e lucro",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png" // Using image 1 again as a placeholder if there are only 2 links, but wait, there are 2 links. I will use the first one twice or find if there's a third.
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png"
                 }
               ].map((card, i) => (
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
