@@ -546,42 +546,47 @@ export default function SalesPage() {
       </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saldo Geral</CardTitle>
+        <Card className="bg-card border-border overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-muted-foreground/20" />
+          <CardHeader className="p-6 pb-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Saldo Geral</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold font-mono ${balance >= 0 ? 'text-green-500' : 'text-destructive'}`}>
+          <CardContent className="p-6 pt-2">
+            <div className={`text-4xl font-bold font-mono tracking-tight ${balance >= 0 ? 'text-green-500' : 'text-destructive'}`}>
               R$ {balance.toFixed(2)}
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Entradas</CardTitle>
+
+        <Card className="bg-card border-border overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
+          <CardHeader className="p-6 pb-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Entradas</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-green-500">
+          <CardContent className="p-6 pt-2">
+            <div className="text-4xl font-bold font-mono text-green-500 tracking-tight">
               R$ {totalInflow.toFixed(2)}
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Saídas</CardTitle>
+
+        <Card className="bg-card border-border overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-destructive" />
+          <CardHeader className="p-6 pb-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em]">Saídas</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-1">
+          <CardContent className="p-6 pt-2 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground uppercase">Operacional</span>
+              <span className="text-[10px] text-muted-foreground/60 uppercase font-bold tracking-wider">Operacional</span>
               <span className="text-sm font-bold font-mono text-destructive">R$ {totalOperationalOutflow.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground uppercase">Estoque/Invest.</span>
+              <span className="text-[10px] text-muted-foreground/60 uppercase font-bold tracking-wider">Estoque/Invest.</span>
               <span className="text-sm font-bold font-mono text-blue-500">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
             </div>
-            <div className="pt-1 border-t border-border flex justify-between items-center">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold">Total</span>
-              <span className="text-lg font-bold font-mono text-destructive">R$ {totalOutflow.toFixed(2)}</span>
+            <div className="pt-2 border-t border-border flex justify-between items-center">
+              <span className="text-[10px] text-muted-foreground/80 uppercase font-extrabold tracking-widest">Total</span>
+              <span className="text-2xl font-bold font-mono text-destructive tracking-tight">R$ {totalOutflow.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
