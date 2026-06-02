@@ -260,7 +260,7 @@ const LandingPage = () => {
           </div>
 
           {/* Subseção: Veja o sistema em ação */}
-          <div className="mt-24">
+          <div className="mt-24 max-w-6xl mx-auto">
             <h3 className="text-2xl font-bold text-center mb-10">Veja o sistema em ação</h3>
             
             <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
@@ -271,26 +271,26 @@ const LandingPage = () => {
                   image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409446027-18572e0f-b770-49aa-974b-dac75b535819.png"
                 },
                 { 
-                  title: "Relatórios", 
-                  subtitle: "Veja quais produtos mais lucram",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409478534-0d943e2a-2c83-4351-bdcd-b15aaeae6a99.png"
-                },
-                { 
                   title: "Gestão de Caixa", 
                   subtitle: "Controle entradas, saídas e lucro",
                   image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
+                },
+                { 
+                  title: "Relatórios", 
+                  subtitle: "Veja quais produtos mais lucram",
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409478534-0d943e2a-2c83-4351-bdcd-b15aaeae6a99.png"
                 }
               ].map((card, i) => (
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden">
+                    <div className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden min-h-[220px]">
                       <img 
                         src={card.image} 
                         alt={card.title}
                         className="w-full h-full object-cover object-top"
                       />
                     </div>
-                    <p className="text-sm text-center text-muted-foreground font-medium">
+                    <p className="text-xs text-center text-gray-400">
                       {card.subtitle}
                     </p>
                   </div>
