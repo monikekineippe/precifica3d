@@ -301,7 +301,7 @@ const LandingPage = () => {
           <div className="mt-20 flex flex-col md:flex-row items-center justify-between gap-8 pt-8 border-t border-border/50 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <img src={logo} alt="Gestão3D" className="h-6 object-contain grayscale opacity-50" />
-              <span>© 2024 Gestão3D. Todos os direitos reservados.</span>
+              <span>© 2026 Gestão3D. Todos os direitos reservados.</span>
             </div>
             <div className="flex gap-6">
               <Link to="/login" className="hover:text-primary transition-colors">Entrar</Link>
