@@ -265,14 +265,30 @@ const LandingPage = () => {
             
             <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
               {[
-                { title: "Tela de Precificação", subtitle: "Calcule o custo real em segundos" },
-                { title: "Gestão de Caixa", subtitle: "Controle entradas, saídas e lucro" },
-                { title: "Relatórios", subtitle: "Veja quais produtos mais lucram" }
+                { 
+                  title: "Precificação", 
+                  subtitle: "IA calcula o preço ideal em segundos",
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png"
+                },
+                { 
+                  title: "Relatórios", 
+                  subtitle: "Veja quais produtos mais lucram",
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
+                },
+                { 
+                  title: "Gestão de Caixa", 
+                  subtitle: "Controle entradas, saídas e lucro",
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png" // Using image 1 again as a placeholder if there are only 2 links, but wait, there are 2 links. I will use the first one twice or find if there's a third.
+                }
               ].map((card, i) => (
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-[#1e293b] border border-border rounded-xl shadow-lg flex items-center justify-center p-6 text-center">
-                      <span className="text-muted-foreground font-medium">{card.title}</span>
+                    <div className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden">
+                      <img 
+                        src={card.image} 
+                        alt={card.title}
+                        className="w-full h-full object-cover object-top"
+                      />
                     </div>
                     <p className="text-sm text-center text-muted-foreground font-medium">
                       {card.subtitle}
