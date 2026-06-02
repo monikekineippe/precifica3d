@@ -283,12 +283,18 @@ const LandingPage = () => {
               ].map((card, i) => (
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
                   <div className="space-y-4">
-                    <div className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden min-h-[220px]">
+                    <div 
+                      className="aspect-video bg-[#1e293b] border border-teal-500/20 rounded-xl shadow-lg overflow-hidden min-h-[220px] relative group cursor-pointer"
+                      onClick={() => setSelectedImage(card.image)}
+                    >
                       <img 
                         src={card.image} 
                         alt={card.title}
-                        className="w-full h-full object-cover object-top"
+                        className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
                       />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <ZoomIn className="w-12 h-12 text-white" />
+                      </div>
                     </div>
                     <p className="text-xs text-center text-gray-400">
                       {card.subtitle}
@@ -297,6 +303,30 @@ const LandingPage = () => {
                 </div>
               ))}
             </div>
+
+            {/* Lightbox Modal */}
+            {selectedImage && (
+              <div 
+                className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+                onClick={() => setSelectedImage(null)}
+              >
+                <button 
+                  className="absolute top-6 right-6 text-white hover:text-primary transition-colors z-[101]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedImage(null);
+                  }}
+                >
+                  <X className="w-10 h-10" />
+                </button>
+                <img 
+                  src={selectedImage} 
+                  alt="Sistema em ação" 
+                  className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>
