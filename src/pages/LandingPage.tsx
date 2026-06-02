@@ -199,6 +199,7 @@ const LandingPage = () => {
             </Button>
           </Link>
         </div>
+      </section>
 
       {/* Target Audience */}
       <section className="py-20 bg-muted/30 text-center">
