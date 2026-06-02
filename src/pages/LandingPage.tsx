@@ -268,17 +268,17 @@ const LandingPage = () => {
                 { 
                   title: "Precificação", 
                   subtitle: "IA calcula o preço ideal em segundos",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409446027-18572e0f-b770-49aa-974b-dac75b535819.png"
                 },
                 { 
                   title: "Relatórios", 
                   subtitle: "Veja quais produtos mais lucram",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409478534-0d943e2a-2c83-4351-bdcd-b15aaeae6a99.png"
                 },
                 { 
                   title: "Gestão de Caixa", 
                   subtitle: "Controle entradas, saídas e lucro",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409044607-b8b876bc-fbfa-425a-acf6-1d9d5b5b4514.png"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
                 }
               ].map((card, i) => (
                 <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
