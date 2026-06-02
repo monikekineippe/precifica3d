@@ -74,7 +74,7 @@ const LandingPage = () => {
           style={{ backgroundImage: `url(${printerBg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/0 via-background/80 to-background pointer-events-none" />
-        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-[1.22fr_1fr] gap-12 items-center">
             <div className="text-left">
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
