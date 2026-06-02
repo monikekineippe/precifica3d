@@ -172,58 +172,62 @@ export default function Dashboard() {
 
       {/* Main Stats (Line 1) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <Card className="border-border bg-card overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-muted-foreground/20" />
+          <CardHeader className="p-6 pb-0 space-y-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] flex items-center justify-between">
               Faturamento (Mês)
-              <DollarSign size={14} className="text-primary" />
+              <DollarSign size={14} className="text-primary/40" />
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-foreground">
+          <CardContent className="p-6 pt-2">
+            <div className="text-4xl font-bold font-mono text-foreground tracking-tight">
               R$ {stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <Card className="border-border bg-card overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-green-500" />
+          <CardHeader className="p-6 pb-0 space-y-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] flex items-center justify-between">
               Lucro Bruto (Mês)
-              <TrendingUp size={14} className="text-green-500" />
+              <TrendingUp size={14} className="text-green-500/40" />
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-green-500">
+          <CardContent className="p-6 pt-2">
+            <div className="text-4xl font-bold font-mono text-green-500 tracking-tight">
               R$ {stats.monthlyGrossProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <Card className="border-border bg-card overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+          <CardHeader className="p-6 pb-0 space-y-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] flex items-center justify-between">
               Meta Mensal
               <span className="text-[10px] text-primary">{goalCompletion}%</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="text-2xl font-bold font-mono text-foreground">
+          <CardContent className="p-6 pt-2 space-y-3">
+            <div className="text-4xl font-bold font-mono text-foreground tracking-tight">
               R$ {stats.monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
             </div>
             <Progress value={goalCompletion} className="h-1.5" />
           </CardContent>
         </Card>
 
-        <Card className="border-border bg-card">
-          <CardHeader className="pb-2 space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
+        <Card className="border-border bg-card overflow-hidden relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-primary/40" />
+          <CardHeader className="p-6 pb-0 space-y-0">
+            <CardTitle className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.1em] flex items-center justify-between">
               Ticket Médio
-              <ArrowUpRight size={14} className="text-primary" />
+              <ArrowUpRight size={14} className="text-primary/40" />
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-foreground">
+          <CardContent className="p-6 pt-2">
+            <div className="text-4xl font-bold font-mono text-foreground tracking-tight">
               R$ {stats.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </div>
           </CardContent>
