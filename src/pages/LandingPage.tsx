@@ -584,10 +584,8 @@ const LandingPage = () => {
                 Criar minha conta grátis agora
               </Button>
             </Link>
-            <a href="#planos" className="w-full">
-              <Button size="lg" variant="outline" className="w-full h-14 px-8 text-lg font-medium border-white/20 text-white hover:bg-white/5 transition-colors rounded-xl">
-                Ver os planos
-              </Button>
+            <a href="#planos" className="text-gray-400 text-sm underline hover:text-[#00D4FF] transition-colors">
+              Ver os planos
             </a>
           </div>
           <p className="text-gray-500 text-sm mt-6">
