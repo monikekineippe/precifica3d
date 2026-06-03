@@ -493,40 +493,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-primary/5 rounded-3xl p-8 md:p-16 border border-primary/20">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-bold mb-8">Por que escolher o Gestão3D?</h2>
-                <ul className="space-y-4">
-                  {[
-                    "Mais lucro em cada peça vendida",
-                    "Menos erros de precificação",
-                    "Controle total do seu estoque",
-                    "Profissionalização do seu negócio",
-                    "Economia de tempo com automação"
-                  ].map(benefit => (
-                    <li key={benefit} className="flex items-center gap-3">
-                      <CheckCircle2 className="text-primary shrink-0" />
-                      <span className="text-lg font-medium">{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="relative">
-                <div className="aspect-square bg-gradient-to-tr from-primary/20 to-accent/20 rounded-2xl blur-2xl absolute inset-0 -z-10" />
-                <img 
-                  src={logo} 
-                  alt="Ícone de plataforma para gestão, estoque e precificação de serviços de impressão 3D com inteligência artificial" 
-                  className="w-full h-auto max-w-sm mx-auto drop-shadow-2xl" 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials Section */}
       <section className="py-20 bg-[#111827]">
