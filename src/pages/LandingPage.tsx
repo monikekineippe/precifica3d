@@ -69,44 +69,45 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <header className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <header className="relative min-h-[85vh] flex items-center pt-20 overflow-hidden bg-gradient-to-b from-[#0B1020] to-[#0f172a]">
         <div 
-          className="absolute inset-0 bg-cover bg-center opacity-10 pointer-events-none"
+          className="absolute inset-0 bg-cover bg-center opacity-5 pointer-events-none"
           style={{ backgroundImage: `url(${printerBg})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0B1020] via-[#0B1020]/95 to-[#0f172a] pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20">
           <div className="grid grid-cols-1 lg:grid-cols-[1.22fr_1fr] gap-12 items-center">
-            <div className="text-left">
-              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
-                Você sabe quantas horas imprimiu este mês. <span className="text-primary">Mas sabe quanto lucrou de verdade?</span>
+            {/* Left Column: 55% approx */}
+            <div className="text-left animate-in fade-in slide-in-from-left duration-700">
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 leading-tight text-white">
+                Você sabe quantas horas imprimiu este mês.<br />
+                <span className="text-[#00D4FF]">Mas sabe quanto lucrou de verdade?</span>
               </h1>
-              <p className="text-xl text-muted-foreground mb-10 max-w-2xl">
+              <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
                 A maioria dos impressores 3D cobra por grama e esquece a energia, a depreciação da máquina, as falhas e o tempo. O Gestão3D calcula tudo isso em segundos — e te mostra o preço certo para cada peça.
               </p>
-              <div className="flex flex-col sm:flex-row items-start gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
                 <Link to="/signup">
-                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-primary text-primary-foreground neon-glow group">
+                  <Button size="lg" className="h-14 px-8 text-lg font-bold bg-[#00D4FF] text-[#0B1020] hover:bg-[#00D4FF]/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)]">
                     Calcular o custo da minha primeira peça — grátis
-                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/login">
-                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-bold">
+                <a href="#demo">
+                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-medium border-white/20 text-white bg-transparent hover:bg-white/5 transition-colors">
                     Ver como funciona
                   </Button>
-                </Link>
+                </a>
               </div>
             </div>
 
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-[#00D4FF]/20 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-              <div className="relative bg-[#111827] border border-white/10 rounded-xl shadow-2xl overflow-hidden p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <Badge variant="outline" className="bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/30 gap-1.5 py-1 px-3">
-                    <Circle className="w-1.5 h-1.5 fill-[#00D4FF] animate-pulse" />
-                    Dashboard ao vivo
-                  </Badge>
+            {/* Right Column: 45% approx */}
+            <div className="relative group animate-in fade-in slide-in-from-right duration-700 delay-200">
+              <div className="absolute -inset-1 bg-[#00D4FF]/20 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+              <div className="relative bg-[#111827] border border-white/10 rounded-2xl shadow-2xl overflow-hidden p-8">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="bg-[#00D4FF]/10 text-[#00D4FF] text-xs font-bold py-1.5 px-4 rounded-full flex items-center gap-2">
+                    <span className="text-lg leading-none">✦</span>
+                    Resultado ao vivo
+                  </div>
                   <div className="flex gap-1.5">
                     <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
                     <div className="w-2.5 h-2.5 rounded-full bg-white/10" />
@@ -114,47 +115,39 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 mb-8">
-                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Receita do Mês</div>
-                    <div className="text-sm font-bold text-white">R$ 1.840</div>
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">Custo Total</span>
+                    <span className="text-white font-bold text-xl">R$ 11,69</span>
                   </div>
-                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1 text-profit">Lucro</div>
-                    <div className="text-sm font-bold text-profit">R$ 720</div>
+                  
+                  <div className="flex justify-between items-center py-4 border-y border-white/5">
+                    <span className="text-gray-400 font-medium">Preço Sugerido</span>
+                    <span className="text-[#00D4FF] text-3xl font-extrabold">R$ 29,90</span>
                   </div>
-                  <div className="bg-white/5 p-3 rounded-lg border border-white/10">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Margem</div>
-                    <div className="text-sm font-bold text-[#00D4FF]">39%</div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400 font-medium">Lucro Líquido</span>
+                    <span className="text-[#22C55E] font-bold text-xl">R$ 18,21 (150%)</span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">Vendas Recentes</div>
-                  {[
-                    { label: "Action Figure Yoda", value: "R$ 120,00", profit: "R$ 45,00", icon: Box },
-                    { label: "Engrenagem Industrial", value: "R$ 85,00", profit: "R$ 32,00", icon: Package },
-                    { label: "Suporte Alexa Echo", value: "R$ 45,00", profit: "R$ 18,00", icon: ShoppingCart },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-[#00D4FF]/10 rounded-md">
-                          <item.icon className="w-3.5 h-3.5 text-[#00D4FF]" />
-                        </div>
-                        <div>
-                          <div className="text-[11px] font-medium text-white/90">{item.label}</div>
-                          <div className="text-[9px] text-muted-foreground">Lucro: <span className="text-profit">{item.profit}</span></div>
-                        </div>
-                      </div>
-                      <div className="text-[11px] font-bold text-white">{item.value}</div>
-                    </div>
-                  ))}
+                <div className="mt-8 pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-2 text-gray-500 text-xs italic">
+                    <span className="text-[#00D4FF] not-italic">✦</span>
+                    IA sugere margem ideal para Bola Fidget
+                  </div>
                 </div>
               </div>
+
+              {/* Decorative element */}
+              <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[#00D4FF]/10 rounded-full blur-3xl -z-10"></div>
+              <div className="absolute -top-6 -left-6 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl -z-10"></div>
             </div>
           </div>
         </div>
       </header>
+
 
       {/* Trust/Social Proof Banner */}
       <section className="py-10 bg-muted/50 border-y border-border/50">
@@ -262,7 +255,7 @@ const LandingPage = () => {
           </div>
 
           {/* Subseção: Veja o sistema em ação */}
-          <div className="mt-24 max-w-6xl mx-auto">
+          <div id="demo" className="mt-24 max-w-6xl mx-auto">
             <h3 className="text-2xl font-bold text-center mb-10">Veja o sistema em ação</h3>
             
             <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
