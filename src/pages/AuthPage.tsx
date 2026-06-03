@@ -69,7 +69,7 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* LEFT COLUMN — Product showcase */}
+      {/* LEFT COLUMN Product showcase */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-center px-12 xl:px-20 relative overflow-hidden">
         {/* Background image */}
         <div
@@ -93,7 +93,7 @@ export default function AuthPage() {
               Controle custos, estoque e preços da sua impressão 3D em uma única plataforma.
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
-              Calcule o custo real de cada impressão e descubra o preço ideal de venda com ajuda da IA — em segundos.
+              Calcule o custo real de cada impressão e descubra o preço ideal de venda com ajuda da IA em segundos.
             </p>
           </div>
 
@@ -114,7 +114,7 @@ export default function AuthPage() {
         </div>
       </div>
 
-      {/* RIGHT COLUMN — Form */}
+      {/* RIGHT COLUMN Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm space-y-6">
       {/* Mobile hero block */}

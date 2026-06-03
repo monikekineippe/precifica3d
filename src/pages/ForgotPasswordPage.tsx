@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
               Precifique suas peças 3D com <span className="text-primary neon-text">inteligência</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-md">
-              Calcule o custo real de cada impressão e descubra o preço ideal de venda com ajuda da IA — em segundos.
+              Calcule o custo real de cada impressão e descubra o preço ideal de venda com ajuda da IA em segundos.
             </p>
           </div>
           <ul className="space-y-3">

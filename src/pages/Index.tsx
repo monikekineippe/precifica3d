@@ -166,7 +166,7 @@ export default function Index() {
           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-primary/30" />
         </div>
 
-        {/* SECTION 1 — FREE */}
+        {/* SECTION 1 FREE */}
         <section className="px-6 space-y-4 mb-12">
           <SectionLabel>Comece Aqui · Grátis</SectionLabel>
 
@@ -203,7 +203,7 @@ export default function Index() {
           </LinkCard>
         </section>
 
-        {/* SECTION 2 — ENTRY PRODUCTS */}
+        {/* SECTION 2 ENTRY PRODUCTS */}
         <section className="px-6 py-12 bg-card space-y-4 mb-12">
           <SectionLabel>Primeiros Passos</SectionLabel>
 
@@ -213,7 +213,7 @@ export default function Index() {
                 <BookOpen size={24} />
               </div>
               <h3 className="font-serif text-xl">
-                Ebook — Estratégia Feminina
+                Ebook Estratégia Feminina
               </h3>
             </div>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
@@ -248,7 +248,7 @@ export default function Index() {
           </LinkCard>
         </section>
 
-        {/* SECTION 3 — CORE PRODUCTS */}
+        {/* SECTION 3 CORE PRODUCTS */}
         <section className="px-6 py-12 bg-deep-black space-y-6">
           <SectionLabel light>Soluções Completas</SectionLabel>
 
@@ -293,7 +293,7 @@ export default function Index() {
                 <Bot size={24} />
               </div>
               <h3 className="font-serif text-xl">
-                Corujah — IA para Infoprodutos
+                Corujah IA para Infoprodutos
               </h3>
             </div>
             <p className="text-sm text-neutral-400 mb-6 leading-relaxed">
@@ -309,7 +309,7 @@ export default function Index() {
           </LinkCard>
         </section>
 
-        {/* SECTION 4 — MENTORSHIP */}
+        {/* SECTION 4 MENTORSHIP */}
         <section className="px-6 py-16 bg-gradient-to-b from-deep-black to-[#2A1A0A]">
           <SectionLabel light>Aceleração · Nível Avançado</SectionLabel>
 

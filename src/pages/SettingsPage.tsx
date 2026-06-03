@@ -158,7 +158,7 @@ export default function SettingsPage() {
               <Label className="text-foreground">Estado padrão</Label>
               <Select value={defaultState} onValueChange={v => { setDefaultState(v); setDefaultCity(""); }}>
                 <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
-                <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
+                <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} {s.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div>

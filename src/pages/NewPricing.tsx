@@ -376,12 +376,12 @@ export default function NewPricing() {
             <div className="space-y-3">
               <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
                 <Button className="w-full bg-primary text-primary-foreground font-semibold" size="lg">
-                  Assinar Pro Mensal — R$ 29,90/mês
+                  Assinar Pro Mensal R$ 29,90/mês
                 </Button>
               </a>
               <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
                 <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10" size="lg">
-                  Assinar Pro Anual — R$ 239,90/ano
+                  Assinar Pro Anual R$ 239,90/ano
                 </Button>
               </a>
               <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate("/")}>
@@ -487,7 +487,7 @@ export default function NewPricing() {
               }
             }}>
               <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="UF" /></SelectTrigger>
-              <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} — {s.name}</SelectItem>)}</SelectContent>
+              <SelectContent>{BRAZILIAN_STATES.map(s => <SelectItem key={s.uf} value={s.uf}>{s.uf} {s.name}</SelectItem>)}</SelectContent>
             </Select>
           </div>
           {state && (
@@ -502,7 +502,7 @@ export default function NewPricing() {
                     if (info) { setTariff(info.tarifa); setDistributor(info.distribuidora); setTariffRef(info.referencia); }
                   }}>
                     <SelectTrigger className="bg-background border-border text-xs h-8 mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent>{getDistributorsByState(state).map(d => <SelectItem key={d.distribuidora} value={d.distribuidora}>{d.distribuidora} — R$ {d.tarifa.toFixed(2)}/kWh</SelectItem>)}</SelectContent>
+                    <SelectContent>{getDistributorsByState(state).map(d => <SelectItem key={d.distribuidora} value={d.distribuidora}>{d.distribuidora} R$ {d.tarifa.toFixed(2)}/kWh</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               )}
@@ -511,7 +511,7 @@ export default function NewPricing() {
           <div><Label className="text-foreground">Tarifa (R$/kWh)</Label><Input type="number" step={0.01} value={tariff} onChange={e => setTariff(+e.target.value)} className="bg-muted border-border" /></div>
           {printer && (
             <div className="text-xs text-muted-foreground">
-              Consumo: <span className="font-mono text-primary">{printer.consumo_watts}W — {printer.nome}</span>
+              Consumo: <span className="font-mono text-primary">{printer.consumo_watts}W {printer.nome}</span>
               <br />Custo energia: <span className="font-mono text-primary">R$ {energyCost.toFixed(2)}</span>
             </div>
           )}
@@ -584,12 +584,12 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION G — Resultado e Precificação Inteligente */}
+      {/* SECTION G Resultado e Precificação Inteligente */}
       <Card className="border-border bg-card neon-glow">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><DollarSign size={16} className="text-primary" />Resultado e Precificação Inteligente</CardTitle></CardHeader>
         <CardContent className="space-y-6">
 
-          {/* BLOCK 1 — AI Margin Suggestion */}
+          {/* BLOCK 1 AI Margin Suggestion */}
           {marginLoading ? (
             <div className="space-y-2">
               <Skeleton className="h-6 w-48" />
@@ -620,7 +620,7 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 2 — Margin & Tax Controls */}
+          {/* BLOCK 2 Margin & Tax Controls */}
           <div>
             <div className="flex justify-between mb-2"><Label className="text-foreground">Margem de lucro</Label><span className="font-mono text-primary text-sm">{margin}%</span></div>
             <Slider value={[margin]} onValueChange={([v]) => setMargin(v)} min={0} max={300} step={1} className="[&>span:first-child]:bg-muted [&_[role=slider]]:bg-primary" />
@@ -630,7 +630,7 @@ export default function NewPricing() {
             <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
           </div>
 
-          {/* BLOCK 3 — Result Panel */}
+          {/* BLOCK 3 Result Panel */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg bg-muted/50 border border-border text-center">
               <p className="text-[10px] text-muted-foreground mb-1">💸 Custo Total</p>
@@ -650,7 +650,7 @@ export default function NewPricing() {
             </div>
           </div>
 
-          {/* BLOCK 3.5 — Payment Methods */}
+          {/* BLOCK 3.5 Payment Methods */}
           {suggestedPrice > 0 && (
             <div className="space-y-3">
               <p className="text-xs font-medium text-foreground flex items-center gap-2">
@@ -714,7 +714,7 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 4 — Breakdown Chart */}
+          {/* BLOCK 4 Breakdown Chart */}
           {pieData.length > 0 && (
             <div>
               <p className="text-xs font-medium text-foreground mb-2">Breakdown de Custos</p>
@@ -742,7 +742,7 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 5 — Scenario Simulator */}
+          {/* BLOCK 5 Scenario Simulator */}
           {marginSuggestion && totalCost > 0 && (
             <div>
               <p className="text-xs font-medium text-foreground mb-2">Simulador de Cenários</p>
@@ -804,7 +804,7 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 6 — Actions */}
+          {/* BLOCK 6 Actions */}
           <div className="flex flex-wrap gap-3 pt-2 border-t border-border">
             <Button onClick={handleSave} className="flex-1 bg-primary text-primary-foreground neon-glow">
               Salvar Orçamento
