@@ -653,9 +653,9 @@ const LandingPage = () => {
             <Link to="/signup" className="hover:text-[#00D4FF] transition-colors">Criar Conta</Link>
             <a href="#planos" className="hover:text-[#00D4FF] transition-colors">Planos</a>
             <a href="#" className="hover:text-[#00D4FF] transition-colors">Termos</a>
-            <a href="#" className="hover:text-[#00D4FF] transition-colors">Privacidade</a>
           </div>
         </div>
+      </footer>
     </div>
   );
 };
