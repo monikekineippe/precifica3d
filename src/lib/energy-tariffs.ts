@@ -1,5 +1,5 @@
 // Tarifas médias residenciais por estado (ANEEL / distribuidoras principais)
-// Fonte: dados públicos ANEEL — valores médios em R$/kWh (sem bandeira tarifária)
+// Fonte: dados públicos ANEEL valores médios em R$/kWh (sem bandeira tarifária)
 // Atualizado: referência 2024/2025
 
 export interface TariffInfo {
