@@ -47,14 +47,18 @@ export default function MarketplacePage() {
     
     return MARKETPLACES.map(mp => {
       const commission = category?.commissions[mp.name as keyof typeof category.commissions] || mp.commission;
+      const fixedFee = mp.fixedFee || 0;
       
       // Cálculo: Preço = (Custo + Taxa Fixa) / (1 - (Comissão + Margem)/100)
       // Simplificado: Preço Sugerido com margem alvo
       const commissionDecimal = commission / 100;
       const marginDecimal = targetMargin / 100;
       
-      const suggestedPrice = (baseCost + mp.fixedFee) / (1 - commissionDecimal - marginDecimal);
-      const totalFees = suggestedPrice * commissionDecimal + mp.fixedFee;
+      // Proteção contra divisão por zero ou negativa (se comissão + margem >= 100%)
+      const denominator = 1 - commissionDecimal - marginDecimal;
+      const suggestedPrice = denominator > 0 ? (baseCost + fixedFee) / denominator : 0;
+      
+      const totalFees = suggestedPrice * commissionDecimal + fixedFee;
       const profit = suggestedPrice - baseCost - totalFees;
 
       return {
@@ -63,7 +67,7 @@ export default function MarketplacePage() {
         suggestedPrice: Math.max(0, suggestedPrice),
         totalFees,
         profit,
-        roi: (profit / baseCost) * 100
+        roi: baseCost > 0 ? (profit / baseCost) * 100 : 0
       };
     });
   }, [baseCost, selectedCategory, targetMargin]);
