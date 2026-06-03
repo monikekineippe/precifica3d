@@ -546,35 +546,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-12 text-center">Para quem é o Gestão3D?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Printer className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Makers e Hobbistas</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Você imprime por paixão mas quer transformar em renda. O Gestão3D te mostra exatamente quanto cobrar para não trabalhar de graça.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Package className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Oficinas e Negócios 3D</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Você já vende, mas não sabe se está lucrando de verdade. O Gestão3D organiza seus custos, estoque e vendas em um só lugar.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-border bg-card hover:border-primary/50 transition-colors group text-left">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Tag className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Lojas de Personalizados</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">Você trabalha com volume e variedade. O Gestão3D controla cada peça, cada filamento e cada venda, sem planilha, sem achismo.</p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Benefits */}
       <section className="py-20">
