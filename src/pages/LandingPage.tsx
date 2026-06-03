@@ -255,7 +255,7 @@ const LandingPage = () => {
           </div>
 
           {/* Subseção: Veja o sistema em ação */}
-          <div className="mt-24 max-w-6xl mx-auto">
+          <div id="demo" className="mt-24 max-w-6xl mx-auto">
             <h3 className="text-2xl font-bold text-center mb-10">Veja o sistema em ação</h3>
             
             <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
