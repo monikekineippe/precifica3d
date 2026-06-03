@@ -595,13 +595,15 @@ const LandingPage = () => {
       </section>
 
       {/* Plans Section */}
-      <section id="planos" className="py-20 bg-muted/30">
+      <section id="planos" className="py-20 bg-muted/30 overflow-visible">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Comece grátis. Escale quando quiser.</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">Sem cartão de crédito para começar. Cancele quando quiser.</p>
           </div>
-          <PlansPage isEmbedded={true} />
+          <div className="w-full">
+            <PlansPage isEmbedded={true} />
+          </div>
         </div>
       </section>
 
@@ -614,9 +616,9 @@ const LandingPage = () => {
           </div>
           <div className="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2">
             <Link to="/login" className="hover:text-[#00D4FF] transition-colors">Entrar</Link>
-            <Link to="/signup" className="hover:text-[#00D4FF] transition-colors">Criar Conta</Link>
             <a href="#planos" className="hover:text-[#00D4FF] transition-colors">Planos</a>
             <a href="#" className="hover:text-[#00D4FF] transition-colors">Termos</a>
+            <a href="#" className="hover:text-[#00D4FF] transition-colors">Privacidade</a>
           </div>
         </div>
       </footer>
