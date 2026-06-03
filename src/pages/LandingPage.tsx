@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Funciona para qualquer impressora?",
-    answer: "Sim. O sistema tem impressoras pré-cadastradas das marcas mais usadas no Brasil — Bambu Lab, Creality, Prusa, FLSUN e outras. Você também pode cadastrar a sua com as especificações exatas."
+    answer: "Sim. O sistema tem impressoras pré-cadastradas das marcas mais usadas no Brasil Bambu Lab, Creality, Prusa, FLSUN e outras. Você também pode cadastrar a sua com as especificações exatas."
   },
   {
     question: "Os dados ficam salvos?",
@@ -93,13 +93,13 @@ const LandingPage = () => {
                 <span className="text-[#00D4FF]">Mas sabe quanto lucrou de verdade?</span>
               </h1>
               <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
-                O Gestão3D calcula o custo real de cada peça, sugere o preço ideal de venda — e ainda mostra quanto cobrar na Shopee, Mercado Livre, Amazon e TikTok Shop, já com as taxas de cada plataforma descontadas.
+                O Gestão3D calcula o custo real de cada peça, sugere o preço ideal de venda e ainda mostra quanto cobrar na Shopee, Mercado Livre, Amazon e TikTok Shop, já com as taxas de cada plataforma descontadas.
               </p>
               <div className="flex flex-col gap-3 mt-8 w-full max-w-md">
                 <a href="/signup" className="w-full text-center bg-[#00D4FF] text-[#0B1020] 
                   font-bold rounded-xl py-4 px-6 text-sm sm:text-base hover:opacity-90 
                   transition-opacity">
-                  Calcular o custo da minha primeira peça — grátis
+                  Calcular o custo da minha primeira peça grátis
                 </a>
                 <a href="#demo" className="w-full text-center border border-white/20 
                   text-white rounded-xl py-4 px-6 text-sm sm:text-base hover:bg-white/5 
@@ -321,7 +321,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div id="demo" className="max-w-7xl mx-auto">
             <h3 className="text-3xl font-bold text-center text-white mb-2">Não é uma planilha. É uma plataforma completa.</h3>
-            <p className="text-gray-400 text-center mb-12">Veja como o Gestão3D funciona na prática — clique nas imagens para ampliar.</p>
+            <p className="text-gray-400 text-center mb-12">Veja como o Gestão3D funciona na prática clique nas imagens para ampliar.</p>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
@@ -406,7 +406,7 @@ const LandingPage = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Tarifa de energia real por cidade</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Não usamos uma média genérica. O Gestão3D busca automaticamente a tarifa da sua distribuidora de energia por cidade. Se você está em Curitiba, paga diferente de quem está em São Paulo — e isso muda o seu custo real.
+                Não usamos uma média genérica. O Gestão3D busca automaticamente a tarifa da sua distribuidora de energia por cidade. Se você está em Curitiba, paga diferente de quem está em São Paulo e isso muda o seu custo real.
               </p>
             </div>
 
@@ -428,7 +428,7 @@ const LandingPage = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Lucro real, não estimado</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Cada venda salva um snapshot financeiro imutável: custo no momento da venda, taxa do pagamento, desconto aplicado e lucro líquido real. Não uma projeção — o número verdadeiro.
+                Cada venda salva um snapshot financeiro imutável: custo no momento da venda, taxa do pagamento, desconto aplicado e lucro líquido real. Não uma projeção o número verdadeiro.
               </p>
             </div>
 
@@ -439,7 +439,7 @@ const LandingPage = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Calculadora de marketplace integrada</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Informe o custo da peça e veja em segundos o preço ideal para cada plataforma — com a taxa real da Shopee, Mercado Livre, Amazon e TikTok Shop já descontada. Sem planilha, sem chute.
+                Informe o custo da peça e veja em segundos o preço ideal para cada plataforma com a taxa real da Shopee, Mercado Livre, Amazon e TikTok Shop já descontada. Sem planilha, sem chute.
               </p>
             </div>
           </div>
@@ -478,7 +478,7 @@ const LandingPage = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Makers que querem profissionalizar</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Você imprime com qualidade mas ainda precifica no instinto. O Gestão3D te dá os números para cobrar com confiança — e transformar hobby em renda.
+                Você imprime com qualidade mas ainda precifica no instinto. O Gestão3D te dá os números para cobrar com confiança e transformar hobby em renda.
               </p>
             </div>
             
@@ -611,7 +611,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white">Você vai continuar cobrando no chute?</h2>
           <p className="text-lg sm:text-xl text-gray-400 mt-4 max-w-xl mx-auto">
-            Ou prefere saber exatamente quanto lucra em cada peça — a partir de hoje, de graça?
+            Ou prefere saber exatamente quanto lucra em cada peça a partir de hoje, de graça?
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 max-w-md mx-auto">
             <Link to="/signup" className="w-full">
