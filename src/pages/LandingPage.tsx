@@ -524,6 +524,56 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-20 bg-[#111827]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-12 text-center text-white">O que dizem os impressores que pararam de trabalhar no prejuízo</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                text: "Antes eu precificava no chute e vivia no sufoco. Com o Gestão3D descobri que estava vendendo abaixo do custo. Em 2 semanas ajustei tudo e meu lucro aumentou.",
+                name: "Rafael M.",
+                city: "São Paulo, SP",
+                initials: "RM"
+              },
+              {
+                text: "A parte de energia por cidade foi o que me convenceu. Minha tarifa é diferente da média e isso fazia diferença no cálculo. Agora sei exatamente o que estou gastando.",
+                name: "Camila T.",
+                city: "Curitiba, PR",
+                initials: "CT"
+              },
+              {
+                text: "Simples, rápido e funciona. Uso todo dia antes de fechar qualquer orçamento. Não consigo mais trabalhar sem.",
+                name: "Lucas A.",
+                city: "Belo Horizonte, MG",
+                initials: "LA"
+              }
+            ].map((testimonial, i) => (
+              <div key={i} className="p-6 rounded-xl bg-[#1F2937] border border-white/10 flex flex-col h-full hover:border-[#00D4FF]/30 transition-colors">
+                <div className="flex gap-1 mb-4 text-[#F59E0B]">
+                  {"★".repeat(5)}
+                </div>
+                
+                <p className="italic text-gray-300 mb-8 flex-grow">
+                  "{testimonial.text}"
+                </p>
+                
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-[#00D4FF]/20 flex items-center justify-center text-[#00D4FF] font-bold shrink-0">
+                    {testimonial.initials}
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-bold text-white">{testimonial.name}</div>
+                    <div className="text-gray-500">{testimonial.city}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* FAQ Section */}
       <section className="py-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -549,55 +599,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-16 text-center">O que dizem os impressores que já usam o Gestão3D</h2>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                text: "Antes eu precificava no chute e vivia no sufoco. Com o Gestão3D descobri que estava vendendo abaixo do custo. Em 2 semanas ajustei tudo e meu lucro aumentou.",
-                name: "Rafael M.",
-                city: "São Paulo, SP",
-                initials: "RM"
-              },
-              {
-                text: "A parte de energia por cidade foi o que me convenceu. Minha tarifa é diferente da média e isso fazia diferença no cálculo. Agora sei exatamente o que estou gastando.",
-                name: "Camila T.",
-                city: "Curitiba, PR",
-                initials: "CT"
-              },
-              {
-                text: "Simples, rápido e funciona. Uso todo dia antes de fechar qualquer orçamento. Não consigo mais trabalhar sem.",
-                name: "Lucas A.",
-                city: "Belo Horizonte, MG",
-                initials: "LA"
-              }
-            ].map((testimonial, i) => (
-              <div key={i} className="p-8 rounded-2xl bg-muted/20 border border-teal-500/10 flex flex-col h-full hover:border-teal-500/30 transition-colors">
-                <div className="flex gap-1 mb-6 text-yellow-400">
-                  {"⭐".repeat(5)}
-                </div>
-                
-                <p className="italic text-muted-foreground mb-8 flex-grow">
-                  "{testimonial.text}"
-                </p>
-                
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white font-bold text-lg shrink-0">
-                    {testimonial.initials}
-                  </div>
-                  <div className="text-sm">
-                    <div className="font-bold text-foreground">{testimonial.name}</div>
-                    <div className="text-muted-foreground">{testimonial.city}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Plans Section */}
       <section id="planos" className="py-20 bg-muted/30">
