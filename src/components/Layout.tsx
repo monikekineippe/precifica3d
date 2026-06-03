@@ -8,7 +8,7 @@ import logo from "@/assets/logo-precifica3d.png";
 import logoIcon from "@/assets/logo-icon.png";
 
 const NAV = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/printers", icon: Printer, label: "Impressoras" },
   { to: "/new", icon: PlusCircle, label: "Nova Precificação" },
   { to: "/marketplace", icon: ShoppingBag, label: "Marketplace" },
@@ -64,7 +64,6 @@ export default function Layout() {
             <NavLink
               key={to}
               to={to}
-              end={to === "/"}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 cn(
