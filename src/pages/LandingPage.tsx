@@ -394,47 +394,43 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* Subseção: Veja o sistema em ação */}
-          <div id="demo" className="mt-24 max-w-6xl mx-auto">
-            <h3 className="text-2xl font-bold text-center mb-10">Veja o sistema em ação</h3>
+          {/* Subseção: Não é uma planilha. É uma plataforma completa. */}
+          <div id="demo" className="mt-24 max-w-7xl mx-auto">
+            <h3 className="text-3xl font-bold text-center text-white mb-2">Não é uma planilha. É uma plataforma completa.</h3>
+            <p className="text-gray-400 text-center mb-12">Veja como o Gestão3D funciona na prática — clique nas imagens para ampliar.</p>
             
-            <div className="flex overflow-x-auto pb-6 md:pb-0 md:grid md:grid-cols-3 gap-6 snap-x snap-mandatory scrollbar-hide">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { 
-                  title: "Precificação", 
-                  subtitle: "IA calcula o preço ideal em segundos",
+                  title: "IA calcula o preço ideal em segundos",
                   image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409446027-18572e0f-b770-49aa-974b-dac75b535819.png"
                 },
                 { 
-                  title: "Gestão de Caixa", 
-                  subtitle: "Controle entradas, saídas e lucro",
+                  title: "Controle cada venda, custo e lucro em tempo real",
                   image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
                 },
                 { 
-                  title: "Relatórios", 
-                  subtitle: "Veja quais produtos mais lucram",
+                  title: "Descubra quais produtos merecem o seu tempo",
                   image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409478534-0d943e2a-2c83-4351-bdcd-b15aaeae6a99.png"
                 }
               ].map((card, i) => (
-                <div key={i} className="min-w-[85vw] md:min-w-0 snap-center">
-                  <div className="space-y-4">
-                    <div 
-                      className="aspect-video bg-[#111827] border border-white/10 rounded-xl shadow-lg overflow-hidden min-h-[220px] relative group cursor-pointer"
-                      onClick={() => setSelectedImage(card.image)}
-                    >
-                      <img 
-                        src={card.image} 
-                        alt={card.title}
-                        className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <ZoomIn className="w-12 h-12 text-white" />
-                      </div>
+                <div key={i} className="flex flex-col space-y-4">
+                  <div 
+                    className="aspect-video bg-[#111827] border border-white/10 rounded-xl shadow-lg overflow-hidden min-h-[200px] md:min-h-[280px] relative group cursor-pointer"
+                    onClick={() => setSelectedImage(card.image)}
+                  >
+                    <img 
+                      src={card.image} 
+                      alt={card.title}
+                      className="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <ZoomIn className="w-10 h-10 text-[#00D4FF]" />
                     </div>
-                    <p className="text-xs text-center text-gray-400">
-                      {card.subtitle}
-                    </p>
                   </div>
+                  <p className="text-xs text-center text-gray-400">
+                    {card.title}
+                  </p>
                 </div>
               ))}
             </div>
@@ -442,22 +438,22 @@ const LandingPage = () => {
             {/* Lightbox Modal */}
             {selectedImage && (
               <div 
-                className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 animate-in fade-in duration-200"
+                className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200"
                 onClick={() => setSelectedImage(null)}
               >
                 <button 
-                  className="absolute top-6 right-6 text-white hover:text-primary transition-colors z-[101]"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 text-white hover:text-[#00D4FF] transition-colors z-[101] bg-black/50 rounded-full p-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSelectedImage(null);
                   }}
                 >
-                  <X className="w-10 h-10" />
+                  <X className="w-8 h-8 sm:w-10 sm:h-10" />
                 </button>
                 <img 
                   src={selectedImage} 
-                  alt="Sistema em ação" 
-                  className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
+                  alt="Sistema em ação ampliado" 
+                  className="max-w-full md:max-w-5xl max-h-[85vh] md:max-h-[90vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-200"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
