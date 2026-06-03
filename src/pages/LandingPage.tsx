@@ -2,7 +2,12 @@ import { Link } from "react-router-dom";
 import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles } from "lucide-react";
+import { 
+  CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, 
+  ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, 
+  Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, 
+  AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles 
+} from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
 import { useState } from "react";
@@ -148,7 +153,6 @@ const LandingPage = () => {
         </div>
       </header>
 
-
       {/* Trust/Social Proof Banner */}
       <section className="py-8 sm:py-10 bg-[#111827] border-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -174,7 +178,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
 
       {/* A Dor Section */}
       <section className="pt-20 pb-16 bg-[#0B1020]">
@@ -231,7 +234,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Problem & Solution (Now moved below "A Dor" or potentially merged/replaced) */}
       {/* How it Works Section */}
       <section className="py-20 bg-[#0f172a] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -309,68 +311,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-
-      {/* Features Grid */}
-      <section className="py-20">
+      {/* Demo Section */}
+      <section className="py-20 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Funcionalidades Profissionais</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Tudo o que você precisa para dominar sua produção e suas finanças.</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Calculator className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Precificação Inteligente</h3>
-              <p className="text-muted-foreground">Cálculo automático considerando filamento, energia, mão de obra e manutenção da máquina.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Package className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Controle de Estoque</h3>
-              <p className="text-muted-foreground">Gerencie seus filamentos, cores e tipos de material. Saiba exatamente quando repor.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <LayoutDashboard className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Gestão de Pedidos</h3>
-              <p className="text-muted-foreground">Organize suas encomendas e prazos em um dashboard intuitivo e profissional.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-[#7C3AED]/20 bg-[#111827] hover:border-[#7C3AED]/50 transition-colors group relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-[#7C3AED] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl-lg">IA</div>
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Brain className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3 flex items-center gap-2">IA Sugere Margem <Badge variant="secondary" className="bg-ai text-white text-[10px]">IA</Badge></h3>
-              <p className="text-muted-foreground">Nossa inteligência artificial analisa o cenário e sugere a melhor margem de lucro.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <Zap className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Energia por Cidade</h3>
-              <p className="text-muted-foreground">Busca automática das tarifas de energia atualizadas diretamente da sua distribuidora.</p>
-            </div>
-            
-            <div className="p-8 rounded-2xl border border-white/5 bg-[#111827] hover:border-[#00D4FF]/50 transition-colors group">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                <CheckCircle2 className="text-primary" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Simulador de Lucro</h3>
-              <p className="text-muted-foreground">Compare cenários de venda e descubra como aumentar sua rentabilidade em cada peça.</p>
-            </div>
-          </div>
-
-          {/* Subseção: Não é uma planilha. É uma plataforma completa. */}
-          <div id="demo" className="mt-24 max-w-7xl mx-auto">
+          <div id="demo" className="max-w-7xl mx-auto">
             <h3 className="text-3xl font-bold text-center text-white mb-2">Não é uma planilha. É uma plataforma completa.</h3>
             <p className="text-gray-400 text-center mb-12">Veja como o Gestão3D funciona na prática — clique nas imagens para ampliar.</p>
             
@@ -503,7 +447,6 @@ const LandingPage = () => {
       </section>
 
       {/* Target Audience */}
-      {/* Para quem Section */}
       <section className="py-20 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -545,7 +488,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
 
       {/* Benefits */}
       <section className="py-20">
