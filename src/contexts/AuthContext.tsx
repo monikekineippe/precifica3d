@@ -6,7 +6,7 @@ interface Profile {
   id: string;
   user_id: string;
   nome: string;
-  plano: "free" | "mensal" | "anual";
+  plano: "free" | "mensal" | "anual" | "master";
   plano_expiracao: string | null;
   primary_printer_id: string | null;
   greenn_assinatura_id: string | null;
