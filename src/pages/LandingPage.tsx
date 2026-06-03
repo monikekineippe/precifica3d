@@ -605,6 +605,31 @@ const LandingPage = () => {
 
 
 
+      {/* Final CTA Section */}
+      <section className="py-24 bg-gradient-to-b from-[#0B1020] to-[#0f172a]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Você vai continuar cobrando no chute?</h2>
+          <p className="text-lg sm:text-xl text-gray-400 mt-4 max-w-xl mx-auto">
+            Ou prefere saber exatamente quanto lucra em cada peça — a partir de hoje, de graça?
+          </p>
+          <div className="mt-10 flex flex-col items-center gap-4 max-w-md mx-auto">
+            <Link to="/signup" className="w-full">
+              <Button size="lg" className="w-full h-14 px-8 text-base sm:text-lg font-bold bg-[#00D4FF] text-[#0B1020] hover:bg-[#00D4FF]/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] rounded-xl whitespace-nowrap">
+                Criar minha conta grátis agora
+              </Button>
+            </Link>
+            <a href="#planos" className="w-full">
+              <Button size="lg" variant="outline" className="w-full h-14 px-8 text-lg font-medium border-white/20 text-white hover:bg-white/5 transition-colors rounded-xl">
+                Ver os planos
+              </Button>
+            </a>
+          </div>
+          <p className="text-gray-500 text-sm mt-6">
+            Sem cartão de crédito · Cancele quando quiser · Leva 30 segundos
+          </p>
+        </div>
+      </section>
+
       {/* Plans Section */}
       <section id="planos" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -616,30 +641,18 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* CTA Footer */}
-      <footer className="py-20 border-t border-white/5 bg-[#0B1020]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Pronto para profissionalizar seu negócio 3D?</h2>
-          <p className="text-muted-foreground mb-10 max-w-xl mx-auto">
-            Junte-se a centenas de impressores que já estão lucrando mais com o Gestão3D.
-          </p>
-          <Link to="/signup">
-            <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-[#0B1020] neon-glow">
-              Criar Minha Conta Grátis
-            </Button>
-          </Link>
-          <div className="mt-20 pt-8 border-t border-border/20 flex flex-col md:flex-row items-center justify-between gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <img src={logo} alt="Gestão3D" className="h-6 object-contain grayscale opacity-50" />
-              <span>© 2026 Gestão3D. Todos os direitos reservados.</span>
-            </div>
-            <div className="flex flex-wrap justify-center md:justify-end gap-x-6 gap-y-2">
-              <Link to="/login" className="hover:text-primary transition-colors">Entrar</Link>
-              <Link to="/signup" className="hover:text-primary transition-colors">Criar Conta Grátis</Link>
-              <a href="#planos" className="hover:text-primary transition-colors">Planos</a>
-              <a href="#" className="hover:text-primary transition-colors">Termos de Uso</a>
-              <a href="#" className="hover:text-primary transition-colors">Política de Privacidade</a>
-            </div>
+      {/* Footer */}
+      <footer className="py-8 bg-[#0B1020] border-t border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
+            <img src={logo} alt="Gestão3D" className="h-6 object-contain grayscale opacity-50" />
+            <span>© 2026 Gestão3D. Todos os direitos reservados.</span>
+          </div>
+          <div className="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2">
+            <Link to="/login" className="hover:text-[#00D4FF] transition-colors">Entrar</Link>
+            <Link to="/signup" className="hover:text-[#00D4FF] transition-colors">Criar Conta</Link>
+            <a href="#planos" className="hover:text-[#00D4FF] transition-colors">Planos</a>
+            <a href="#" className="hover:text-[#00D4FF] transition-colors">Termos</a>
           </div>
         </div>
       </footer>
