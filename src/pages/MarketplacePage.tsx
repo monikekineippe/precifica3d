@@ -46,28 +46,35 @@ export default function MarketplacePage() {
     const category = CATEGORIES.find(c => c.name === selectedCategory);
     
     return MARKETPLACES.map(mp => {
-      const commission = category?.commissions[mp.name as keyof typeof category.commissions] || mp.commission;
-      const fixedFee = mp.fixedFee || 0;
+      // Garantir que a comissão seja um número válido
+      const categoryCommission = category?.commissions[mp.name as keyof typeof category.commissions];
+      const commission = typeof categoryCommission === 'number' ? categoryCommission : mp.commission;
       
-      // Cálculo: Preço = (Custo + Taxa Fixa) / (1 - (Comissão + Margem)/100)
-      // Simplificado: Preço Sugerido com margem alvo
-      const commissionDecimal = commission / 100;
-      const marginDecimal = targetMargin / 100;
+      // Garantir que a taxa fixa seja um número válido (0 se ausente)
+      const fixedFee = typeof mp.fixedFee === 'number' ? mp.fixedFee : 0;
       
-      // Proteção contra divisão por zero ou negativa (se comissão + margem >= 100%)
+      const commissionDecimal = (commission || 0) / 100;
+      const marginDecimal = (targetMargin || 0) / 100;
+      
+      // Fórmula: Preço = (Custo + Taxa Fixa) / (1 - Comissão% - Margem%)
       const denominator = 1 - commissionDecimal - marginDecimal;
-      const suggestedPrice = denominator > 0 ? (baseCost + fixedFee) / denominator : 0;
+      
+      // Se o denominador for <= 0, a margem + comissão é inviável (>= 100%)
+      const suggestedPrice = (denominator > 0 && (baseCost || 0) >= 0) 
+        ? ((baseCost || 0) + fixedFee) / denominator 
+        : 0;
       
       const totalFees = suggestedPrice * commissionDecimal + fixedFee;
-      const profit = suggestedPrice - baseCost - totalFees;
+      const profit = suggestedPrice > 0 ? suggestedPrice - (baseCost || 0) - totalFees : 0;
 
       return {
         ...mp,
         commission,
-        suggestedPrice: Math.max(0, suggestedPrice),
-        totalFees,
-        profit,
-        roi: baseCost > 0 ? (profit / baseCost) * 100 : 0
+        fixedFee,
+        suggestedPrice: Number.isFinite(suggestedPrice) ? Math.max(0, suggestedPrice) : 0,
+        totalFees: Number.isFinite(totalFees) ? totalFees : 0,
+        profit: Number.isFinite(profit) ? profit : 0,
+        roi: (baseCost || 0) > 0 && Number.isFinite(profit) ? (profit / baseCost) * 100 : 0
       };
     });
   }, [baseCost, selectedCategory, targetMargin]);
