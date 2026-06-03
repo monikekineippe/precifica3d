@@ -37,7 +37,6 @@ export default function HistoryPage() {
     if (!user) return;
     setLoading(true);
     try {
-      // Fetching all quotes. RLS will ensure the user only sees their own.
       const { data, error } = await supabase
         .from("orcamentos")
         .select("*")
