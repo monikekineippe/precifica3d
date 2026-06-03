@@ -815,6 +815,13 @@ export default function NewPricing() {
             <Button variant="outline" className="border-border" onClick={handleExportCSV}>
               {!isPro && <Lock size={14} className="mr-1" />} Exportar CSV
             </Button>
+            <Button 
+              variant="outline" 
+              className="border-border text-[#00D4FF] hover:bg-[#00D4FF]/10" 
+              onClick={() => navigate("/marketplace", { state: { cost: totalCost } })}
+            >
+              <ShoppingBag size={14} className="mr-1" /> Ver preços para marketplace
+            </Button>
           </div>
         </CardContent>
       </Card>

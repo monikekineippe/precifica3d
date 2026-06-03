@@ -9,9 +9,9 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { pieceName, filamentType } = await req.json();
-    if (!pieceName || !filamentType) {
-      return new Response(JSON.stringify({ error: "pieceName and filamentType required" }), {
+    const { pieceName, filamentType, marketplaceAnalysis } = await req.json();
+    if (!pieceName && !marketplaceAnalysis) {
+      return new Response(JSON.stringify({ error: "pieceName required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -34,7 +34,9 @@ serve(async (req) => {
           },
           {
             role: "user",
-            content: `Sou um vendedor de peças impressas em 3D no Brasil. Estou precificando uma peça do tipo '${pieceName}' feita em ${filamentType}. Qual a margem de lucro percentual praticada no mercado brasileiro para este tipo de peça? Considere os perfis: decorativo, funcional/industrial, miniatura/colecionável e customizado/personalizado. Responda APENAS com JSON no formato: { "categoria": "decorativo|funcional|miniatura|customizado", "margem_minima": 0, "margem_sugerida": 0, "margem_maxima": 0, "justificativa": "texto curto explicando a sugestão" }`
+            content: marketplaceAnalysis 
+              ? `Estou vendendo uma peça impressa em 3D do tipo '${pieceName}' em marketplaces brasileiros (Shopee, Mercado Livre, Amazon). Qual a margem de lucro percentual (líquida) sugerida para este produto ser competitivo mas lucrativo? Responda APENAS com JSON no formato: { "margem_sugerida": 0, "justificativa": "texto curto" }`
+              : `Sou um vendedor de peças impressas em 3D no Brasil. Estou precificando uma peça do tipo '${pieceName}' feita em ${filamentType}. Qual a margem de lucro percentual praticada no mercado brasileiro para este tipo de peça? Considere os perfis: decorativo, funcional/industrial, miniatura/colecionável e customizado/personalizado. Responda APENAS com JSON no formato: { "categoria": "decorativo|funcional|miniatura|customizado", "margem_minima": 0, "margem_sugerida": 0, "margem_maxima": 0, "justificativa": "texto curto explicando a sugestão" }`
           }
         ],
       }),
