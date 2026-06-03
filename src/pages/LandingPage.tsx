@@ -92,7 +92,7 @@ const LandingPage = () => {
                 <span className="text-[#00D4FF]">Mas sabe quanto lucrou de verdade?</span>
               </h1>
               <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
-                A maioria dos impressores 3D cobra por grama e esquece a energia, a depreciação da máquina, as falhas e o tempo. O Gestão3D calcula tudo isso em segundos — e te mostra o preço certo para cada peça.
+                O Gestão3D calcula o custo real de cada peça, sugere o preço ideal de venda — e ainda mostra quanto cobrar na Shopee, Mercado Livre, Amazon e TikTok Shop, já com as taxas de cada plataforma descontadas.
               </p>
               <div className="flex flex-col gap-3 mt-8 w-full max-w-md">
                 <a href="/signup" className="w-full text-center bg-[#00D4FF] text-[#0B1020] 
