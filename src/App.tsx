@@ -20,6 +20,7 @@ import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import SalesPage from "@/pages/SalesPage";
 import ClientsPage from "@/pages/ClientsPage";
+import MarketplacePage from "@/pages/MarketplacePage";
 import NotFound from "@/pages/NotFound";
 
 
