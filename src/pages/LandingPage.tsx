@@ -176,7 +176,62 @@ const LandingPage = () => {
       </section>
 
 
-      {/* Problem & Solution */}
+      {/* A Dor Section */}
+      <section className="py-20 bg-[#0B1020]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Se você se reconhece em alguma dessas situações, o Gestão3D foi feito para você
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Esses são os erros mais comuns de quem imprime sem controle financeiro.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1 */}
+            <div className="bg-[#111827] border border-white/10 border-t-4 border-t-[#EF4444] rounded-xl p-5 sm:p-6 flex flex-col h-full">
+              <div className="mb-4">
+                <TrendingDown className="w-6 h-6 sm:w-7 sm:h-7 text-[#EF4444]" />
+              </div>
+              <p className="italic text-white mb-3">
+                "Eu calculo pelo peso do filamento, mas no final do mês não sobra quase nada."
+              </p>
+              <p className="text-gray-400 text-sm mt-auto">
+                Você está ignorando energia, depreciação e mão de obra. O custo real pode ser 2x maior do que você pensa.
+              </p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-[#111827] border border-white/10 border-t-4 border-t-[#F59E0B] rounded-xl p-5 sm:p-6 flex flex-col h-full">
+              <div className="mb-4">
+                <AlertTriangle className="w-6 h-6 sm:w-7 sm:h-7 text-[#F59E0B]" />
+              </div>
+              <p className="italic text-white mb-3">
+                "Já baixei o preço para fechar venda e fiquei na dúvida se ainda estava lucrando."
+              </p>
+              <p className="text-gray-400 text-sm mt-auto">
+                Sem saber o custo exato, qualquer desconto pode virar prejuízo. Você precisa de um piso, não de um chute.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-[#111827] border border-white/10 border-t-4 border-t-[#00D4FF] rounded-xl p-5 sm:p-6 flex flex-col h-full">
+              <div className="mb-4">
+                <HelpCircle className="w-6 h-6 sm:w-7 sm:h-7 text-[#00D4FF]" />
+              </div>
+              <p className="italic text-white mb-3">
+                "Tenho vários produtos mas não sei quais me dão mais retorno."
+              </p>
+              <p className="text-gray-400 text-sm mt-auto">
+                Trabalhar muito não é o mesmo que trabalhar certo. Você precisa saber quais peças merecem o seu tempo.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem & Solution (Now moved below "A Dor" or potentially merged/replaced) */}
       <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -198,6 +253,7 @@ const LandingPage = () => {
                 O Gestão3D foi criado para transformar seu hobby em um negócio lucrativo. Automatizamos os cálculos complexos e damos a você visão clara de cada centavo que entra e sai.
               </p>
             </div>
+
           </div>
         </div>
       </section>
