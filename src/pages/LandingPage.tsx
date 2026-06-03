@@ -656,9 +656,6 @@ const LandingPage = () => {
             <a href="#" className="hover:text-[#00D4FF] transition-colors">Privacidade</a>
           </div>
         </div>
-      </footer>
-
-      </footer>
     </div>
   );
 };
