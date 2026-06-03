@@ -226,10 +226,10 @@ export default function MarketplacePage() {
                     <span className="text-gray-400">Comissão ({mp.commission}%)</span>
                     <span className="text-gray-300">R$ {(mp.suggestedPrice * mp.commission / 100).toFixed(2)}</span>
                   </div>
-                  {fixedFee > 0 && (
+                  {mp.fixedFee > 0 && (
                     <div className="flex justify-between text-[11px]">
                       <span className="text-gray-400">Taxa Fixa</span>
-                      <span className="text-gray-300">R$ {fixedFee.toFixed(2)}</span>
+                      <span className="text-gray-300">R$ {mp.fixedFee.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-[11px]">
