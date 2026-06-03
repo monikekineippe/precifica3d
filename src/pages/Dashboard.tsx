@@ -34,7 +34,9 @@ export default function Dashboard() {
     criticalStock: 0,
     operationalExpenses: 0,
     materialExpenses: 0,
-    investmentExpenses: 0
+    investmentExpenses: 0,
+    printersCount: 0,
+    activePrinter: null as any
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -48,6 +50,21 @@ export default function Dashboard() {
       const now = new Date();
       const firstDay = startOfMonth(now);
       const lastDay = endOfMonth(now);
+
+      // 0. Get Active Printer and Printers Count
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("primary_printer_id")
+        .eq("user_id", user.id)
+        .single();
+
+      const { data: userPrinters } = await supabase
+        .from("impressoras")
+        .select("*")
+        .eq("user_id", user.id);
+
+      const printersCount = userPrinters ? userPrinters.length : 0;
+      const activePrinter = userPrinters ? userPrinters.find((p: any) => p.id === profileData?.primary_printer_id) : null;
 
       // 1. Get Monthly Sales
       const { data: sales } = await supabase
@@ -142,7 +159,9 @@ export default function Dashboard() {
         criticalStock: criticalCount,
         operationalExpenses: operational,
         materialExpenses: material,
-        investmentExpenses: investment
+        investmentExpenses: investment,
+        printersCount: printersCount,
+        activePrinter: activePrinter
       });
       setRecentSales(recent || []);
       setChartData(chartDataFormatted);
@@ -225,7 +244,22 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary Stats (Line 2) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link to="/printers">
+          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Impressoras</p>
+              <div className="flex items-center justify-between">
+                <div className="text-3xl font-bold font-mono text-foreground">{stats.printersCount}</div>
+                <Printer size={24} className="text-muted-foreground opacity-20" />
+              </div>
+              {stats.activePrinter && (
+                <p className="text-[10px] text-primary truncate mt-1">Ativa: {stats.activePrinter.nome}</p>
+              )}
+            </div>
+          </Card>
+        </Link>
+
         <Card className="border-border bg-card p-6">
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Vendas no Mês</p>
