@@ -462,6 +462,55 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Diferenciais Section */}
+      <section className="py-20 bg-[#0f172a]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              O que nenhuma outra ferramenta faz
+            </h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">
+              Esses são os motivos pelos quais impressores trocam planilhas e calculadoras pelo Gestão3D.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Diferencial 1 */}
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full hover:border-[#00D4FF]/30 transition-colors group">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Zap className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Tarifa de energia real por cidade</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Não usamos uma média genérica. O Gestão3D busca automaticamente a tarifa da sua distribuidora de energia por cidade. Se você está em Curitiba, paga diferente de quem está em São Paulo — e isso muda o seu custo real.
+              </p>
+            </div>
+
+            {/* Diferencial 2 */}
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full hover:border-[#7C3AED]/30 transition-colors group">
+              <div className="w-12 h-12 rounded-full bg-[#7C3AED]/10 flex items-center justify-center mb-6 group-hover:bg-[#7C3AED]/20 transition-colors">
+                <Sparkles className="w-6 h-6 text-[#7C3AED]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">IA com contexto de produto</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                A margem sugerida varia por tipo de peça. Bola fidget tem potencial de margem diferente de peça técnica industrial. A IA sabe disso e ajusta a sugestão para cada orçamento.
+              </p>
+            </div>
+
+            {/* Diferencial 3 */}
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full hover:border-[#22C55E]/30 transition-colors group">
+              <div className="w-12 h-12 rounded-full bg-[#22C55E]/10 flex items-center justify-center mb-6 group-hover:bg-[#22C55E]/20 transition-colors">
+                <TrendingUp className="w-6 h-6 text-[#22C55E]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Lucro real, não estimado</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Cada venda salva um snapshot financeiro imutável: custo no momento da venda, taxa do pagamento, desconto aplicado e lucro líquido real. Não uma projeção — o número verdadeiro.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Interstitial CTA */}
       <section className="py-20 bg-primary/10 border-y border-primary/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
