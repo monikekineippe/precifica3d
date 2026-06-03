@@ -94,17 +94,16 @@ const LandingPage = () => {
               <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
                 A maioria dos impressores 3D cobra por grama e esquece a energia, a depreciação da máquina, as falhas e o tempo. O Gestão3D calcula tudo isso em segundos — e te mostra o preço certo para cada peça.
               </p>
-              <div className="mt-8 flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto">
-                <Link to="/signup" className="w-full sm:w-auto max-w-full overflow-hidden">
-                  <Button size="lg" className="h-[48px] sm:h-14 w-full py-4 px-6 text-sm sm:text-lg font-bold bg-[#00D4FF] text-[#0B1020] hover:bg-[#00D4FF]/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] whitespace-nowrap overflow-hidden text-ellipsis">
-                    <span className="sm:hidden">Calcular minha primeira peça — grátis</span>
-                    <span className="hidden sm:inline">Calcular o custo da minha primeira peça — grátis</span>
-                  </Button>
-                </Link>
-                <a href="#demo" className="w-full sm:w-auto max-w-full">
-                  <Button size="lg" variant="outline" className="h-[48px] sm:h-14 w-full px-8 text-sm sm:text-lg font-medium border-white/20 text-white bg-transparent hover:bg-white/5 transition-colors">
-                    Ver como funciona
-                  </Button>
+              <div className="flex flex-col gap-3 mt-8 w-full max-w-md">
+                <a href="/signup" className="w-full text-center bg-[#00D4FF] text-[#0B1020] 
+                  font-bold rounded-xl py-4 px-6 text-sm sm:text-base hover:opacity-90 
+                  transition-opacity">
+                  Calcular o custo da minha primeira peça — grátis
+                </a>
+                <a href="#demo" className="w-full text-center border border-white/20 
+                  text-white rounded-xl py-4 px-6 text-sm sm:text-base hover:bg-white/5 
+                  transition-colors">
+                  Ver como funciona
                 </a>
               </div>
             </div>
