@@ -571,6 +571,19 @@ const LandingPage = () => {
 
 
 
+      {/* Plans Section */}
+      <section id="planos" className="py-20 bg-muted/30 overflow-visible">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">Comece grátis. Escale quando quiser.</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">Sem cartão de crédito para começar. Cancele quando quiser.</p>
+          </div>
+          <div className="w-full">
+            <PlansPage isEmbedded={true} />
+          </div>
+        </div>
+      </section>
+
       {/* Final CTA Section */}
       <section className="py-24 bg-gradient-to-b from-[#0B1020] to-[#0f172a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -584,26 +597,10 @@ const LandingPage = () => {
                 Criar minha conta grátis agora
               </Button>
             </Link>
-            <a href="#planos" className="text-gray-400 text-sm underline hover:text-[#00D4FF] transition-colors">
-              Ver os planos
-            </a>
           </div>
           <p className="text-gray-500 text-sm mt-6">
             Sem cartão de crédito · Cancele quando quiser · Leva 30 segundos
           </p>
-        </div>
-      </section>
-
-      {/* Plans Section */}
-      <section id="planos" className="py-20 bg-muted/30 overflow-visible">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Comece grátis. Escale quando quiser.</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">Sem cartão de crédito para começar. Cancele quando quiser.</p>
-          </div>
-          <div className="w-full">
-            <PlansPage isEmbedded={true} />
-          </div>
         </div>
       </section>
 
