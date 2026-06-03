@@ -309,28 +309,44 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-muted/30">
+      <section className="py-20 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold uppercase tracking-wider">
-                O Problema
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Para quem quer parar de adivinhar e começar a lucrar
+            </h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Printer className="w-6 h-6 text-[#00D4FF]" />
               </div>
-              <h2 className="text-3xl font-bold">Muitos impressores 3D vendem sem saber o custo real</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                Calcular o preço apenas "por grama" é um erro comum que destrói o lucro. Você esquece a energia, a depreciação da máquina, as falhas e o tempo de pós-processamento. Sem controle, você paga para trabalhar.
+              <h3 className="text-xl font-bold text-white mb-3">Makers que querem profissionalizar</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Você imprime com qualidade mas ainda precifica no instinto. O Gestão3D te dá os números para cobrar com confiança — e transformar hobby em renda.
               </p>
             </div>
-            <div className="space-y-6">
-              <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold uppercase tracking-wider">
-                A Solução
+            
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Package className="w-6 h-6 text-[#00D4FF]" />
               </div>
-              <h2 className="text-3xl font-bold">Uma plataforma completa de gestão, estoque e precificação</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">
-                O Gestão3D foi criado para transformar seu hobby em um negócio lucrativo. Automatizamos os cálculos complexos e damos a você visão clara de cada centavo que entra e sai.
+              <h3 className="text-xl font-bold text-white mb-3">Oficinas com volume de pedidos</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Você já vende, mas não sabe exatamente o que está lucrando em cada produto. O Gestão3D organiza tudo: custos, estoque, vendas e relatórios em um só lugar.
               </p>
             </div>
-
+            
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Tag className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Lojas de personalizados e presentes</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Você trabalha com variedade e precisa de agilidade. O Gestão3D deixa você precificar qualquer peça em segundos e saber na hora se o pedido vale a pena.
+              </p>
+            </div>
           </div>
         </div>
       </section>
