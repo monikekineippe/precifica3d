@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import PlansPage from "./PlansPage";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, AlertTriangle, HelpCircle } from "lucide-react";
+import { CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
 import { useState } from "react";
@@ -232,6 +232,83 @@ const LandingPage = () => {
       </section>
 
       {/* Problem & Solution (Now moved below "A Dor" or potentially merged/replaced) */}
+      {/* How it Works Section */}
+      <section className="py-20 bg-[#0f172a] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-2">
+              Veja o que acontece quando você usa o Gestão3D
+            </h2>
+            <p className="text-gray-400">
+              Do zero ao preço certo em menos de 2 minutos
+            </p>
+          </div>
+
+          <div className="relative">
+            {/* Desktop Connector Line */}
+            <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+              {/* Step 1 */}
+              <div className="relative group text-center md:text-left pl-12 md:pl-0 border-l-2 border-dashed border-white/10 md:border-l-0">
+                <div className="absolute top-0 -left-[13px] md:relative md:left-0 md:mb-6">
+                  <div className="relative inline-flex items-center justify-center">
+                    <span className="absolute -top-4 -left-2 text-5xl font-bold text-[#00D4FF]/10 select-none">01</span>
+                    <div className="w-14 h-14 rounded-xl bg-[#00D4FF]/10 flex items-center justify-center text-[#00D4FF] relative z-10 border border-[#00D4FF]/20 shadow-[0_0_15px_rgba(0,212,255,0.1)]">
+                      <ClipboardList className="w-8 h-8" />
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">Informe os dados da impressão</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Nome da peça, impressora, tempo de impressão e filamento usado. Leva menos de 1 minuto.
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="relative group text-center md:text-left pl-12 md:pl-0 border-l-2 border-dashed border-white/10 md:border-l-0">
+                <div className="absolute top-0 -left-[13px] md:relative md:left-0 md:mb-6">
+                  <div className="relative inline-flex items-center justify-center">
+                    <span className="absolute -top-4 -left-2 text-5xl font-bold text-[#00D4FF]/10 select-none">02</span>
+                    <div className="w-14 h-14 rounded-xl bg-[#00D4FF]/10 flex items-center justify-center text-[#00D4FF] relative z-10 border border-[#00D4FF]/20 shadow-[0_0_15px_rgba(0,212,255,0.1)]">
+                      <Cpu className="w-8 h-8" />
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">O sistema calcula tudo automaticamente</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Filamento, energia com a tarifa real da sua distribuidora, mão de obra, manutenção e depreciação. Sem estimativa, sem chute.
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="relative group text-center md:text-left pl-12 md:pl-0">
+                <div className="absolute top-0 -left-[13px] md:relative md:left-0 md:mb-6">
+                  <div className="relative inline-flex items-center justify-center">
+                    <span className="absolute -top-4 -left-2 text-5xl font-bold text-[#7C3AED]/10 select-none">03</span>
+                    <div className="w-14 h-14 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center text-[#7C3AED] relative z-10 border border-[#7C3AED]/20 shadow-[0_0_15px_rgba(124,58,237,0.1)]">
+                      <Sparkles className="w-8 h-8" />
+                    </div>
+                  </div>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-3">A IA sugere a margem ideal</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Baseada no tipo de peça e no mercado, a IA indica a margem certa e mostra o preço sugerido, o preço mínimo e o lucro líquido por unidade.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-16 text-center">
+            <Link to="/signup" className="inline-block w-full sm:w-auto">
+              <Button size="lg" className="h-14 w-full sm:w-auto px-8 text-sm sm:text-base font-bold bg-[#00D4FF] text-[#0B1020] hover:bg-[#00D4FF]/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] rounded-xl">
+                Quero calcular minha primeira peça agora
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
