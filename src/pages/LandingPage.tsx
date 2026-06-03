@@ -614,9 +614,9 @@ const LandingPage = () => {
           </div>
           <div className="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2">
             <Link to="/login" className="hover:text-[#00D4FF] transition-colors">Entrar</Link>
-            <Link to="/signup" className="hover:text-[#00D4FF] transition-colors">Criar Conta</Link>
             <a href="#planos" className="hover:text-[#00D4FF] transition-colors">Planos</a>
             <a href="#" className="hover:text-[#00D4FF] transition-colors">Termos</a>
+            <a href="#" className="hover:text-[#00D4FF] transition-colors">Privacidade</a>
           </div>
         </div>
       </footer>
