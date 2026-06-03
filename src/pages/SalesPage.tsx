@@ -370,7 +370,7 @@ export default function SalesPage() {
 
     setTransactionDialogOpen(false);
     setEditingTransaction(null);
-    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" });
+    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "" });
     fetchData();
   };
 
@@ -470,7 +470,7 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "insumo_estoque" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
@@ -574,7 +574,7 @@ export default function SalesPage() {
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground uppercase font-medium tracking-wider">Estoque/Invest.</span>
-                <span className="font-bold font-mono text-cyan">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+                <span className="font-bold font-mono text-[#00D4FF]">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
               </div>
               <div className="pt-2 border-t border-border flex justify-between items-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Total</span>
@@ -969,18 +969,23 @@ export default function SalesPage() {
               />
             </div>
             <div className="grid gap-2">
-              <Label>Categoria</Label>
+              <Label>Categoria *</Label>
               <Select value={transactionForm.category} onValueChange={v => setTransactionForm({...transactionForm, category: v})}>
                 <SelectTrigger className="bg-muted border-border">
                   <SelectValue placeholder="Selecione uma categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="venda">Venda</SelectItem>
-                  <SelectItem value="insumo_estoque">Insumo / Estoque</SelectItem>
-                  <SelectItem value="despesa_fixa">Despesa Fixa</SelectItem>
-                  <SelectItem value="despesa_variavel">Despesa Variável</SelectItem>
-                  <SelectItem value="investimento_equipamento">Investimento / Equipamento</SelectItem>
-                  <SelectItem value="retirada">Retirada</SelectItem>
+                  {transactionForm.type === 'inflow' ? (
+                    <SelectItem value="venda">Venda</SelectItem>
+                  ) : (
+                    <>
+                      <SelectItem value="insumo_estoque">Insumo / Estoque</SelectItem>
+                      <SelectItem value="despesa_fixa">Despesa Fixa</SelectItem>
+                      <SelectItem value="despesa_variavel">Despesa Variável</SelectItem>
+                      <SelectItem value="investimento_equipamento">Investimento / Equipamento</SelectItem>
+                      <SelectItem value="retirada">Retirada</SelectItem>
+                    </>
+                  )}
                   <SelectItem value="outros">Outros</SelectItem>
                 </SelectContent>
               </Select>
