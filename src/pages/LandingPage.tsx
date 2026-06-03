@@ -78,7 +78,7 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-[1.22fr_1fr] gap-12 items-center">
             {/* Left Column: 55% approx */}
             <div className="text-left animate-in fade-in slide-in-from-left duration-700">
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 leading-tight text-white">
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4 leading-tight text-white">
                 Você sabe quantas horas imprimiu este mês.<br />
                 <span className="text-[#00D4FF]">Mas sabe quanto lucrou de verdade?</span>
               </h1>
@@ -177,7 +177,7 @@ const LandingPage = () => {
 
 
       {/* A Dor Section */}
-      <section className="py-20 bg-[#0B1020]">
+      <section className="pt-20 pb-16 bg-[#0B1020]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-white mb-2">
