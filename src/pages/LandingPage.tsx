@@ -6,7 +6,8 @@ import {
   CheckCircle2, Calculator, Package, LayoutDashboard, Brain, Zap, 
   ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, 
   Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, 
-  AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles 
+  AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles,
+  ShoppingBag
 } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
