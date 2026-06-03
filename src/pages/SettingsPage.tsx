@@ -109,7 +109,13 @@ export default function SettingsPage() {
             <div>
               <p className="text-foreground font-medium">Plano atual</p>
               <Badge variant="outline" className={isPro ? "border-primary/50 text-primary mt-1" : "border-border text-muted-foreground mt-1"}>
-                {isPro ? <><Crown size={12} className="mr-1" /> Pro</> : "Free"}
+                {profile?.plano === "master" ? (
+                  <><Crown size={12} className="mr-1" /> Master</>
+                ) : isPro ? (
+                  <><Crown size={12} className="mr-1" /> Pro</>
+                ) : (
+                  "Free"
+                )}
               </Badge>
             </div>
             {isPro && profile?.plano_expiracao && (
