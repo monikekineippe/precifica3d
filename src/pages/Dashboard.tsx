@@ -66,23 +66,6 @@ export default function Dashboard() {
       const printersCount = userPrinters ? userPrinters.length : 0;
       const activePrinter = userPrinters ? userPrinters.find((p: any) => p.id === profileData?.primary_printer_id) : null;
 
-
-      // 0. Get Active Printer and Printers Count
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("primary_printer_id")
-        .eq("user_id", user.id)
-        .single();
-
-      const { data: userPrinters } = await supabase
-        .from("impressoras")
-        .select("*")
-        .eq("user_id", user.id);
-
-      const printersCount = userPrinters ? userPrinters.length : 0;
-      const activePrinter = userPrinters ? userPrinters.find((p: any) => p.id === profile?.primary_printer_id) : null;
-
-
       // 1. Get Monthly Sales
       const { data: sales } = await supabase
         .from("sales")
@@ -286,7 +269,6 @@ export default function Dashboard() {
             </div>
           </div>
         </Card>
-
 
         <Link to="/inventory">
           <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
