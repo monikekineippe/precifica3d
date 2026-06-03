@@ -370,7 +370,7 @@ export default function SalesPage() {
 
     setTransactionDialogOpen(false);
     setEditingTransaction(null);
-    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "venda" });
+    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "" });
     fetchData();
   };
 
