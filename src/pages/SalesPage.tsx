@@ -470,7 +470,7 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "insumo_estoque" }); setTransactionDialogOpen(true); }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
