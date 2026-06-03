@@ -574,7 +574,7 @@ export default function SalesPage() {
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="text-muted-foreground uppercase font-medium tracking-wider">Estoque/Invest.</span>
-                <span className="font-bold font-mono text-cyan">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
+                <span className="font-bold font-mono text-[#00D4FF]">R$ {totalInvestmentStockOutflow.toFixed(2)}</span>
               </div>
               <div className="pt-2 border-t border-border flex justify-between items-center">
                 <span className="text-xs text-muted-foreground uppercase font-bold tracking-widest">Total</span>
