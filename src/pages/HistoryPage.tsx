@@ -37,19 +37,11 @@ export default function HistoryPage() {
     if (!user) return;
     setLoading(true);
     try {
-      let query = supabase
+      const { data, error } = await supabase
         .from("orcamentos")
         .select("*")
-        .eq("user_id", user.id);
-
-      // If not Pro, only show current month's quotes
-      if (!isPro) {
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        query = query.gte("created_at", startOfMonth);
-      }
-
-      const { data, error } = await query.order("created_at", { ascending: false });
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("HistoryPage: Error fetching quotes:", error);
