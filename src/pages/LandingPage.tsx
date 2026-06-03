@@ -398,7 +398,7 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Diferencial 1 */}
             <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full hover:border-[#00D4FF]/30 transition-colors group">
               <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
@@ -429,6 +429,17 @@ const LandingPage = () => {
               <h3 className="text-xl font-bold text-white mb-3">Lucro real, não estimado</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Cada venda salva um snapshot financeiro imutável: custo no momento da venda, taxa do pagamento, desconto aplicado e lucro líquido real. Não uma projeção — o número verdadeiro.
+              </p>
+            </div>
+
+            {/* Diferencial 4 */}
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full hover:border-[#00D4FF]/30 transition-colors group">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Store className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Calculadora de marketplace integrada</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Informe o custo da peça e veja em segundos o preço ideal para cada plataforma — com a taxa real da Shopee, Mercado Livre, Amazon e TikTok Shop já descontada. Sem planilha, sem chute.
               </p>
             </div>
           </div>
