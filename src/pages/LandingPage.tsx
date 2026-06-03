@@ -150,24 +150,31 @@ const LandingPage = () => {
 
 
       {/* Trust/Social Proof Banner */}
-      <section className="py-10 bg-muted/50 border-y border-border/50">
+      <section className="py-8 sm:py-10 bg-[#111827] border-none">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 text-center">
-            <div className="space-y-1">
-              <div className="text-4xl font-extrabold text-primary">+300</div>
-              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">impressores cadastrados</div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0 text-center">
+            <div className="flex-1 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-[#00D4FF]">+400</div>
+              <div className="text-sm text-gray-400">impressores cadastrados</div>
             </div>
-            <div className="space-y-1">
-              <div className="text-4xl font-extrabold text-primary">+5.000</div>
-              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">orçamentos gerados</div>
+            
+            <div className="hidden md:block w-px h-12 bg-white/10" />
+            
+            <div className="flex-1 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-[#00D4FF]">+8.000</div>
+              <div className="text-sm text-gray-400">orçamentos gerados</div>
             </div>
-            <div className="space-y-1">
-              <div className="text-4xl font-extrabold text-white">R$ 0</div>
-              <div className="text-sm uppercase tracking-widest text-muted-foreground font-medium">para começar</div>
+            
+            <div className="hidden md:block w-px h-12 bg-white/10" />
+            
+            <div className="flex-1 space-y-1">
+              <div className="text-3xl sm:text-4xl font-bold text-[#00D4FF]">33%</div>
+              <div className="text-sm text-gray-400">economia na assinatura anual</div>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Problem & Solution */}
       <section className="py-20 bg-muted/30">
