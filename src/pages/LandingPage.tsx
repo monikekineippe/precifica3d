@@ -490,6 +490,16 @@ const LandingPage = () => {
                 Você trabalha com variedade e precisa de agilidade. O Gestão3D deixa você precificar qualquer peça em segundos e saber na hora se o pedido vale a pena.
               </p>
             </div>
+
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors md:col-span-3 lg:col-span-1">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <ShoppingBag className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Preços para Marketplace</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Saiba exatamente quanto cobrar na Shopee, Mercado Livre, Amazon e TikTok Shop. A IA calcula o preço ideal já com as taxas de cada plataforma.
+              </p>
+            </div>
           </div>
         </div>
       </section>
