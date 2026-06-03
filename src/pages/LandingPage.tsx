@@ -14,20 +14,24 @@ import { useState } from "react";
 
 const FAQ_ITEMS = [
   {
-    question: "Como calcular o preço de uma impressão 3D?",
-    answer: "O preço correto de uma impressão 3D deve incluir: custo do filamento usado, consumo de energia da impressora, depreciação do equipamento, manutenção, mão de obra e embalagem. Somar apenas o filamento é o erro mais comum e o que mais destrói o lucro. O Gestão3D calcula todos esses componentes automaticamente assim que você informa o tempo de impressão e o peso da peça."
+    question: "É complicado de usar?",
+    answer: "Não. Se você consegue preencher uma ficha de pedido, consegue usar o Gestão3D. O cálculo completo leva menos de 2 minutos na primeira vez. Depois disso, menos de 30 segundos por peça."
   },
   {
-    question: "Como controlar estoque de filamento para impressão 3D?",
-    answer: "O controle de estoque de filamento deve registrar o peso total de cada rolo, a quantidade usada em cada impressão e o custo por kg de cada compra. Com isso você sabe quanto material tem disponível e quando precisa repor. O Gestão3D tem um módulo de estoque de matéria-prima com alertas automáticos quando o filamento está abaixo do mínimo configurado."
+    question: "Vale R$ 29,90 por mês?",
+    answer: "Depende. Se você vende pelo menos 5 peças por mês e cobra R$ 5 a mais em cada uma porque agora sabe o custo real, o sistema já se pagou. A maioria dos usuários recupera o investimento na primeira semana."
   },
   {
-    question: "Qual o melhor software para precificar impressão 3D?",
-    answer: "O melhor software é aquele que considera todos os custos reais da sua operação, não só o filamento. O Gestão3D é o único que busca automaticamente a tarifa de energia da sua distribuidora local, calcula depreciação por modelo de impressora e ainda usa IA para sugerir a margem ideal por tipo de peça."
+    question: "E se eu não gostar?",
+    answer: "Comece grátis, sem cartão de crédito. Teste com 2 orçamentos reais. Se não fizer sentido para o seu negócio, não assine. Simples assim."
   },
   {
-    question: "Como saber se estou tendo lucro com impressão 3D?",
-    answer: "Você tem lucro quando o preço de venda cobre todos os custos (filamento, energia, manutenção, mão de obra) e ainda sobra margem. O erro mais comum é calcular só o custo do filamento e ignorar os outros. O Gestão3D registra o lucro real de cada venda e mostra seu resultado financeiro do mês no dashboard, sem planilha, sem achismo."
+    question: "Funciona para qualquer impressora?",
+    answer: "Sim. O sistema tem impressoras pré-cadastradas das marcas mais usadas no Brasil — Bambu Lab, Creality, Prusa, FLSUN e outras. Você também pode cadastrar a sua com as especificações exatas."
+  },
+  {
+    question: "Os dados ficam salvos?",
+    answer: "Sim. Todos os seus orçamentos, vendas e histórico ficam salvos na sua conta, acessíveis de qualquer dispositivo a qualquer momento."
   }
 ];
 
@@ -575,29 +579,30 @@ const LandingPage = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20">
+      <section className="py-20 bg-transparent">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-12 text-center">Perguntas Frequentes (FAQ)</h2>
-          <div className="space-y-4">
+          <h2 className="text-3xl font-bold mb-12 text-center text-white">Suas dúvidas antes de começar</h2>
+          <div className="space-y-0">
             {FAQ_ITEMS.map((item, index) => (
-              <div key={index} className="border border-border rounded-xl overflow-hidden">
+              <div key={index} className="border-b border-white/10">
                 <button 
-                  className="w-full p-5 text-left flex items-center justify-between bg-card hover:bg-muted/50 transition-colors"
+                  className="w-full py-5 text-left flex items-center justify-between hover:text-[#00D4FF] transition-colors group"
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
                 >
-                  <span className="font-bold">{item.question}</span>
-                  <ChevronDown className={`transition-transform ${openFaq === index ? "rotate-180" : ""}`} />
+                  <span className="font-bold text-white group-hover:text-[#00D4FF] transition-colors">{item.question}</span>
+                  <ChevronDown className={`transition-transform duration-200 text-gray-500 ${openFaq === index ? "rotate-180 text-[#00D4FF]" : ""}`} />
                 </button>
-                {openFaq === index && (
-                  <div className="p-5 bg-card border-t border-border text-muted-foreground leading-relaxed">
+                <div className={`overflow-hidden transition-all duration-300 ${openFaq === index ? "max-h-96 pb-5" : "max-h-0"}`}>
+                  <p className="text-gray-400 leading-relaxed">
                     {item.answer}
-                  </div>
-                )}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
 
 
       {/* Plans Section */}
