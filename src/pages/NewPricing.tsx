@@ -3,7 +3,7 @@ import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles, CreditCard, QrCode,
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles, CreditCard, QrCode, ShoppingBag
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -814,6 +814,13 @@ export default function NewPricing() {
             </Button>
             <Button variant="outline" className="border-border" onClick={handleExportCSV}>
               {!isPro && <Lock size={14} className="mr-1" />} Exportar CSV
+            </Button>
+            <Button 
+              variant="outline" 
+              className="border-border text-[#00D4FF] hover:bg-[#00D4FF]/10" 
+              onClick={() => navigate("/marketplace", { state: { cost: totalCost } })}
+            >
+              <ShoppingBag size={14} className="mr-1" /> Ver preços para marketplace
             </Button>
           </div>
         </CardContent>

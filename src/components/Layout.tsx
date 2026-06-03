@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet, Users } from "lucide-react";
+import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet, Users, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,7 @@ const NAV = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/printers", icon: Printer, label: "Impressoras" },
   { to: "/new", icon: PlusCircle, label: "Nova Precificação" },
+  { to: "/marketplace", icon: ShoppingBag, label: "Marketplace" },
   { to: "/history", icon: History, label: "Histórico" },
   { to: "/reports", icon: BarChart3, label: "Relatórios" },
   { to: "/inventory", icon: Package, label: "Estoque" },
