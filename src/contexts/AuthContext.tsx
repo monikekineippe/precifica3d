@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAnual = profile?.plano === "anual" && (
+  const isAnual = (profile?.plano === "anual" || profile?.plano === "master") && (
     !profile.plano_expiracao || new Date(profile.plano_expiracao) > new Date()
   );
 
