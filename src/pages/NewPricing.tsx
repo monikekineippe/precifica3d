@@ -748,18 +748,24 @@ export default function NewPricing() {
                       <CommandItem value="manual" onSelect={() => { setPkgType('manual'); setPkgCost(0); }} className="text-xs">
                         <Plus size={14} className="mr-2" /> Preencher manualmente
                       </CommandItem>
-                      {inventory.filter(item => item.type === 'Embalagem').map((item) => (
+                      {inventoryLoading ? (
+                        <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                          <Loader2 size={14} className="animate-spin" /> Carregando...
+                        </div>
+                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').length === 0 ? (
+                        <div className="p-2 text-xs text-muted-foreground">Nenhuma embalagem encontrada.</div>
+                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').map((item) => (
                         <CommandItem
                           key={item.id}
                           value={item.name}
                           onSelect={() => {
                             setPkgType(item.id);
-                            setPkgCost(Number(item.unit_cost || 0));
+                            setPkgCost(Number(item.cost_per_unit || 0));
                           }}
                           className="text-xs flex flex-col items-start"
                         >
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                          <div className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/un</div>
                         </CommandItem>
                       ))}
                     </CommandGroup>
