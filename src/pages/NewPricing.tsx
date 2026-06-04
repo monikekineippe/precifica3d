@@ -134,6 +134,8 @@ export default function NewPricing() {
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [filaments, setFilaments] = useState<FilamentEntry[]>([createFilament(0)]);
+  const [accessories, setAccessories] = useState<any[]>([]);
+  const [pkgQty, setPkgQty] = useState(1);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
