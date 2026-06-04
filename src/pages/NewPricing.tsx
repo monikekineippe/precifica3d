@@ -3,7 +3,7 @@ import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
-  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles, CreditCard, QrCode, ShoppingBag
+  Zap, Package, Wrench, DollarSign, Plus, Trash2, Info, Loader2, Lock, Share2, Sparkles, CreditCard, QrCode, ShoppingBag, Search, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import UpgradeModal from "@/components/UpgradeModal";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)", "hsl(30,80%,50%)", "hsl(310,60%,55%)"];
 const FILAMENT_COLORS = ["#00ccaa", "#3399ff", "#ff6633", "#cc33ff", "#ffcc00", "#00ff88", "#ff3366", "#6633ff"];
@@ -78,14 +81,18 @@ export default function NewPricing() {
   const [cardFeePercent, setCardFeePercent] = useState(4.99);
   const [maxInstallments, setMaxInstallments] = useState(12);
 
+  const [inventory, setInventory] = useState<any[]>([]);
+
   useEffect(() => {
     if (!user) return;
+    
+    // Fetch Printers
     supabase.from("impressoras").select("*")
       .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
       .then(({ data }) => {
         if (data) setPrinters(data as any);
         // Load user settings and apply defaults after printers are loaded
-        supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+        supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle()
           .then(({ data: settingsData }) => {
             if (settingsData) {
               setSettings({ defaultTariff: settingsData.default_tariff, defaultMargin: settingsData.default_margin, defaultTaxRate: settingsData.default_tax_rate });
@@ -93,24 +100,32 @@ export default function NewPricing() {
               setTaxRate(settingsData.default_tax_rate);
               // Apply saved defaults
               if (!defaultsApplied) {
-                if ((settingsData as any).default_printer_id && data?.some((p: any) => p.id === (settingsData as any).default_printer_id)) {
-                  setPrinterId((settingsData as any).default_printer_id);
+                if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
+                  setPrinterId(settingsData.default_printer_id);
                 }
-                if ((settingsData as any).default_state) {
-                  setState((settingsData as any).default_state);
+                if (settingsData.default_state) {
+                  setState(settingsData.default_state);
                 }
-                if ((settingsData as any).default_city) {
-                  // City will be set after cities load via the separate effect
-                  setDefaultCity((settingsData as any).default_city);
+                if (settingsData.default_city) {
+                  setDefaultCity(settingsData.default_city);
                 }
                 setDefaultsApplied(true);
               }
               // Load payment settings
-              setPixDiscount((settingsData as any).pix_discount ?? 0);
-              setCardFeePercent((settingsData as any).card_fee_percent ?? 4.99);
-              setMaxInstallments((settingsData as any).max_installments ?? 12);
+              setPixDiscount(settingsData.pix_discount ?? 0);
+              setCardFeePercent(settingsData.card_fee_percent ?? 4.99);
+              setMaxInstallments(settingsData.max_installments ?? 12);
             }
           });
+      });
+
+    // Fetch Inventory (Filaments)
+    supabase.from("inventory")
+      .select("*")
+      .eq("user_id", user.id)
+      .or('type.eq.Filamento,type.eq.Matéria-Prima')
+      .then(({ data }) => {
+        if (data) setInventory(data);
       });
   }, [user]);
 
@@ -449,6 +464,99 @@ export default function NewPricing() {
                 </div>
                 {i > 0 && <button onClick={() => removeFilament(f.id)} className="text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>}
               </div>
+
+              {/* Inventory Search */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase font-bold">Selecionar do estoque</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between bg-background border-border h-9 text-xs font-normal"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <Search size={14} className="text-muted-foreground shrink-0" />
+                        <span className="truncate">
+                          {(f as any).inventoryId 
+                            ? inventory.find(item => item.id === (f as any).inventoryId)?.name || "Buscar no estoque..."
+                            : "Buscar no estoque..."}
+                        </span>
+                      </div>
+                      <Plus size={14} className="ml-2 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Filtrar filamentos..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty>Nenhum filamento encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="manual"
+                            onSelect={() => {
+                              updateFilament(f.id, { 
+                                brand: '', 
+                                costPerKg: 0,
+                                ...({ inventoryId: null, fromStock: false } as any)
+                              });
+                            }}
+                            className="text-xs"
+                          >
+                            <Plus size={14} className="mr-2" /> Preencher manualmente
+                          </CommandItem>
+                          {inventory.map((item) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.name}
+                              onSelect={() => {
+                                const matchedType = FILAMENT_TYPES.find(t => item.name.toUpperCase().includes(t.toUpperCase())) || f.type;
+                                updateFilament(f.id, {
+                                  type: matchedType,
+                                  brand: item.brand || '',
+                                  costPerKg: Number(item.unit_cost || 0),
+                                  ...({ inventoryId: item.id, fromStock: true } as any)
+                                });
+                              }}
+                              className="text-xs flex flex-col items-start"
+                            >
+                              <div className="font-medium">{item.name}</div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/kg</span>
+                                <Badge variant="outline" className={cn(
+                                  "text-[9px] px-1 py-0 h-3.5",
+                                  item.quantity <= 0 ? "border-destructive text-destructive" : "border-primary/30 text-primary"
+                                )}>
+                                  Qtd: {item.quantity}{item.unit === 'kg' ? 'kg' : 'g'}
+                                </Badge>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Stock Warning */}
+                {(f as any).inventoryId && (
+                  <div className="flex flex-col gap-1 mt-1">
+                    {inventory.find(item => item.id === (f as any).inventoryId)?.quantity <= 0 && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-alert font-medium bg-alert/10 p-1.5 rounded border border-alert/20">
+                        <AlertCircle size={12} />
+                        Estoque zerado para este filamento
+                      </div>
+                    )}
+                    {(f as any).fromStock && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-primary font-medium bg-primary/10 p-1.5 rounded border border-primary/20">
+                        <CheckCircle2 size={12} />
+                        Custo real do estoque aplicado
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-foreground">Tipo</Label>
@@ -458,7 +566,12 @@ export default function NewPricing() {
                   </Select>
                 </div>
                 <div><Label className="text-xs text-foreground">Marca</Label><Input value={f.brand} onChange={e => updateFilament(f.id, { brand: e.target.value })} className="bg-background border-border text-xs h-8" /></div>
-                <div><Label className="text-xs text-foreground">Custo/kg (R$)</Label><Input type="number" value={f.costPerKg || ''} onChange={e => updateFilament(f.id, { costPerKg: +e.target.value })} className="bg-background border-border text-xs h-8" /></div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs text-foreground">Custo/kg (R$)</Label>
+                  </div>
+                  <Input type="number" value={f.costPerKg || ''} onChange={e => updateFilament(f.id, { costPerKg: +e.target.value, ...({ fromStock: false } as any) })} className="bg-background border-border text-xs h-8" />
+                </div>
                 <div><Label className="text-xs text-foreground">Peso usado (g)</Label><Input type="number" value={f.weightUsed || ''} onChange={e => updateFilament(f.id, { weightUsed: +e.target.value })} className="bg-background border-border text-xs h-8" /></div>
               </div>
               <div className="text-xs text-right text-muted-foreground">Custo: <span className="font-mono text-primary">R$ {f.computedCost.toFixed(2)}</span></div>
