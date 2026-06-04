@@ -840,9 +840,16 @@ export default function SalesPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
-                          {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
-                        </p>
+                        <div className="flex flex-col items-end">
+                          <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
+                            {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
+                          </p>
+                          {transaction.auto_inventory_update && (
+                            <Badge variant="outline" className="text-[9px] bg-green-500/10 text-green-500 border-green-500/20 gap-1 mt-1 py-0 h-4">
+                              <CheckCircle2 size={8} /> Estoque atualizado
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex items-center">
                           <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
                             <Pencil size={16} />
@@ -1111,6 +1118,95 @@ export default function SalesPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {(transactionForm.category === 'insumo_estoque' || transactionForm.category === 'investimento_equipamento') && transactionForm.type === 'outflow' && !editingTransaction && (
+              <div className="space-y-4 pt-2 border-t border-border mt-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="auto-inv" className="cursor-pointer">Adicionar ao estoque automaticamente</Label>
+                  <Switch 
+                    id="auto-inv" 
+                    checked={transactionForm.auto_inventory_update} 
+                    onCheckedChange={v => setTransactionForm({...transactionForm, auto_inventory_update: v})} 
+                  />
+                </div>
+
+                {transactionForm.auto_inventory_update && (
+                  <div className="grid gap-3 p-3 rounded-lg bg-muted/50 border border-border animate-in fade-in slide-in-from-top-2">
+                    <div className="grid gap-2">
+                      <Label>Tipo de item</Label>
+                      <Select 
+                        value={transactionForm.inventory_item_type} 
+                        onValueChange={v => setTransactionForm({...transactionForm, inventory_item_type: v})}
+                      >
+                        <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="filament">Filamento</SelectItem>
+                          <SelectItem value="packaging">Embalagem</SelectItem>
+                          <SelectItem value="accessory">Acessório</SelectItem>
+                          <SelectItem value="product">Produto Pronto</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Nome/Descrição do item</Label>
+                      <Input 
+                        value={transactionForm.inventory_item_name} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_name: e.target.value})}
+                        placeholder="Ex: PLA Branco Premium"
+                        className="bg-background border-border"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="grid gap-2">
+                        <Label>Quantidade</Label>
+                        <Input 
+                          type="number"
+                          value={transactionForm.inventory_item_qty} 
+                          onChange={e => {
+                            const qty = +e.target.value;
+                            setTransactionForm(prev => ({
+                              ...prev, 
+                              inventory_item_qty: qty,
+                              inventory_item_cost: qty > 0 ? prev.amount / qty : 0
+                            }));
+                          }}
+                          className="bg-background border-border"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Unidade</Label>
+                        <Select 
+                          value={transactionForm.inventory_item_unit} 
+                          onValueChange={v => setTransactionForm({...transactionForm, inventory_item_unit: v})}
+                        >
+                          <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="kg">kg</SelectItem>
+                            <SelectItem value="g">g</SelectItem>
+                            <SelectItem value="unidade">unidade</SelectItem>
+                            <SelectItem value="metro">metro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label>Custo unitário (R$)</Label>
+                      <Input 
+                        type="number"
+                        value={transactionForm.inventory_item_cost} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_cost: +e.target.value})}
+                        className="bg-background border-border"
+                      />
+                      <p className="text-[10px] text-muted-foreground">Calculado: Total ÷ Quantidade</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {(transactionForm.category === 'insumo_estoque' || transactionForm.category === 'investimento_equipamento') && transactionForm.type === 'outflow' && !editingTransaction && (
               <div className="space-y-4 pt-2 border-t border-border mt-2">
