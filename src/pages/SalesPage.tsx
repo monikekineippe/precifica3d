@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil } from "lucide-react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +50,8 @@ interface CashTransaction {
   description: string;
   category: string;
   created_at: string;
+  auto_inventory_update?: boolean;
+  inventory_data?: any;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -95,7 +98,13 @@ export default function SalesPage() {
     type: "inflow" as "inflow" | "outflow",
     amount: 0,
     description: "",
-    category: ""
+    category: "",
+    auto_inventory_update: false,
+    inventory_item_type: "filament",
+    inventory_item_name: "",
+    inventory_item_qty: 0,
+    inventory_item_unit: "g",
+    inventory_item_cost: 0
   });
 
   const fetchData = async () => {
@@ -353,24 +362,101 @@ export default function SalesPage() {
       }
       toast.success("Transação atualizada!");
     } else {
-      const { error } = await supabase.from("cash_transactions").insert({
+      // 1. First register the transaction
+      const transactionData: any = {
         user_id: user.id,
         type: transactionForm.type,
         amount: transactionForm.amount,
         description: transactionForm.description,
-        category: transactionForm.category
-      });
+        category: transactionForm.category,
+        auto_inventory_update: transactionForm.auto_inventory_update
+      };
+
+      if (transactionForm.auto_inventory_update) {
+        transactionData.inventory_data = {
+          type: transactionForm.inventory_item_type,
+          name: transactionForm.inventory_item_name,
+          qty: transactionForm.inventory_item_qty,
+          unit: transactionForm.inventory_item_unit,
+          cost: transactionForm.inventory_item_cost
+        };
+      }
+
+      const { data: transaction, error } = await supabase
+        .from("cash_transactions")
+        .insert(transactionData)
+        .select()
+        .single();
 
       if (error) {
         toast.error("Erro ao registrar transação");
         return;
       }
+
+      // 2. Handle inventory update if toggle is on
+      if (transactionForm.auto_inventory_update) {
+        // Check if item already exists by name
+        const { data: existingItems } = await supabase
+          .from("inventory")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("name", transactionForm.inventory_item_name);
+
+        if (existingItems && existingItems.length > 0) {
+          const item = existingItems[0];
+          const newQty = Number(item.quantity) + Number(transactionForm.inventory_item_qty);
+          
+          // Weighted average cost: (current_qty * current_cost + new_qty * new_cost) / (current_qty + new_qty)
+          const currentQty = Number(item.quantity) || 0;
+          const currentCost = Number(item.cost_per_unit) || 0;
+          const newAddedQty = Number(transactionForm.inventory_item_qty);
+          const newAddedCost = Number(transactionForm.inventory_item_cost);
+          
+          const weightedCost = ((currentQty * currentCost) + (newAddedQty * newAddedCost)) / (currentQty + newAddedQty);
+
+          await supabase
+            .from("inventory")
+            .update({
+              quantity: newQty,
+              cost_per_unit: weightedCost,
+              last_purchase_date: new Date().toISOString()
+            })
+            .eq("id", item.id);
+          
+          toast.info(`Estoque de ${item.name} atualizado! Novo custo médio: R$ ${weightedCost.toFixed(2)}`);
+        } else {
+          // Create new item
+          await supabase.from("inventory").insert({
+            user_id: user.id,
+            name: transactionForm.inventory_item_name,
+            type: transactionForm.inventory_item_type,
+            quantity: transactionForm.inventory_item_qty,
+            unit: transactionForm.inventory_item_unit,
+            cost_per_unit: transactionForm.inventory_item_cost,
+            category: (transactionForm.inventory_item_type === 'product' || transactionForm.inventory_item_type === 'finished_product') ? 'finished_product' : 'raw_material',
+            last_purchase_date: new Date().toISOString()
+          });
+          toast.info(`Novo item ${transactionForm.inventory_item_name} criado no estoque!`);
+        }
+      }
+
       toast.success("Transação registrada!");
     }
 
     setTransactionDialogOpen(false);
     setEditingTransaction(null);
-    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "" });
+    setTransactionForm({ 
+      type: "inflow", 
+      amount: 0, 
+      description: "", 
+      category: "",
+      auto_inventory_update: false,
+      inventory_item_type: "filament",
+      inventory_item_name: "",
+      inventory_item_qty: 0,
+      inventory_item_unit: "g",
+      inventory_item_cost: 0
+    });
     fetchData();
   };
 
