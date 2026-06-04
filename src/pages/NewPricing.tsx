@@ -82,6 +82,7 @@ export default function NewPricing() {
   const [maxInstallments, setMaxInstallments] = useState(12);
 
   const [inventory, setInventory] = useState<any[]>([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -119,14 +120,29 @@ export default function NewPricing() {
           });
       });
 
-    // Fetch Inventory (Filaments)
-    supabase.from("inventory")
-      .select("*")
-      .eq("user_id", user.id)
-      .or('type.eq.Filamento,type.eq.Matéria-Prima')
-      .then(({ data }) => {
-        if (data) setInventory(data);
-      });
+    // Fetch Inventory
+    const fetchInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const { data, error } = await supabase.from("inventory")
+          .select("*")
+          .eq("user_id", user.id);
+        
+        if (error) throw error;
+        
+        if (data) {
+          console.log("Inventory data loaded:", data);
+          setInventory(data);
+        }
+      } catch (err) {
+        console.error("Error loading inventory:", err);
+        toast.error("Erro ao carregar itens do estoque.");
+      } finally {
+        setInventoryLoading(false);
+      }
+    };
+
+    fetchInventory();
   }, [user]);
 
   const [pieceName, setPieceName] = useState("");
@@ -514,7 +530,13 @@ export default function NewPricing() {
                           >
                             <Plus size={14} className="mr-2" /> Preencher manualmente
                           </CommandItem>
-                          {inventory.map((item) => (
+                          {inventoryLoading ? (
+                            <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                              <Loader2 size={14} className="animate-spin" /> Carregando estoque...
+                            </div>
+                          ) : inventory.filter(item => item.type === 'filament' || item.type === 'Filamento').length === 0 ? (
+                            <div className="p-2 text-xs text-muted-foreground">Nenhum filamento encontrado no estoque. Cadastre em Estoque primeiro.</div>
+                          ) : inventory.filter(item => item.type === 'filament' || item.type === 'Filamento').map((item) => (
                             <CommandItem
                               key={item.id}
                               value={item.name}
@@ -523,7 +545,7 @@ export default function NewPricing() {
                                 updateFilament(f.id, {
                                   type: matchedType,
                                   brand: item.brand || '',
-                                  costPerKg: Number(item.unit_cost || 0),
+                                  costPerKg: Number(item.cost_per_unit || 0),
                                   ...({ inventoryId: item.id, fromStock: true } as any)
                                 });
                               }}
@@ -531,7 +553,7 @@ export default function NewPricing() {
                             >
                               <div className="font-medium">{item.name}</div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/kg</span>
+                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/kg</span>
                                 <Badge variant="outline" className={cn(
                                   "text-[9px] px-1 py-0 h-3.5",
                                   item.quantity <= 0 ? "border-destructive text-destructive" : "border-primary/30 text-primary"
@@ -726,18 +748,24 @@ export default function NewPricing() {
                       <CommandItem value="manual" onSelect={() => { setPkgType('manual'); setPkgCost(0); }} className="text-xs">
                         <Plus size={14} className="mr-2" /> Preencher manualmente
                       </CommandItem>
-                      {inventory.filter(item => item.type === 'Embalagem').map((item) => (
+                      {inventoryLoading ? (
+                        <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                          <Loader2 size={14} className="animate-spin" /> Carregando...
+                        </div>
+                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').length === 0 ? (
+                        <div className="p-2 text-xs text-muted-foreground">Nenhuma embalagem encontrada.</div>
+                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').map((item) => (
                         <CommandItem
                           key={item.id}
                           value={item.name}
                           onSelect={() => {
                             setPkgType(item.id);
-                            setPkgCost(Number(item.unit_cost || 0));
+                            setPkgCost(Number(item.cost_per_unit || 0));
                           }}
                           className="text-xs flex flex-col items-start"
                         >
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                          <div className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/un</div>
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -814,7 +842,13 @@ export default function NewPricing() {
                           }} className="text-xs">
                             <Plus size={14} className="mr-2" /> Preencher manualmente
                           </CommandItem>
-                          {inventory.filter(item => item.type === 'Acessório').map((item) => (
+                          {inventoryLoading ? (
+                            <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                              <Loader2 size={14} className="animate-spin" /> Carregando...
+                            </div>
+                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').length === 0 ? (
+                            <div className="p-2 text-xs text-muted-foreground">Nenhum item encontrado.</div>
+                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').map((item) => (
                             <CommandItem
                               key={item.id}
                               value={item.name}
@@ -824,7 +858,7 @@ export default function NewPricing() {
                                   ...newAccs[idx], 
                                   inventoryId: item.id, 
                                   name: item.name, 
-                                  unitCost: Number(item.unit_cost || 0), 
+                                  unitCost: Number(item.cost_per_unit || 0), 
                                   isManual: false 
                                 };
                                 setAccessories(newAccs);
@@ -832,7 +866,7 @@ export default function NewPricing() {
                               className="text-xs flex flex-col items-start"
                             >
                               <div className="font-medium">{item.name}</div>
-                              <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                              <div className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/un</div>
                             </CommandItem>
                           ))}
                         </CommandGroup>
