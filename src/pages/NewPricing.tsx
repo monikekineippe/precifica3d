@@ -464,6 +464,99 @@ export default function NewPricing() {
                 </div>
                 {i > 0 && <button onClick={() => removeFilament(f.id)} className="text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>}
               </div>
+
+              {/* Inventory Search */}
+              <div className="space-y-1.5">
+                <Label className="text-[10px] text-muted-foreground uppercase font-bold">Selecionar do estoque</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between bg-background border-border h-9 text-xs font-normal"
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <Search size={14} className="text-muted-foreground shrink-0" />
+                        <span className="truncate">
+                          {(f as any).inventoryId 
+                            ? inventory.find(item => item.id === (f as any).inventoryId)?.name || "Buscar no estoque..."
+                            : "Buscar no estoque..."}
+                        </span>
+                      </div>
+                      <Plus size={14} className="ml-2 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Filtrar filamentos..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty>Nenhum filamento encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem
+                            value="manual"
+                            onSelect={() => {
+                              updateFilament(f.id, { 
+                                brand: '', 
+                                costPerKg: 0,
+                                ...({ inventoryId: null, fromStock: false } as any)
+                              });
+                            }}
+                            className="text-xs"
+                          >
+                            <Plus size={14} className="mr-2" /> Preencher manualmente
+                          </CommandItem>
+                          {inventory.map((item) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.name}
+                              onSelect={() => {
+                                const matchedType = FILAMENT_TYPES.find(t => item.name.toUpperCase().includes(t.toUpperCase())) || f.type;
+                                updateFilament(f.id, {
+                                  type: matchedType,
+                                  brand: item.brand || '',
+                                  costPerKg: Number(item.unit_cost || 0),
+                                  ...({ inventoryId: item.id, fromStock: true } as any)
+                                });
+                              }}
+                              className="text-xs flex flex-col items-start"
+                            >
+                              <div className="font-medium">{item.name}</div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/kg</span>
+                                <Badge variant="outline" className={cn(
+                                  "text-[9px] px-1 py-0 h-3.5",
+                                  item.quantity <= 0 ? "border-destructive text-destructive" : "border-primary/30 text-primary"
+                                )}>
+                                  Qtd: {item.quantity}{item.unit === 'kg' ? 'kg' : 'g'}
+                                </Badge>
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Stock Warning */}
+                {(f as any).inventoryId && (
+                  <div className="flex flex-col gap-1 mt-1">
+                    {inventory.find(item => item.id === (f as any).inventoryId)?.quantity <= 0 && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-alert font-medium bg-alert/10 p-1.5 rounded border border-alert/20">
+                        <AlertCircle size={12} />
+                        Estoque zerado para este filamento
+                      </div>
+                    )}
+                    {(f as any).fromStock && (
+                      <div className="flex items-center gap-1.5 text-[10px] text-primary font-medium bg-primary/10 p-1.5 rounded border border-primary/20">
+                        <CheckCircle2 size={12} />
+                        Custo real do estoque aplicado
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs text-foreground">Tipo</Label>
@@ -473,7 +566,12 @@ export default function NewPricing() {
                   </Select>
                 </div>
                 <div><Label className="text-xs text-foreground">Marca</Label><Input value={f.brand} onChange={e => updateFilament(f.id, { brand: e.target.value })} className="bg-background border-border text-xs h-8" /></div>
-                <div><Label className="text-xs text-foreground">Custo/kg (R$)</Label><Input type="number" value={f.costPerKg || ''} onChange={e => updateFilament(f.id, { costPerKg: +e.target.value })} className="bg-background border-border text-xs h-8" /></div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-xs text-foreground">Custo/kg (R$)</Label>
+                  </div>
+                  <Input type="number" value={f.costPerKg || ''} onChange={e => updateFilament(f.id, { costPerKg: +e.target.value, ...({ fromStock: false } as any) })} className="bg-background border-border text-xs h-8" />
+                </div>
                 <div><Label className="text-xs text-foreground">Peso usado (g)</Label><Input type="number" value={f.weightUsed || ''} onChange={e => updateFilament(f.id, { weightUsed: +e.target.value })} className="bg-background border-border text-xs h-8" /></div>
               </div>
               <div className="text-xs text-right text-muted-foreground">Custo: <span className="font-mono text-primary">R$ {f.computedCost.toFixed(2)}</span></div>
