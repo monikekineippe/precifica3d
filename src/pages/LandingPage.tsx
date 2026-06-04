@@ -327,8 +327,8 @@ const LandingPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
                 { 
-                  title: "IA calcula o preço ideal em segundos",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409446027-18572e0f-b770-49aa-974b-dac75b535819.png"
+                  title: "Selecione filamento, embalagem e acessórios direto do estoque",
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780613859977-05182b66-682f-4ada-bcbd-69ed7e316933.png"
                 },
                 { 
                   title: "Controle cada venda, custo e lucro em tempo real",
