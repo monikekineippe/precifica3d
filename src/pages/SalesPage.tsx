@@ -493,7 +493,13 @@ export default function SalesPage() {
       type: transaction.type,
       amount: transaction.amount,
       description: transaction.description,
-      category: transaction.category
+      category: transaction.category,
+      auto_inventory_update: transaction.auto_inventory_update || false,
+      inventory_item_type: transaction.inventory_data?.type || "filament",
+      inventory_item_name: transaction.inventory_data?.name || "",
+      inventory_item_qty: transaction.inventory_data?.qty || 0,
+      inventory_item_unit: transaction.inventory_data?.unit || "g",
+      inventory_item_cost: transaction.inventory_data?.cost || 0
     });
     setTransactionDialogOpen(true);
   };
@@ -556,7 +562,22 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "insumo_estoque" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { 
+            setEditingTransaction(null); 
+            setTransactionForm({ 
+              type: "outflow", 
+              amount: 0, 
+              description: "", 
+              category: "insumo_estoque",
+              auto_inventory_update: false,
+              inventory_item_type: "filament",
+              inventory_item_name: "",
+              inventory_item_qty: 0,
+              inventory_item_unit: "g",
+              inventory_item_cost: 0
+            }); 
+            setTransactionDialogOpen(true); 
+          }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
@@ -1039,7 +1060,14 @@ export default function SalesPage() {
                   id="t-amount" 
                   type="number" 
                   value={transactionForm.amount} 
-                  onChange={e => setTransactionForm({...transactionForm, amount: +e.target.value})} 
+                  onChange={e => {
+                    const val = +e.target.value;
+                    setTransactionForm(prev => ({
+                      ...prev, 
+                      amount: val,
+                      inventory_item_cost: prev.inventory_item_qty > 0 ? val / prev.inventory_item_qty : prev.inventory_item_cost
+                    }));
+                  }} 
                   className="bg-muted border-border" 
                 />
               </div>
@@ -1049,7 +1077,14 @@ export default function SalesPage() {
               <Input 
                 id="desc" 
                 value={transactionForm.description} 
-                onChange={e => setTransactionForm({...transactionForm, description: e.target.value})} 
+                onChange={e => {
+                  const val = e.target.value;
+                  setTransactionForm(prev => ({
+                    ...prev, 
+                    description: val,
+                    inventory_item_name: prev.auto_inventory_update && !prev.inventory_item_name ? val : prev.inventory_item_name
+                  }));
+                }} 
                 placeholder="Ex: Compra de carretel de filamento" 
                 className="bg-muted border-border" 
               />
@@ -1076,6 +1111,95 @@ export default function SalesPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {(transactionForm.category === 'insumo_estoque' || transactionForm.category === 'investimento_equipamento') && transactionForm.type === 'outflow' && !editingTransaction && (
+              <div className="space-y-4 pt-2 border-t border-border mt-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="auto-inv" className="cursor-pointer">Adicionar ao estoque automaticamente</Label>
+                  <Switch 
+                    id="auto-inv" 
+                    checked={transactionForm.auto_inventory_update} 
+                    onCheckedChange={v => setTransactionForm({...transactionForm, auto_inventory_update: v})} 
+                  />
+                </div>
+
+                {transactionForm.auto_inventory_update && (
+                  <div className="grid gap-3 p-3 rounded-lg bg-muted/50 border border-border animate-in fade-in slide-in-from-top-2">
+                    <div className="grid gap-2">
+                      <Label>Tipo de item</Label>
+                      <Select 
+                        value={transactionForm.inventory_item_type} 
+                        onValueChange={v => setTransactionForm({...transactionForm, inventory_item_type: v})}
+                      >
+                        <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="filament">Filamento</SelectItem>
+                          <SelectItem value="packaging">Embalagem</SelectItem>
+                          <SelectItem value="accessory">Acessório</SelectItem>
+                          <SelectItem value="product">Produto Pronto</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Nome/Descrição do item</Label>
+                      <Input 
+                        value={transactionForm.inventory_item_name} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_name: e.target.value})}
+                        placeholder="Ex: PLA Branco Premium"
+                        className="bg-background border-border"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="grid gap-2">
+                        <Label>Quantidade</Label>
+                        <Input 
+                          type="number"
+                          value={transactionForm.inventory_item_qty} 
+                          onChange={e => {
+                            const qty = +e.target.value;
+                            setTransactionForm(prev => ({
+                              ...prev, 
+                              inventory_item_qty: qty,
+                              inventory_item_cost: qty > 0 ? prev.amount / qty : 0
+                            }));
+                          }}
+                          className="bg-background border-border"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Unidade</Label>
+                        <Select 
+                          value={transactionForm.inventory_item_unit} 
+                          onValueChange={v => setTransactionForm({...transactionForm, inventory_item_unit: v})}
+                        >
+                          <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="kg">kg</SelectItem>
+                            <SelectItem value="g">g</SelectItem>
+                            <SelectItem value="unidade">unidade</SelectItem>
+                            <SelectItem value="metro">metro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label>Custo unitário (R$)</Label>
+                      <Input 
+                        type="number"
+                        value={transactionForm.inventory_item_cost} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_cost: +e.target.value})}
+                        className="bg-background border-border"
+                      />
+                      <p className="text-[10px] text-muted-foreground">Calculado: Total ÷ Quantidade</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setTransactionDialogOpen(false); setEditingTransaction(null); }}>Cancelar</Button>
