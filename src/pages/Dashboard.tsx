@@ -89,12 +89,12 @@ export default function Dashboard() {
       
       const criticalCount = inventory ? inventory.filter((i: any) => i.quantity <= i.min_stock).length : 0;
 
-      // 4. Get Monthly Expenses
+      // 4. Get Monthly Expenses (Other Movements)
       const { data: expenses } = await supabase
         .from("cash_transactions")
         .select("*")
         .eq("user_id", user.id)
-        .eq("type", "expense")
+        .eq("type", "outflow")
         .gte("created_at", firstDay.toISOString())
         .lte("created_at", lastDay.toISOString());
 
@@ -140,11 +140,11 @@ export default function Dashboard() {
 
       if (expenses) {
         expenses.forEach((e: any) => {
-          if (e.category === "Despesa Fixa" || e.category === "Despesa Variável" || e.category === "Retirada") {
+          if (e.category === "despesa_fixa" || e.category === "despesa_variavel" || e.category === "retirada") {
             operational += Number(e.amount || 0);
-          } else if (e.category === "Insumo/Estoque") {
+          } else if (e.category === "insumo_estoque") {
             material += Number(e.amount || 0);
-          } else if (e.category === "Investimento/Equipamento") {
+          } else if (e.category === "investimento_equipamento") {
             investment += Number(e.amount || 0);
           }
         });
@@ -299,6 +299,10 @@ export default function Dashboard() {
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Investimento:</span>
                 <span className="font-mono text-alert">R$ {stats.investmentExpenses.toFixed(2)}</span>
+              </div>
+              <div className="pt-2 border-t border-border mt-1.5 flex justify-between text-xs font-bold">
+                <span className="text-foreground">Total:</span>
+                <span className="font-mono text-alert">R$ {(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses).toFixed(2)}</span>
               </div>
             </div>
           </div>
