@@ -240,9 +240,74 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Comparison Section */}
+      <section className="py-24 bg-[#0f172a]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-2">Por que planilha não resolve</h2>
+            <p className="text-gray-400">Planilha calcula. O Gestão3D mostra o lucro real.</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full border-separate border-spacing-0">
+              <thead>
+                <tr>
+                  <th className="p-4 text-left text-sm font-medium text-gray-400 bg-transparent">O que você precisa saber</th>
+                  <th className="p-4 text-center text-sm font-bold text-[#EF4444] bg-[#111827] border-t border-x border-white/5 rounded-t-xl">
+                    <div className="flex flex-col items-center gap-2">
+                      <X className="w-5 h-5" />
+                      Planilha / Calculadora
+                    </div>
+                  </th>
+                  <th className="p-4 text-center text-sm font-bold text-[#00D4FF] bg-[#00D4FF]/5 border-t border-x border-[#00D4FF]/20 rounded-t-xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-[#00D4FF]" />
+                    <div className="flex flex-col items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5" />
+                      Gestão3D
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {[
+                  "Custo real do filamento com custo médio ponderado",
+                  "Tarifa de energia da sua distribuidora por cidade",
+                  "Depreciação e manutenção da impressora por hora",
+                  "Preço ideal por marketplace com taxas reais",
+                  "Baixa automática do estoque ao registrar venda",
+                  "Lucro real por peça com snapshot financeiro imutável",
+                  "IA sugerindo margem por tipo de produto",
+                  "Dashboard com faturamento, lucro e meta do mês",
+                ].map((item, idx) => (
+                  <tr key={idx} className={idx % 2 === 0 ? "bg-white/[0.02]" : "bg-transparent"}>
+                    <td className="p-4 text-white/80 border-b border-white/5">{item}</td>
+                    <td className="p-4 text-center border-b border-x border-white/5 bg-[#111827]/50">
+                      <X className="w-5 h-5 text-[#EF4444] mx-auto" />
+                    </td>
+                    <td className="p-4 text-center border-b border-x border-[#00D4FF]/10 bg-[#00D4FF]/5">
+                      <CheckCircle2 className="w-5 h-5 text-[#22C55E] mx-auto" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="mt-16 text-center">
+            <p className="text-xl text-white font-medium mb-6">Chega de adivinhar. Comece a saber.</p>
+            <Link to="/signup">
+              <Button size="lg" className="h-14 px-10 text-base font-bold bg-[#00D4FF] text-[#0B1020] hover:bg-[#00D4FF]/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] rounded-xl">
+                Criar conta grátis
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* How it Works Section */}
       <section className="py-20 bg-[#0f172a] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-white mb-2">
               Veja o que acontece quando você usa o Gestão3D
