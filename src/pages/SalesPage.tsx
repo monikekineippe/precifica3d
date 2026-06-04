@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil } from "lucide-react";
+import { Wallet, Plus, ArrowUpRight, ArrowDownLeft, Trash2, Search, Filter, ShoppingCart, Lock, Pencil, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,6 +50,8 @@ interface CashTransaction {
   description: string;
   category: string;
   created_at: string;
+  auto_inventory_update?: boolean;
+  inventory_data?: any;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -95,7 +98,13 @@ export default function SalesPage() {
     type: "inflow" as "inflow" | "outflow",
     amount: 0,
     description: "",
-    category: ""
+    category: "",
+    auto_inventory_update: false,
+    inventory_item_type: "filament",
+    inventory_item_name: "",
+    inventory_item_qty: 0,
+    inventory_item_unit: "g",
+    inventory_item_cost: 0
   });
 
   const fetchData = async () => {
@@ -353,24 +362,101 @@ export default function SalesPage() {
       }
       toast.success("Transação atualizada!");
     } else {
-      const { error } = await supabase.from("cash_transactions").insert({
+      // 1. First register the transaction
+      const transactionData: any = {
         user_id: user.id,
         type: transactionForm.type,
         amount: transactionForm.amount,
         description: transactionForm.description,
-        category: transactionForm.category
-      });
+        category: transactionForm.category,
+        auto_inventory_update: transactionForm.auto_inventory_update
+      };
+
+      if (transactionForm.auto_inventory_update) {
+        transactionData.inventory_data = {
+          type: transactionForm.inventory_item_type,
+          name: transactionForm.inventory_item_name,
+          qty: transactionForm.inventory_item_qty,
+          unit: transactionForm.inventory_item_unit,
+          cost: transactionForm.inventory_item_cost
+        };
+      }
+
+      const { data: transaction, error } = await supabase
+        .from("cash_transactions")
+        .insert(transactionData)
+        .select()
+        .single();
 
       if (error) {
         toast.error("Erro ao registrar transação");
         return;
       }
+
+      // 2. Handle inventory update if toggle is on
+      if (transactionForm.auto_inventory_update) {
+        // Check if item already exists by name
+        const { data: existingItems } = await supabase
+          .from("inventory")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("name", transactionForm.inventory_item_name);
+
+        if (existingItems && existingItems.length > 0) {
+          const item = existingItems[0];
+          const newQty = Number(item.quantity) + Number(transactionForm.inventory_item_qty);
+          
+          // Weighted average cost: (current_qty * current_cost + new_qty * new_cost) / (current_qty + new_qty)
+          const currentQty = Number(item.quantity) || 0;
+          const currentCost = Number(item.cost_per_unit) || 0;
+          const newAddedQty = Number(transactionForm.inventory_item_qty);
+          const newAddedCost = Number(transactionForm.inventory_item_cost);
+          
+          const weightedCost = ((currentQty * currentCost) + (newAddedQty * newAddedCost)) / (currentQty + newAddedQty);
+
+          await supabase
+            .from("inventory")
+            .update({
+              quantity: newQty,
+              cost_per_unit: weightedCost,
+              last_purchase_date: new Date().toISOString()
+            })
+            .eq("id", item.id);
+          
+          toast.info(`Estoque de ${item.name} atualizado! Novo custo médio: R$ ${weightedCost.toFixed(2)}`);
+        } else {
+          // Create new item
+          await supabase.from("inventory").insert({
+            user_id: user.id,
+            name: transactionForm.inventory_item_name,
+            type: transactionForm.inventory_item_type,
+            quantity: transactionForm.inventory_item_qty,
+            unit: transactionForm.inventory_item_unit,
+            cost_per_unit: transactionForm.inventory_item_cost,
+            category: (transactionForm.inventory_item_type === 'product' || transactionForm.inventory_item_type === 'finished_product') ? 'finished_product' : 'raw_material',
+            last_purchase_date: new Date().toISOString()
+          });
+          toast.info(`Novo item ${transactionForm.inventory_item_name} criado no estoque!`);
+        }
+      }
+
       toast.success("Transação registrada!");
     }
 
     setTransactionDialogOpen(false);
     setEditingTransaction(null);
-    setTransactionForm({ type: "inflow", amount: 0, description: "", category: "" });
+    setTransactionForm({ 
+      type: "inflow", 
+      amount: 0, 
+      description: "", 
+      category: "",
+      auto_inventory_update: false,
+      inventory_item_type: "filament",
+      inventory_item_name: "",
+      inventory_item_qty: 0,
+      inventory_item_unit: "g",
+      inventory_item_cost: 0
+    });
     fetchData();
   };
 
@@ -407,7 +493,13 @@ export default function SalesPage() {
       type: transaction.type,
       amount: transaction.amount,
       description: transaction.description,
-      category: transaction.category
+      category: transaction.category,
+      auto_inventory_update: transaction.auto_inventory_update || false,
+      inventory_item_type: transaction.inventory_data?.type || "filament",
+      inventory_item_name: transaction.inventory_data?.name || "",
+      inventory_item_qty: transaction.inventory_data?.qty || 0,
+      inventory_item_unit: transaction.inventory_data?.unit || "g",
+      inventory_item_cost: transaction.inventory_data?.cost || 0
     });
     setTransactionDialogOpen(true);
   };
@@ -470,7 +562,22 @@ export default function SalesPage() {
           <p className="text-muted-foreground text-sm mt-1">Controle suas vendas e movimentações financeiras</p>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => { setEditingTransaction(null); setTransactionForm({ type: "outflow", amount: 0, description: "", category: "insumo_estoque" }); setTransactionDialogOpen(true); }} className="border-border">
+          <Button size="sm" variant="outline" onClick={() => { 
+            setEditingTransaction(null); 
+            setTransactionForm({ 
+              type: "outflow", 
+              amount: 0, 
+              description: "", 
+              category: "insumo_estoque",
+              auto_inventory_update: false,
+              inventory_item_type: "filament",
+              inventory_item_name: "",
+              inventory_item_qty: 0,
+              inventory_item_unit: "g",
+              inventory_item_cost: 0
+            }); 
+            setTransactionDialogOpen(true); 
+          }} className="border-border">
             <ArrowDownLeft size={14} className="mr-1 text-alert" /> Lançar Gasto
           </Button>
           <Button size="sm" onClick={() => { 
@@ -733,9 +840,16 @@ export default function SalesPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
-                          {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
-                        </p>
+                        <div className="flex flex-col items-end">
+                          <p className={`font-bold font-mono text-sm ${transaction.type === 'inflow' ? 'text-green-500' : 'text-destructive'}`}>
+                            {transaction.type === 'inflow' ? '+' : '-'} R$ {Number(transaction.amount).toFixed(2)}
+                          </p>
+                          {transaction.auto_inventory_update && (
+                            <Badge variant="outline" className="text-[9px] bg-green-500/10 text-green-500 border-green-500/20 gap-1 mt-1 py-0 h-4">
+                              <CheckCircle2 size={8} /> Estoque atualizado
+                            </Badge>
+                          )}
+                        </div>
                         <div className="flex items-center">
                           <button onClick={() => handleEditTransaction(transaction)} className="p-1.5 text-muted-foreground hover:text-primary">
                             <Pencil size={16} />
@@ -953,7 +1067,14 @@ export default function SalesPage() {
                   id="t-amount" 
                   type="number" 
                   value={transactionForm.amount} 
-                  onChange={e => setTransactionForm({...transactionForm, amount: +e.target.value})} 
+                  onChange={e => {
+                    const val = +e.target.value;
+                    setTransactionForm(prev => ({
+                      ...prev, 
+                      amount: val,
+                      inventory_item_cost: prev.inventory_item_qty > 0 ? val / prev.inventory_item_qty : prev.inventory_item_cost
+                    }));
+                  }} 
                   className="bg-muted border-border" 
                 />
               </div>
@@ -963,7 +1084,14 @@ export default function SalesPage() {
               <Input 
                 id="desc" 
                 value={transactionForm.description} 
-                onChange={e => setTransactionForm({...transactionForm, description: e.target.value})} 
+                onChange={e => {
+                  const val = e.target.value;
+                  setTransactionForm(prev => ({
+                    ...prev, 
+                    description: val,
+                    inventory_item_name: prev.auto_inventory_update && !prev.inventory_item_name ? val : prev.inventory_item_name
+                  }));
+                }} 
                 placeholder="Ex: Compra de carretel de filamento" 
                 className="bg-muted border-border" 
               />
@@ -990,6 +1118,96 @@ export default function SalesPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {(transactionForm.category === 'insumo_estoque' || transactionForm.category === 'investimento_equipamento') && transactionForm.type === 'outflow' && !editingTransaction && (
+              <div className="space-y-4 pt-2 border-t border-border mt-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="auto-inv" className="cursor-pointer">Adicionar ao estoque automaticamente</Label>
+                  <Switch 
+                    id="auto-inv" 
+                    checked={transactionForm.auto_inventory_update} 
+                    onCheckedChange={v => setTransactionForm({...transactionForm, auto_inventory_update: v})} 
+                  />
+                </div>
+
+                {transactionForm.auto_inventory_update && (
+                  <div className="grid gap-3 p-3 rounded-lg bg-muted/50 border border-border animate-in fade-in slide-in-from-top-2">
+                    <div className="grid gap-2">
+                      <Label>Tipo de item</Label>
+                      <Select 
+                        value={transactionForm.inventory_item_type} 
+                        onValueChange={v => setTransactionForm({...transactionForm, inventory_item_type: v})}
+                      >
+                        <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="filament">Filamento</SelectItem>
+                          <SelectItem value="packaging">Embalagem</SelectItem>
+                          <SelectItem value="accessory">Acessório</SelectItem>
+                          <SelectItem value="product">Produto Pronto</SelectItem>
+                          <SelectItem value="other">Outro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label>Nome/Descrição do item</Label>
+                      <Input 
+                        value={transactionForm.inventory_item_name} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_name: e.target.value})}
+                        placeholder="Ex: PLA Branco Premium"
+                        className="bg-background border-border"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="grid gap-2">
+                        <Label>Quantidade</Label>
+                        <Input 
+                          type="number"
+                          value={transactionForm.inventory_item_qty} 
+                          onChange={e => {
+                            const qty = +e.target.value;
+                            setTransactionForm(prev => ({
+                              ...prev, 
+                              inventory_item_qty: qty,
+                              inventory_item_cost: qty > 0 ? prev.amount / qty : 0
+                            }));
+                          }}
+                          className="bg-background border-border"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Unidade</Label>
+                        <Select 
+                          value={transactionForm.inventory_item_unit} 
+                          onValueChange={v => setTransactionForm({...transactionForm, inventory_item_unit: v})}
+                        >
+                          <SelectTrigger className="bg-background border-border"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="kg">kg</SelectItem>
+                            <SelectItem value="g">g</SelectItem>
+                            <SelectItem value="unidade">unidade</SelectItem>
+                            <SelectItem value="metro">metro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label>Custo unitário (R$)</Label>
+                      <Input 
+                        type="number"
+                        value={transactionForm.inventory_item_cost} 
+                        onChange={e => setTransactionForm({...transactionForm, inventory_item_cost: +e.target.value})}
+                        className="bg-background border-border"
+                      />
+                      <p className="text-[10px] text-muted-foreground">Calculado: Total ÷ Quantidade</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setTransactionDialogOpen(false); setEditingTransaction(null); }}>Cancelar</Button>

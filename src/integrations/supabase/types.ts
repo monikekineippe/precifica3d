@@ -17,30 +17,36 @@ export type Database = {
       cash_transactions: {
         Row: {
           amount: number
+          auto_inventory_update: boolean | null
           category: string | null
           created_at: string
           description: string
           id: string
+          inventory_data: Json | null
           sale_id: string | null
           type: string
           user_id: string
         }
         Insert: {
           amount: number
+          auto_inventory_update?: boolean | null
           category?: string | null
           created_at?: string
           description: string
           id?: string
+          inventory_data?: Json | null
           sale_id?: string | null
           type: string
           user_id: string
         }
         Update: {
           amount?: number
+          auto_inventory_update?: boolean | null
           category?: string | null
           created_at?: string
           description?: string
           id?: string
+          inventory_data?: Json | null
           sale_id?: string | null
           type?: string
           user_id?: string
