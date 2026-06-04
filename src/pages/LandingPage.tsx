@@ -94,7 +94,7 @@ const LandingPage = () => {
                 <span className="text-[#00D4FF]">Mas está lucrando de verdade?</span>
               </h1>
               <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
-                A maioria dos impressores descobre tarde demais que estava vendendo no prejuízo. O Gestão3D mostra o lucro real de cada peça antes, durante e depois da venda — com os custos que você estava esquecendo.
+                A maioria dos impressores descobre tarde demais que estava vendendo no prejuízo. O Gestão3D mostra o lucro real de cada peça antes, durante e depois da venda, com os custos que você estava esquecendo.
               </p>
               <div className="flex flex-col gap-3 mt-8 w-full max-w-md">
                 <a href="/signup" className="w-full text-center bg-[#00D4FF] text-[#0B1020] 
