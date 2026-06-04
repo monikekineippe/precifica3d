@@ -1281,7 +1281,15 @@ export default function NewPricing() {
               <Switch 
                 id="add-to-inventory" 
                 checked={addToInventory} 
-                onCheckedChange={setAddToInventory} 
+                onCheckedChange={(checked) => {
+                  setAddToInventory(checked);
+                  if (checked) {
+                    setInventoryForm({
+                      ...inventoryForm,
+                      costPerUnit: Number((totalCost / (inventoryForm.quantity || 1)).toFixed(2))
+                    });
+                  }
+                }} 
               />
             </div>
 
@@ -1302,7 +1310,14 @@ export default function NewPricing() {
                       type="number" 
                       min={1}
                       value={inventoryForm.quantity} 
-                      onChange={e => setInventoryForm({ ...inventoryForm, quantity: Number(e.target.value) })} 
+                      onChange={e => {
+                        const qty = Number(e.target.value);
+                        setInventoryForm({ 
+                          ...inventoryForm, 
+                          quantity: qty,
+                          costPerUnit: Number((totalCost / (qty || 1)).toFixed(2))
+                        });
+                      }} 
                       className="bg-muted border-border"
                     />
                   </div>
