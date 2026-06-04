@@ -18,6 +18,8 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { PieChart as RePie, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import { toast } from "sonner";
 import type { FilamentEntry } from "@/lib/types";
@@ -153,6 +155,14 @@ export default function NewPricing() {
   const [accessories, setAccessories] = useState<any[]>([]);
   const [pkgQty, setPkgQty] = useState(1);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
+  const [saveInventoryOpen, setSaveInventoryOpen] = useState(false);
+  const [addToInventory, setAddToInventory] = useState(false);
+  const [inventoryForm, setInventoryForm] = useState({
+    name: "",
+    quantity: 1,
+    variation: "",
+    costPerUnit: 0
+  });
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [defaultCity, setDefaultCity] = useState("");
@@ -336,28 +346,96 @@ export default function NewPricing() {
     if (!user) return;
     if (!canCreateQuote) { setUpgradeOpen(true); return; }
 
-    await supabase.from("orcamentos").insert({
+    setInventoryForm({
+      name: pieceName,
+      quantity: 1,
+      variation: "",
+      costPerUnit: Number(totalCost.toFixed(2))
+    });
+    setAddToInventory(false);
+    setSaveInventoryOpen(true);
+  };
+
+  const confirmSave = async (withInventory: boolean) => {
+    if (!user) return;
+    setSaveInventoryOpen(false);
+
+    const quoteData = {
       user_id: user.id,
-      nome_peca: pieceName, impressora_id: printerId, impressora_nome: printer.nome,
-      tempo_horas: hours, tempo_minutos: minutes,
+      nome_peca: pieceName, 
+      impressora_id: printerId, 
+      impressora_nome: printer?.nome,
+      tempo_horas: hours, 
+      tempo_minutos: minutes,
       filamentos: filaments as any,
-      estado: state, cidade: city, distribuidora: distributor, tarifa_energia: tariff, custo_energia: energyCost,
+      estado: state, 
+      cidade: city, 
+      distribuidora: distributor, 
+      tarifa_energia: tariff, 
+      custo_energia: energyCost,
       modo_mao_de_obra: laborMode,
       valor_hora_mao_de_obra: laborMode === "manual" ? laborRate : null,
       horas_mao_de_obra: laborMode === "manual" ? laborHours : null,
       custo_mao_de_obra: laborCost,
       percentual_mao_de_obra: laborMode === "auto" ? laborAutoPct : null,
-      custo_manutencao: maintenanceCost, custo_depreciacao: depreciationCost,
-      tipo_embalagem: pkgType, custo_embalagem: totalPkgCost,
+      custo_manutencao: maintenanceCost, 
+      custo_depreciacao: depreciationCost,
+      tipo_embalagem: pkgType, 
+      custo_embalagem: totalPkgCost,
       quantidade_embalagem: pkgQty,
       acessorios: accessories as any,
       custo_acessorios: totalAccessoriesCost,
-      margem_lucro: margin, percentual_impostos: taxRate,
-      custo_total: totalCost, preco_sugerido: suggestedPrice, preco_minimo: minimumPrice,
+      margem_lucro: margin, 
+      percentual_impostos: taxRate,
+      custo_total: totalCost, 
+      preco_sugerido: suggestedPrice, 
+      preco_minimo: minimumPrice,
       lucro_liquido: profit,
-    } as any);
-    toast.success("Orçamento salvo com sucesso!");
-    refresh();
+    };
+
+    console.log("Saving quote to 'orcamentos' table:", quoteData);
+
+    try {
+      const { data, error } = await supabase.from("orcamentos").insert([quoteData as any]).select();
+      
+      if (error) {
+        console.error("Error inserting quote:", error);
+        toast.error(`Erro ao salvar orçamento: ${error.message}`);
+        return;
+      }
+
+      console.log("Quote saved successfully:", data);
+
+      if (withInventory) {
+        const invData = {
+          user_id: user.id,
+          name: inventoryForm.name,
+          type: "product",
+          category: "finished_product",
+          quantity: inventoryForm.quantity,
+          unit: "unidade",
+          cost_per_unit: inventoryForm.costPerUnit,
+        };
+        
+        console.log("Adding to inventory:", invData);
+        const { error: invError } = await supabase.from("inventory").insert([invData as any]);
+        
+        if (invError) {
+          console.error("Error adding to inventory:", invError);
+          toast.error("Orçamento salvo, mas houve erro ao adicionar ao estoque.");
+        } else {
+          toast.success("Orçamento salvo e peça adicionada ao estoque!");
+        }
+      } else {
+        toast.success("Orçamento salvo com sucesso!");
+      }
+
+      refresh();
+      navigate("/history");
+    } catch (err) {
+      console.error("Unexpected error saving quote:", err);
+      toast.error("Ocorreu um erro inesperado ao salvar.");
+    }
   };
 
   const handleExportPDF = () => {
@@ -1185,6 +1263,76 @@ export default function NewPricing() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={saveInventoryOpen} onOpenChange={setSaveInventoryOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Deseja registrar esta peça no estoque de produtos prontos?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="add-to-inventory" className="cursor-pointer">Adicionar ao estoque</Label>
+              <Switch 
+                id="add-to-inventory" 
+                checked={addToInventory} 
+                onCheckedChange={setAddToInventory} 
+              />
+            </div>
+
+            {addToInventory && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2">
+                  <Label>Nome da peça</Label>
+                  <Input 
+                    value={inventoryForm.name} 
+                    onChange={e => setInventoryForm({ ...inventoryForm, name: e.target.value })} 
+                    className="bg-muted border-border"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Quantidade produzida</Label>
+                    <Input 
+                      type="number" 
+                      min={1}
+                      value={inventoryForm.quantity} 
+                      onChange={e => setInventoryForm({ ...inventoryForm, quantity: Number(e.target.value) })} 
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custo unitário (R$)</Label>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      value={inventoryForm.costPerUnit} 
+                      onChange={e => setInventoryForm({ ...inventoryForm, costPerUnit: Number(e.target.value) })} 
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cor/Variação (opcional)</Label>
+                  <Input 
+                    placeholder="Ex: Vermelho, Grande, etc."
+                    value={inventoryForm.variation} 
+                    onChange={e => setInventoryForm({ ...inventoryForm, variation: e.target.value })} 
+                    className="bg-muted border-border"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => confirmSave(false)} className="flex-1">
+              Salvar sem estoque
+            </Button>
+            <Button onClick={() => confirmSave(addToInventory)} className="flex-1 bg-primary text-primary-foreground">
+              {addToInventory ? "Salvar e adicionar ao estoque" : "Salvar Orçamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
