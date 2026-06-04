@@ -196,6 +196,7 @@ export type Database = {
           categoria_ia: string | null
           cidade: string | null
           created_at: string
+          custo_acessorios: number | null
           custo_depreciacao: number
           custo_embalagem: number
           custo_energia: number
@@ -207,6 +208,7 @@ export type Database = {
           embalagem_estoque_id: string | null
           embalagem_quantidade: number | null
           estado: string | null
+          filamento_estoque_id: string | null
           filamentos: Json
           horas_mao_de_obra: number | null
           id: string
@@ -223,6 +225,7 @@ export type Database = {
           percentual_mao_de_obra: number | null
           preco_minimo: number
           preco_sugerido: number
+          quantidade_embalagem: number | null
           tarifa_energia: number
           tempo_horas: number
           tempo_minutos: number
@@ -235,6 +238,7 @@ export type Database = {
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
+          custo_acessorios?: number | null
           custo_depreciacao?: number
           custo_embalagem?: number
           custo_energia?: number
@@ -246,6 +250,7 @@ export type Database = {
           embalagem_estoque_id?: string | null
           embalagem_quantidade?: number | null
           estado?: string | null
+          filamento_estoque_id?: string | null
           filamentos?: Json
           horas_mao_de_obra?: number | null
           id?: string
@@ -262,6 +267,7 @@ export type Database = {
           percentual_mao_de_obra?: number | null
           preco_minimo?: number
           preco_sugerido?: number
+          quantidade_embalagem?: number | null
           tarifa_energia?: number
           tempo_horas?: number
           tempo_minutos?: number
@@ -274,6 +280,7 @@ export type Database = {
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
+          custo_acessorios?: number | null
           custo_depreciacao?: number
           custo_embalagem?: number
           custo_energia?: number
@@ -285,6 +292,7 @@ export type Database = {
           embalagem_estoque_id?: string | null
           embalagem_quantidade?: number | null
           estado?: string | null
+          filamento_estoque_id?: string | null
           filamentos?: Json
           horas_mao_de_obra?: number | null
           id?: string
@@ -301,6 +309,7 @@ export type Database = {
           percentual_mao_de_obra?: number | null
           preco_minimo?: number
           preco_sugerido?: number
+          quantidade_embalagem?: number | null
           tarifa_energia?: number
           tempo_horas?: number
           tempo_minutos?: number
