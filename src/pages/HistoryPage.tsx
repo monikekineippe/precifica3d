@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart, Loader2 } from "lucide-react";
+import { Trash2, Copy, Eye, Download, Lock, PackagePlus, ShoppingCart, Loader2, ArrowUpDown, Calendar, SortAsc } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ export default function HistoryPage() {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "date">("name");
   const [viewing, setViewing] = useState<any>(null);
   const [inventoryDialogOpen, setInventoryDialogOpen] = useState(false);
   const [inventoryForm, setInventoryForm] = useState({
@@ -61,11 +62,19 @@ export default function HistoryPage() {
     fetchQuotes();
   }, [user]);
 
-  const filtered = quotes.filter(q => {
-    const pieceMatch = q.nome_peca?.toLowerCase().includes(search.toLowerCase()) ?? false;
-    const printerMatch = q.impressora_nome?.toLowerCase().includes(search.toLowerCase()) ?? false;
-    return pieceMatch || printerMatch;
-  });
+  const filtered = quotes
+    .filter(q => {
+      const pieceMatch = q.nome_peca?.toLowerCase().includes(search.toLowerCase()) ?? false;
+      const printerMatch = q.impressora_nome?.toLowerCase().includes(search.toLowerCase()) ?? false;
+      return pieceMatch || printerMatch;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name") {
+        return (a.nome_peca || "").localeCompare(b.nome_peca || "");
+      } else {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
 
   const handleDelete = async (id: string) => {
     await supabase.from("orcamentos").delete().eq("id", id);
@@ -162,7 +171,28 @@ export default function HistoryPage() {
         </Button>
       </div>
 
-      <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome ou impressora..." className="bg-muted border-border max-w-md" />
+      <div className="flex items-center gap-3 flex-wrap">
+        <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar por nome ou impressora..." className="bg-muted border-border max-w-md" />
+        
+        <div className="flex items-center gap-1 bg-muted p-1 rounded-md border border-border">
+          <Button 
+            variant={sortBy === "name" ? "secondary" : "ghost"} 
+            size="sm" 
+            onClick={() => setSortBy("name")}
+            className="h-8 text-xs gap-1.5"
+          >
+            <SortAsc size={14} /> Nome (A-Z)
+          </Button>
+          <Button 
+            variant={sortBy === "date" ? "secondary" : "ghost"} 
+            size="sm" 
+            onClick={() => setSortBy("date")}
+            className="h-8 text-xs gap-1.5"
+          >
+            <Calendar size={14} /> Mais recentes
+          </Button>
+        </div>
+      </div>
 
       {loading ? (
         <div className="flex justify-center py-12">

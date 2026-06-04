@@ -153,6 +153,7 @@ export default function NewPricing() {
   const [minutes, setMinutes] = useState(0);
   const [filaments, setFilaments] = useState<FilamentEntry[]>([createFilament(0)]);
   const [accessories, setAccessories] = useState<any[]>([]);
+  const [pkgQty, setPkgQty] = useState(1);
   const [confirmReset, setConfirmReset] = useState<string | null>(null);
   const [saveInventoryOpen, setSaveInventoryOpen] = useState(false);
   const [addToInventory, setAddToInventory] = useState(false);
@@ -395,7 +396,7 @@ export default function NewPricing() {
     console.log("Saving quote to 'orcamentos' table:", quoteData);
 
     try {
-      const { data, error } = await supabase.from("orcamentos").insert(quoteData).select();
+      const { data, error } = await supabase.from("orcamentos").insert([quoteData]).select();
       
       if (error) {
         console.error("Error inserting quote:", error);
@@ -414,11 +415,10 @@ export default function NewPricing() {
           quantity: inventoryForm.quantity,
           unit: "unidade",
           cost_per_unit: inventoryForm.costPerUnit,
-          variation: inventoryForm.variation
         };
         
         console.log("Adding to inventory:", invData);
-        const { error: invError } = await supabase.from("inventory").insert(invData);
+        const { error: invError } = await supabase.from("inventory").insert([invData]);
         
         if (invError) {
           console.error("Error adding to inventory:", invError);
@@ -1263,6 +1263,76 @@ export default function NewPricing() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={saveInventoryOpen} onOpenChange={setSaveInventoryOpen}>
+        <DialogContent className="bg-card border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Deseja registrar esta peça no estoque de produtos prontos?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="add-to-inventory" className="cursor-pointer">Adicionar ao estoque</Label>
+              <Switch 
+                id="add-to-inventory" 
+                checked={addToInventory} 
+                onCheckedChange={setAddToInventory} 
+              />
+            </div>
+
+            {addToInventory && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                <div className="space-y-2">
+                  <Label>Nome da peça</Label>
+                  <Input 
+                    value={inventoryForm.name} 
+                    onChange={e => setInventoryForm({ ...inventoryForm, name: e.target.value })} 
+                    className="bg-muted border-border"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Quantidade produzida</Label>
+                    <Input 
+                      type="number" 
+                      min={1}
+                      value={inventoryForm.quantity} 
+                      onChange={e => setInventoryForm({ ...inventoryForm, quantity: Number(e.target.value) })} 
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Custo unitário (R$)</Label>
+                    <Input 
+                      type="number" 
+                      step="0.01"
+                      value={inventoryForm.costPerUnit} 
+                      onChange={e => setInventoryForm({ ...inventoryForm, costPerUnit: Number(e.target.value) })} 
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Cor/Variação (opcional)</Label>
+                  <Input 
+                    placeholder="Ex: Vermelho, Grande, etc."
+                    value={inventoryForm.variation} 
+                    onChange={e => setInventoryForm({ ...inventoryForm, variation: e.target.value })} 
+                    className="bg-muted border-border"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="flex gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => confirmSave(false)} className="flex-1">
+              Salvar sem estoque
+            </Button>
+            <Button onClick={() => confirmSave(addToInventory)} className="flex-1 bg-primary text-primary-foreground">
+              {addToInventory ? "Salvar e adicionar ao estoque" : "Salvar Orçamento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
