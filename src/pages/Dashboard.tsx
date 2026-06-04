@@ -63,14 +63,6 @@ export default function Dashboard() {
         .eq("user_id", user.id)
         .maybeSingle();
 
-      const { data: userPrinters } = await supabase
-        .from("impressoras")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("is_precadastrada", false);
-
-      const printersCount = userPrinters ? userPrinters.length : 0;
-      
       // Get all printers to find the name of the primary one (even if it's a preset)
       const { data: allAvailablePrinters } = await supabase
         .from("impressoras")
@@ -78,6 +70,16 @@ export default function Dashboard() {
         .or(`user_id.eq.${user.id},is_precadastrada.eq.true`);
 
       const activePrinter = allAvailablePrinters ? allAvailablePrinters.find((p: any) => p.id === profileData?.primary_printer_id) : null;
+      
+      // Contagem de impressoras: 
+      // Se houver uma impressora ativa selecionada (mesmo que seja pré-cadastrada), ela conta como 1.
+      // Somamos isso à quantidade de impressoras personalizadas (não pré-cadastradas) do usuário.
+      const userCustomPrinters = allAvailablePrinters ? allAvailablePrinters.filter((p: any) => !p.is_precadastrada && p.user_id === user.id) : [];
+      
+      // Se a impressora ativa for uma pré-cadastrada, contamos ela.
+      // Se não, ela já está na lista de customizadas.
+      const isActivePrinterPreset = activePrinter?.is_precadastrada;
+      const printersCount = userCustomPrinters.length + (isActivePrinterPreset ? 1 : 0);
 
       // 1. Get Monthly Sales
       const { data: sales } = await supabase
