@@ -396,7 +396,7 @@ export default function NewPricing() {
     console.log("Saving quote to 'orcamentos' table:", quoteData);
 
     try {
-      const { data, error } = await supabase.from("orcamentos").insert([quoteData]).select();
+      const { data, error } = await supabase.from("orcamentos").insert([quoteData as any]).select();
       
       if (error) {
         console.error("Error inserting quote:", error);
@@ -418,7 +418,7 @@ export default function NewPricing() {
         };
         
         console.log("Adding to inventory:", invData);
-        const { error: invError } = await supabase.from("inventory").insert([invData]);
+        const { error: invError } = await supabase.from("inventory").insert([invData as any]);
         
         if (invError) {
           console.error("Error adding to inventory:", invError);
