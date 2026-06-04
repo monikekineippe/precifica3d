@@ -397,7 +397,7 @@ const LandingPage = () => {
                 },
                 { 
                   title: "Controle cada venda, custo e lucro em tempo real",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.jpg"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.png"
                 },
                 { 
                   title: "Descubra quais produtos merecem o seu tempo",
