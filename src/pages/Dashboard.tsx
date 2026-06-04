@@ -289,8 +289,10 @@ export default function Dashboard() {
                 <div className="text-3xl font-bold font-mono text-foreground">{stats.printersCount}</div>
                 <Printer size={24} className="text-muted-foreground opacity-20" />
               </div>
-              {stats.activePrinter && (
+              {stats.activePrinter ? (
                 <p className="text-[10px] text-primary truncate mt-1">Ativa: {stats.activePrinter.nome}</p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground truncate mt-1">Nenhuma selecionada</p>
               )}
             </div>
           </Card>
