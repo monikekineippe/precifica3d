@@ -360,6 +360,8 @@ export default function NewPricing() {
     if (!user) return;
     setSaveInventoryOpen(false);
 
+    const firstFilamentId = filaments[0]?.id?.includes('-') ? filaments[0].id : null;
+
     const quoteData = {
       user_id: user.id,
       nome_peca: pieceName, 
@@ -368,6 +370,7 @@ export default function NewPricing() {
       tempo_horas: hours, 
       tempo_minutos: minutes,
       filamentos: filaments as any,
+      filamento_estoque_id: firstFilamentId,
       estado: state, 
       cidade: city, 
       distribuidora: distributor, 
@@ -381,7 +384,7 @@ export default function NewPricing() {
       custo_manutencao: maintenanceCost, 
       custo_depreciacao: depreciationCost,
       tipo_embalagem: pkgType, 
-      embalagem_estoque_id: pkgType !== 'none' && pkgType !== 'manual' ? pkgType : null,
+      embalagem_estoque_id: (pkgType !== 'none' && pkgType !== 'manual' && pkgType.length > 20) ? pkgType : null,
       embalagem_custo: pkgCost,
       custo_embalagem: totalPkgCost,
       embalagem_quantidade: pkgQty,
