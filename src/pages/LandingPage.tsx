@@ -7,7 +7,8 @@ import {
   ArrowRight, ChevronDown, Printer, Box, Store, Tag, TrendingUp, 
   Wallet, ShoppingCart, Circle, ZoomIn, X, TrendingDown, 
   AlertTriangle, HelpCircle, ClipboardList, Cpu, Sparkles,
-  ShoppingBag
+  ShoppingBag,
+  ArrowDownToLine
 } from "lucide-react";
 import logo from "@/assets/logo-precifica3d.png";
 import printerBg from "@/assets/3d-printer-bg.png";
@@ -471,7 +472,7 @@ const LandingPage = () => {
             </h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
               <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
                 <Printer className="w-6 h-6 text-[#00D4FF]" />
@@ -502,13 +503,33 @@ const LandingPage = () => {
               </p>
             </div>
 
-            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors md:col-span-3 lg:col-span-1">
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
               <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
                 <ShoppingBag className="w-6 h-6 text-[#00D4FF]" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Preços para Marketplace</h3>
               <p className="text-gray-400 text-sm leading-relaxed">
                 Saiba exatamente quanto cobrar na Shopee, Mercado Livre, Amazon e TikTok Shop. A IA calcula o preço ideal já com as taxas de cada plataforma.
+              </p>
+            </div>
+
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <Package className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Estoque integrado à precificação</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Selecione o filamento, embalagem e acessórios direto do seu estoque na hora de precificar. O custo real preenche automaticamente.
+              </p>
+            </div>
+
+            <div className="bg-[#111827] border border-white/10 rounded-xl p-6 flex flex-col h-full group hover:border-[#00D4FF]/30 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-[#00D4FF]/10 flex items-center justify-center mb-6 group-hover:bg-[#00D4FF]/20 transition-colors">
+                <ArrowDownToLine className="w-6 h-6 text-[#00D4FF]" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Compra vira estoque automaticamente</h3>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                Ao lançar uma compra de insumo no caixa, o item entra no estoque na mesma hora. Sem precisar cadastrar duas vezes.
               </p>
             </div>
           </div>
