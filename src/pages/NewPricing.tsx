@@ -842,7 +842,13 @@ export default function NewPricing() {
                           }} className="text-xs">
                             <Plus size={14} className="mr-2" /> Preencher manualmente
                           </CommandItem>
-                          {inventory.filter(item => item.type === 'Acessório').map((item) => (
+                          {inventoryLoading ? (
+                            <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                              <Loader2 size={14} className="animate-spin" /> Carregando...
+                            </div>
+                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').length === 0 ? (
+                            <div className="p-2 text-xs text-muted-foreground">Nenhum item encontrado.</div>
+                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').map((item) => (
                             <CommandItem
                               key={item.id}
                               value={item.name}
@@ -852,7 +858,7 @@ export default function NewPricing() {
                                   ...newAccs[idx], 
                                   inventoryId: item.id, 
                                   name: item.name, 
-                                  unitCost: Number(item.unit_cost || 0), 
+                                  unitCost: Number(item.cost_per_unit || 0), 
                                   isManual: false 
                                 };
                                 setAccessories(newAccs);
@@ -860,7 +866,7 @@ export default function NewPricing() {
                               className="text-xs flex flex-col items-start"
                             >
                               <div className="font-medium">{item.name}</div>
-                              <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                              <div className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/un</div>
                             </CommandItem>
                           ))}
                         </CommandGroup>
