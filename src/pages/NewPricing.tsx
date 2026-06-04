@@ -308,7 +308,8 @@ export default function NewPricing() {
     { name: "Mão de obra", value: +laborCost.toFixed(2) },
     { name: "Manutenção", value: +maintenanceCost.toFixed(2) },
     { name: "Depreciação", value: +depreciationCost.toFixed(2) },
-    { name: "Embalagem", value: +pkgCost.toFixed(2) },
+    { name: "Embalagem", value: +totalPkgCost.toFixed(2) },
+    { name: "Acessórios", value: +totalAccessoriesCost.toFixed(2) },
     { name: "Margem", value: +profit.toFixed(2) },
     { name: "Impostos", value: +taxAmount.toFixed(2) },
   ].filter(d => d.value > 0);
