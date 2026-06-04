@@ -81,14 +81,18 @@ export default function NewPricing() {
   const [cardFeePercent, setCardFeePercent] = useState(4.99);
   const [maxInstallments, setMaxInstallments] = useState(12);
 
+  const [inventory, setInventory] = useState<any[]>([]);
+
   useEffect(() => {
     if (!user) return;
+    
+    // Fetch Printers
     supabase.from("impressoras").select("*")
       .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
       .then(({ data }) => {
         if (data) setPrinters(data as any);
         // Load user settings and apply defaults after printers are loaded
-        supabase.from("user_settings").select("*").eq("user_id", user.id).single()
+        supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle()
           .then(({ data: settingsData }) => {
             if (settingsData) {
               setSettings({ defaultTariff: settingsData.default_tariff, defaultMargin: settingsData.default_margin, defaultTaxRate: settingsData.default_tax_rate });
@@ -96,24 +100,32 @@ export default function NewPricing() {
               setTaxRate(settingsData.default_tax_rate);
               // Apply saved defaults
               if (!defaultsApplied) {
-                if ((settingsData as any).default_printer_id && data?.some((p: any) => p.id === (settingsData as any).default_printer_id)) {
-                  setPrinterId((settingsData as any).default_printer_id);
+                if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
+                  setPrinterId(settingsData.default_printer_id);
                 }
-                if ((settingsData as any).default_state) {
-                  setState((settingsData as any).default_state);
+                if (settingsData.default_state) {
+                  setState(settingsData.default_state);
                 }
-                if ((settingsData as any).default_city) {
-                  // City will be set after cities load via the separate effect
-                  setDefaultCity((settingsData as any).default_city);
+                if (settingsData.default_city) {
+                  setDefaultCity(settingsData.default_city);
                 }
                 setDefaultsApplied(true);
               }
               // Load payment settings
-              setPixDiscount((settingsData as any).pix_discount ?? 0);
-              setCardFeePercent((settingsData as any).card_fee_percent ?? 4.99);
-              setMaxInstallments((settingsData as any).max_installments ?? 12);
+              setPixDiscount(settingsData.pix_discount ?? 0);
+              setCardFeePercent(settingsData.card_fee_percent ?? 4.99);
+              setMaxInstallments(settingsData.max_installments ?? 12);
             }
           });
+      });
+
+    // Fetch Inventory (Filaments)
+    supabase.from("inventory")
+      .select("*")
+      .eq("user_id", user.id)
+      .or('type.eq.Filamento,type.eq.Matéria-Prima')
+      .then(({ data }) => {
+        if (data) setInventory(data);
       });
   }, [user]);
 
