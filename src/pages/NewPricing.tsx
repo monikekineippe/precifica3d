@@ -82,6 +82,7 @@ export default function NewPricing() {
   const [maxInstallments, setMaxInstallments] = useState(12);
 
   const [inventory, setInventory] = useState<any[]>([]);
+  const [inventoryLoading, setInventoryLoading] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -119,14 +120,29 @@ export default function NewPricing() {
           });
       });
 
-    // Fetch Inventory (Filaments)
-    supabase.from("inventory")
-      .select("*")
-      .eq("user_id", user.id)
-      .or('type.eq.Filamento,type.eq.Matéria-Prima')
-      .then(({ data }) => {
-        if (data) setInventory(data);
-      });
+    // Fetch Inventory
+    const fetchInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const { data, error } = await supabase.from("inventory")
+          .select("*")
+          .eq("user_id", user.id);
+        
+        if (error) throw error;
+        
+        if (data) {
+          console.log("Inventory data loaded:", data);
+          setInventory(data);
+        }
+      } catch (err) {
+        console.error("Error loading inventory:", err);
+        toast.error("Erro ao carregar itens do estoque.");
+      } finally {
+        setInventoryLoading(false);
+      }
+    };
+
+    fetchInventory();
   }, [user]);
 
   const [pieceName, setPieceName] = useState("");
