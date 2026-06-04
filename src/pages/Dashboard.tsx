@@ -45,11 +45,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchData = useCallback(async (isManual = false) => {
     if (!user) return;
+    
+    if (isManual) setIsRefreshing(true);
+    else setLoading(true);
 
-    const fetchData = async () => {
-      setLoading(true);
+    try {
       const now = new Date();
       const firstDay = startOfMonth(now);
       const lastDay = endOfMonth(now);
@@ -59,7 +61,7 @@ export default function Dashboard() {
         .from("profiles")
         .select("primary_printer_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       const { data: userPrinters } = await supabase
         .from("impressoras")
@@ -82,7 +84,7 @@ export default function Dashboard() {
         .from("user_settings")
         .select("monthly_revenue_goal")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       // 3. Get Critical Stock
       const { data: inventory } = await supabase
@@ -168,11 +170,24 @@ export default function Dashboard() {
       });
       setRecentSales(recent || []);
       setChartData(chartDataFormatted);
-      setLoading(false);
-    };
 
-    fetchData();
+      if (isManual) {
+        toast.success("Dashboard atualizado com sucesso!");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      if (isManual) {
+        toast.error("Erro ao atualizar dados.");
+      }
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const goalCompletion = stats.monthlyGoal > 0 
     ? Math.min(Math.round((stats.monthlyRevenue / stats.monthlyGoal) * 100), 100) 
