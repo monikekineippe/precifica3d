@@ -200,8 +200,18 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Gestão real do seu negócio 3D</p>
         </div>
-        <div className="hidden sm:flex gap-3">
-          <Button asChild size="sm" variant="outline" className="border-border">
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-border"
+            onClick={() => fetchData(true)}
+            disabled={isRefreshing}
+          >
+            <RefreshCcw size={14} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+          <Button asChild size="sm" variant="outline" className="border-border hidden sm:flex">
             <Link to="/settings"><Target size={14} className="mr-2" /> Ajustar Meta</Link>
           </Button>
         </div>
