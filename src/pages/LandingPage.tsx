@@ -393,15 +393,15 @@ const LandingPage = () => {
               {[
                 { 
                   title: "Selecione filamento, embalagem e acessórios direto do estoque",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780613859977-05182b66-682f-4ada-bcbd-69ed7e316933.png"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780616190336-0f4c3e6a-3270-4f95-ad2b-1934741785db.png"
                 },
                 { 
                   title: "Controle cada venda, custo e lucro em tempo real",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409045180-2a02dec9-c704-4b6d-9f1a-0f635e94e555.png"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780616212786-2248f4a4-1e56-43c1-acb0-334479d09c0f.png"
                 },
                 { 
                   title: "Descubra quais produtos merecem o seu tempo",
-                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780409478534-0d943e2a-2c83-4351-bdcd-b15aaeae6a99.png"
+                  image: "https://ynvrijkuampxpsmshftm.supabase.co/storage/v1/object/public/prompt-images/uploads/1780616255664-1219cf17-b1ad-4869-9be1-8d83ac3575e6.png"
                 }
               ].map((card, i) => (
                 <div key={i} className="flex flex-col space-y-4">
