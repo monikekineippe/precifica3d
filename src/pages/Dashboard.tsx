@@ -45,7 +45,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchData = useCallback(async (isManual = false) => {
+    const fetchData = useCallback(async (isManual = false) => {
     if (!user) return;
     
     if (isManual) setIsRefreshing(true);
@@ -66,10 +66,18 @@ export default function Dashboard() {
       const { data: userPrinters } = await supabase
         .from("impressoras")
         .select("*")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .eq("is_precadastrada", false);
 
       const printersCount = userPrinters ? userPrinters.length : 0;
-      const activePrinter = userPrinters ? userPrinters.find((p: any) => p.id === profileData?.primary_printer_id) : null;
+      
+      // Get all printers to find the name of the primary one (even if it's a preset)
+      const { data: allAvailablePrinters } = await supabase
+        .from("impressoras")
+        .select("*")
+        .or(`user_id.eq.${user.id},is_precadastrada.eq.true`);
+
+      const activePrinter = allAvailablePrinters ? allAvailablePrinters.find((p: any) => p.id === profileData?.primary_printer_id) : null;
 
       // 1. Get Monthly Sales
       const { data: sales } = await supabase
@@ -281,8 +289,10 @@ export default function Dashboard() {
                 <div className="text-3xl font-bold font-mono text-foreground">{stats.printersCount}</div>
                 <Printer size={24} className="text-muted-foreground opacity-20" />
               </div>
-              {stats.activePrinter && (
+              {stats.activePrinter ? (
                 <p className="text-[10px] text-primary truncate mt-1">Ativa: {stats.activePrinter.nome}</p>
+              ) : (
+                <p className="text-[10px] text-muted-foreground truncate mt-1">Nenhuma selecionada</p>
               )}
             </div>
           </Card>
