@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { 
   PlusCircle, 
@@ -11,7 +11,8 @@ import {
   AlertTriangle,
   ChevronRight,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  RefreshCcw
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth, subDays, eachDayOfInterval, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -41,12 +43,15 @@ export default function Dashboard() {
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchData = useCallback(async (isManual = false) => {
     if (!user) return;
+    
+    if (isManual) setIsRefreshing(true);
+    else setLoading(true);
 
-    const fetchData = async () => {
-      setLoading(true);
+    try {
       const now = new Date();
       const firstDay = startOfMonth(now);
       const lastDay = endOfMonth(now);
@@ -56,7 +61,7 @@ export default function Dashboard() {
         .from("profiles")
         .select("primary_printer_id")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       const { data: userPrinters } = await supabase
         .from("impressoras")
@@ -79,7 +84,7 @@ export default function Dashboard() {
         .from("user_settings")
         .select("monthly_revenue_goal")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       // 3. Get Critical Stock
       const { data: inventory } = await supabase
@@ -165,11 +170,24 @@ export default function Dashboard() {
       });
       setRecentSales(recent || []);
       setChartData(chartDataFormatted);
-      setLoading(false);
-    };
 
-    fetchData();
+      if (isManual) {
+        toast.success("Dashboard atualizado com sucesso!");
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      if (isManual) {
+        toast.error("Erro ao atualizar dados.");
+      }
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const goalCompletion = stats.monthlyGoal > 0 
     ? Math.min(Math.round((stats.monthlyRevenue / stats.monthlyGoal) * 100), 100) 
@@ -182,8 +200,18 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Gestão real do seu negócio 3D</p>
         </div>
-        <div className="hidden sm:flex gap-3">
-          <Button asChild size="sm" variant="outline" className="border-border">
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-border"
+            onClick={() => fetchData(true)}
+            disabled={isRefreshing}
+          >
+            <RefreshCcw size={14} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Atualizar
+          </Button>
+          <Button asChild size="sm" variant="outline" className="border-border hidden sm:flex">
             <Link to="/settings"><Target size={14} className="mr-2" /> Ajustar Meta</Link>
           </Button>
         </div>
