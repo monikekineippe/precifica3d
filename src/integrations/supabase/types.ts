@@ -192,6 +192,7 @@ export type Database = {
       }
       orcamentos: {
         Row: {
+          acessorios: Json | null
           categoria_ia: string | null
           cidade: string | null
           created_at: string
@@ -202,6 +203,9 @@ export type Database = {
           custo_mao_de_obra: number
           custo_total: number
           distribuidora: string | null
+          embalagem_custo: number | null
+          embalagem_estoque_id: string | null
+          embalagem_quantidade: number | null
           estado: string | null
           filamentos: Json
           horas_mao_de_obra: number | null
@@ -227,6 +231,7 @@ export type Database = {
           valor_hora_mao_de_obra: number | null
         }
         Insert: {
+          acessorios?: Json | null
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
@@ -237,6 +242,9 @@ export type Database = {
           custo_mao_de_obra?: number
           custo_total?: number
           distribuidora?: string | null
+          embalagem_custo?: number | null
+          embalagem_estoque_id?: string | null
+          embalagem_quantidade?: number | null
           estado?: string | null
           filamentos?: Json
           horas_mao_de_obra?: number | null
@@ -262,6 +270,7 @@ export type Database = {
           valor_hora_mao_de_obra?: number | null
         }
         Update: {
+          acessorios?: Json | null
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
@@ -272,6 +281,9 @@ export type Database = {
           custo_mao_de_obra?: number
           custo_total?: number
           distribuidora?: string | null
+          embalagem_custo?: number | null
+          embalagem_estoque_id?: string | null
+          embalagem_quantidade?: number | null
           estado?: string | null
           filamentos?: Json
           horas_mao_de_obra?: number | null
@@ -297,6 +309,13 @@ export type Database = {
           valor_hora_mao_de_obra?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orcamentos_embalagem_estoque_id_fkey"
+            columns: ["embalagem_estoque_id"]
+            isOneToOne: false
+            referencedRelation: "inventory"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orcamentos_impressora_id_fkey"
             columns: ["impressora_id"]
