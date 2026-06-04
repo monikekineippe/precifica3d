@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.margin-suggestion]
 verify_jwt = false
+
+[functions.greenn-webhook]
+verify_jwt = false
