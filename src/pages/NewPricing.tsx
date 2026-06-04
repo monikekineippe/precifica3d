@@ -530,7 +530,13 @@ export default function NewPricing() {
                           >
                             <Plus size={14} className="mr-2" /> Preencher manualmente
                           </CommandItem>
-                          {inventory.map((item) => (
+                          {inventoryLoading ? (
+                            <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
+                              <Loader2 size={14} className="animate-spin" /> Carregando estoque...
+                            </div>
+                          ) : inventory.filter(item => item.type === 'filament' || item.type === 'Filamento').length === 0 ? (
+                            <div className="p-2 text-xs text-muted-foreground">Nenhum filamento encontrado no estoque. Cadastre em Estoque primeiro.</div>
+                          ) : inventory.filter(item => item.type === 'filament' || item.type === 'Filamento').map((item) => (
                             <CommandItem
                               key={item.id}
                               value={item.name}
@@ -539,7 +545,7 @@ export default function NewPricing() {
                                 updateFilament(f.id, {
                                   type: matchedType,
                                   brand: item.brand || '',
-                                  costPerKg: Number(item.unit_cost || 0),
+                                  costPerKg: Number(item.cost_per_unit || 0),
                                   ...({ inventoryId: item.id, fromStock: true } as any)
                                 });
                               }}
@@ -547,7 +553,7 @@ export default function NewPricing() {
                             >
                               <div className="font-medium">{item.name}</div>
                               <div className="flex items-center gap-2 mt-0.5">
-                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/kg</span>
+                                <span className="text-[10px] text-muted-foreground">R$ {Number(item.cost_per_unit || 0).toFixed(2)}/kg</span>
                                 <Badge variant="outline" className={cn(
                                   "text-[9px] px-1 py-0 h-3.5",
                                   item.quantity <= 0 ? "border-destructive text-destructive" : "border-primary/30 text-primary"
