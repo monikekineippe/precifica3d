@@ -695,9 +695,9 @@ const LandingPage = () => {
       {/* Final CTA Section */}
       <section className="py-24 bg-gradient-to-b from-[#0B1020] to-[#0f172a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white">Você vai continuar cobrando no chute?</h2>
-          <p className="text-lg sm:text-xl text-gray-400 mt-4 max-w-xl mx-auto">
-            Ou prefere saber exatamente quanto lucra em cada peça a partir de hoje, de graça?
+          <h2 className="text-3xl sm:text-4xl font-bold text-white">Você vai continuar no prejuízo sem saber?</h2>
+          <p className="text-lg sm:text-xl text-gray-400 mt-4 max-w-2xl mx-auto">
+            Ou prefere saber exatamente quanto lucra em cada peça, antes de baixar o preço, antes de aceitar o pedido e antes de comprar mais filamento?
           </p>
           <div className="mt-10 flex flex-col items-center gap-4 max-w-md mx-auto">
             <Link to="/signup" className="w-full">
