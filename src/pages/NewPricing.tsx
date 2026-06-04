@@ -694,15 +694,206 @@ export default function NewPricing() {
         </CardContent>
       </Card>
 
-      {/* SECTION F */}
+      {/* SECTION F: Embalagem */}
       <Card className="border-border bg-card">
         <CardHeader><CardTitle className="text-sm text-foreground flex items-center gap-2"><Package size={16} className="text-muted-foreground" />Embalagem</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <Select value={pkgType} onValueChange={v => { setPkgType(v); if (v === 'none') setPkgCost(0); }}>
-            <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
-            <SelectContent>{PACKAGING_TYPES.map(p => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
-          </Select>
-          {pkgType !== 'none' && <div><Label className="text-foreground">Custo (R$)</Label><Input type="number" value={pkgCost || ''} onChange={e => setPkgCost(+e.target.value)} className="bg-muted border-border" /></div>}
+        <CardContent className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] text-muted-foreground uppercase font-bold">Selecionar embalagem do estoque</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between bg-background border-border h-9 text-xs font-normal">
+                  <div className="flex items-center gap-2 truncate">
+                    <Search size={14} className="text-muted-foreground shrink-0" />
+                    <span className="truncate">
+                      {pkgType !== 'none' && pkgType !== 'manual' 
+                        ? inventory.find(item => item.id === pkgType)?.name || "Buscar embalagem..."
+                        : pkgType === 'manual' ? "Preenchimento manual" : "Sem embalagem"}
+                    </span>
+                  </div>
+                  <Plus size={14} className="ml-2 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Filtrar embalagens..." className="h-9" />
+                  <CommandList>
+                    <CommandEmpty>Nenhuma embalagem encontrada.</CommandEmpty>
+                    <CommandGroup>
+                      <CommandItem value="none" onSelect={() => { setPkgType('none'); setPkgCost(0); }} className="text-xs">
+                        <Trash2 size={14} className="mr-2" /> Sem embalagem
+                      </CommandItem>
+                      <CommandItem value="manual" onSelect={() => { setPkgType('manual'); setPkgCost(0); }} className="text-xs">
+                        <Plus size={14} className="mr-2" /> Preencher manualmente
+                      </CommandItem>
+                      {inventory.filter(item => item.type === 'Embalagem').map((item) => (
+                        <CommandItem
+                          key={item.id}
+                          value={item.name}
+                          onSelect={() => {
+                            setPkgType(item.id);
+                            setPkgCost(Number(item.unit_cost || 0));
+                          }}
+                          className="text-xs flex flex-col items-start"
+                        >
+                          <div className="font-medium">{item.name}</div>
+                          <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {pkgType !== 'none' && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs text-foreground">Custo Unitário (R$)</Label>
+                <Input type="number" value={pkgCost || ''} onChange={e => setPkgCost(+e.target.value)} className="bg-background border-border text-xs h-8" />
+              </div>
+              <div>
+                <Label className="text-xs text-foreground">Quantidade</Label>
+                <Input type="number" min={1} value={pkgQty || ''} onChange={e => setPkgQty(+e.target.value)} className="bg-background border-border text-xs h-8" />
+              </div>
+              <div className="col-span-2 text-xs text-right text-muted-foreground">
+                Total Embalagem: <span className="font-mono text-primary font-bold">R$ {totalPkgCost.toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* SECTION G: Acessórios */}
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm text-foreground flex items-center gap-2"><Plus size={16} className="text-accent" />Acessórios</CardTitle>
+            <Button size="sm" variant="outline" onClick={() => setAccessories([...accessories, { id: crypto.randomUUID(), name: '', unitCost: 0, quantity: 1, isManual: true }])} className="border-accent/30 text-accent text-xs">
+              <Plus size={14} className="mr-1" /> Adicionar
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {accessories.map((acc, idx) => (
+            <div key={acc.id} className="p-3 rounded-lg bg-muted/30 border border-border space-y-3 relative">
+              <button 
+                onClick={() => setAccessories(accessories.filter(a => a.id !== acc.id))} 
+                className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 size={14} />
+              </button>
+              
+              <div className="space-y-1.5 pr-6">
+                <Label className="text-[10px] text-muted-foreground uppercase font-bold">Item do estoque</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className="w-full justify-between bg-background border-border h-9 text-xs font-normal">
+                      <div className="flex items-center gap-2 truncate">
+                        <Search size={14} className="text-muted-foreground shrink-0" />
+                        <span className="truncate">
+                          {acc.inventoryId 
+                            ? inventory.find(i => i.id === acc.inventoryId)?.name || acc.name || "Buscar..."
+                            : acc.name || "Buscar no estoque..."}
+                        </span>
+                      </div>
+                      <Plus size={14} className="ml-2 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Filtrar acessórios..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          <CommandItem value="manual" onSelect={() => {
+                            const newAccs = [...accessories];
+                            newAccs[idx] = { ...newAccs[idx], inventoryId: null, isManual: true, name: '' };
+                            setAccessories(newAccs);
+                          }} className="text-xs">
+                            <Plus size={14} className="mr-2" /> Preencher manualmente
+                          </CommandItem>
+                          {inventory.filter(item => item.type === 'Acessório').map((item) => (
+                            <CommandItem
+                              key={item.id}
+                              value={item.name}
+                              onSelect={() => {
+                                const newAccs = [...accessories];
+                                newAccs[idx] = { 
+                                  ...newAccs[idx], 
+                                  inventoryId: item.id, 
+                                  name: item.name, 
+                                  unitCost: Number(item.unit_cost || 0), 
+                                  isManual: false 
+                                };
+                                setAccessories(newAccs);
+                              }}
+                              className="text-xs flex flex-col items-start"
+                            >
+                              <div className="font-medium">{item.name}</div>
+                              <div className="text-[10px] text-muted-foreground">R$ {Number(item.unit_cost || 0).toFixed(2)}/un</div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <Label className="text-xs text-foreground">Descrição</Label>
+                  <Input 
+                    value={acc.name} 
+                    onChange={e => {
+                      const newAccs = [...accessories];
+                      newAccs[idx].name = e.target.value;
+                      setAccessories(newAccs);
+                    }} 
+                    className="bg-background border-border text-xs h-8" 
+                    placeholder="Ex: Ímã de neodímio"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-foreground">Custo Unit. (R$)</Label>
+                  <Input 
+                    type="number" 
+                    value={acc.unitCost || ''} 
+                    onChange={e => {
+                      const newAccs = [...accessories];
+                      newAccs[idx].unitCost = +e.target.value;
+                      setAccessories(newAccs);
+                    }} 
+                    className="bg-background border-border text-xs h-8" 
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs text-foreground">Quantidade</Label>
+                  <Input 
+                    type="number" 
+                    min={1} 
+                    value={acc.quantity || ''} 
+                    onChange={e => {
+                      const newAccs = [...accessories];
+                      newAccs[idx].quantity = +e.target.value;
+                      setAccessories(newAccs);
+                    }} 
+                    className="bg-background border-border text-xs h-8" 
+                  />
+                </div>
+                <div className="col-span-2 text-xs text-right text-muted-foreground">
+                  Subtotal: <span className="font-mono text-accent font-bold">R$ {(Number(acc.unitCost || 0) * Number(acc.quantity || 1)).toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          <div className="flex justify-between text-xs border-t border-border pt-3">
+            <span className="text-muted-foreground font-medium">Total acessórios</span>
+            <span className="font-mono text-accent font-bold text-sm">R$ {totalAccessoriesCost.toFixed(2)}</span>
+          </div>
         </CardContent>
       </Card>
 
