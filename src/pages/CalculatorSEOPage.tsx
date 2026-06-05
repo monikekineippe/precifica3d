@@ -126,12 +126,13 @@ const CalculatorSEOPage = () => {
             </p>
 
             <div className="mt-16 text-center">
-              <Link to="/signup">
+              <Link to="/register">
                 <Button size="lg" className="h-14 px-10 text-lg font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[0_0_20px_rgba(0,212,255,0.3)] rounded-xl">
                   Acessar a calculadora grátis
                 </Button>
               </Link>
             </div>
+
           </div>
         </div>
       </main>

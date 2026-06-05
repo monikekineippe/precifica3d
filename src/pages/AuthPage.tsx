@@ -17,9 +17,10 @@ const BENEFITS = [
   "Suporte a impressoras mono e multifilamento (até 16 filamentos)",
 ];
 
-export default function AuthPage() {
+export default function AuthPage({ initialIsLogin = true }: { initialIsLogin?: boolean }) {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(initialIsLogin);
+
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");

@@ -42,7 +42,9 @@ const App = () => (
             <Route path="/calculadora-preco-impressao-3d" element={<CalculatorSEOPage />} />
 
             <Route path="/login" element={<AuthPage />} />
-            <Route path="/signup" element={<AuthPage />} />
+             <Route path="/signup" element={<AuthPage initialIsLogin={false} />} />
+             <Route path="/register" element={<AuthPage initialIsLogin={false} />} />
+
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/planos" element={<PlansPage />} />
