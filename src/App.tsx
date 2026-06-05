@@ -16,6 +16,7 @@ import ReportsPage from "@/pages/ReportsPage";
 import InventoryPage from "@/pages/InventoryPage";
 import LandingPage from "@/pages/LandingPage";
 import CalculatorSEOPage from "@/pages/CalculatorSEOPage";
+import InventorySEOPage from "@/pages/InventorySEOPage";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/software-gestao-impressao-3d" element={<LandingPage />} />
             <Route path="/calculadora-preco-impressao-3d" element={<CalculatorSEOPage />} />
+            <Route path="/controle-estoque-filamento" element={<InventorySEOPage />} />
 
             <Route path="/login" element={<AuthPage />} />
              <Route path="/signup" element={<AuthPage initialIsLogin={false} />} />
