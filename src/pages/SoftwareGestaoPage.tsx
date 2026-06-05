@@ -1,8 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Helmet } from "react-helmet-async";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
 import { CheckCircle2, Calculator, Package, Wallet, ShoppingCart, BarChart3, History } from "lucide-react";
 
 const SoftwareGestaoPage = () => {
@@ -49,7 +47,15 @@ const SoftwareGestaoPage = () => {
         />
       </Helmet>
       
-      <Navigation />
+      {/* Basic Navigation Mock or Minimalist Header since separate Nav component is missing */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+          <Link to="/" className="text-2xl font-bold text-primary">Gestão3D</Link>
+          <Link to="/login">
+            <Button variant="ghost">Entrar</Button>
+          </Link>
+        </div>
+      </header>
       
       <main className="flex-grow pt-32 pb-20">
         <div className="container mx-auto px-4 max-w-4xl">
@@ -63,13 +69,13 @@ const SoftwareGestaoPage = () => {
             em um só lugar, com dados reais da sua operação.
           </p>
 
-          <h2 className="text-3xl font-bold mb-10 text-center">O que o Gestão3D faz pelo seu negócio</h2>
+          <h2 className="text-3xl font-bold mb-10 text-center text-foreground">O que o Gestão3D faz pelo seu negócio</h2>
           
           <div className="grid md:grid-cols-2 gap-8 mb-16">
             {features.map((feature, index) => (
               <div key={index} className="p-6 rounded-2xl border bg-card/50 hover:bg-card transition-colors">
                 <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                <h3 className="text-xl font-semibold mb-3 text-foreground">{feature.title}</h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
@@ -79,7 +85,7 @@ const SoftwareGestaoPage = () => {
 
           <div className="space-y-16">
             <section>
-              <h2 className="text-3xl font-bold mb-6">Para quem é o Gestão3D</h2>
+              <h2 className="text-3xl font-bold mb-6 text-foreground">Para quem é o Gestão3D</h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
                 O Gestão3D foi criado para impressores 3D que vendem peças por encomenda, em marketplaces 
                 ou em feiras. Se você imprime para vender e quer saber exatamente quanto lucra em cada peça, 
@@ -88,7 +94,7 @@ const SoftwareGestaoPage = () => {
             </section>
 
             <section className="p-8 rounded-3xl bg-primary/5 border border-primary/10">
-              <h2 className="text-3xl font-bold mb-6">Plano gratuito disponível</h2>
+              <h2 className="text-3xl font-bold mb-6 text-foreground">Plano gratuito disponível</h2>
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
                 Comece gratuitamente sem cartão de crédito. O plano gratuito inclui orçamentos ilimitados, 
                 acesso às impressoras pré-cadastradas e cálculo em tempo real. Faça o primeiro orçamento 
@@ -107,7 +113,11 @@ const SoftwareGestaoPage = () => {
         </div>
       </main>
 
-      <Footer />
+      <footer className="py-12 border-t bg-muted/30">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <p>© 2026 Gestão3D. Todos os direitos reservados.</p>
+        </div>
+      </footer>
     </div>
   );
 };
