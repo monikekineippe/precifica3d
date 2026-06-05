@@ -5,7 +5,30 @@ import { useState } from "react";
 import { Helmet } from 'react-helmet-async';
 import logo from "@/assets/logo-precifica3d.png";
 import PlansPage from "./PlansPage";
-...
+
+const FAQ_ITEMS = [
+  {
+    question: "É complicado de usar?",
+    answer: "Não. Se você consegue preencher uma ficha de pedido, consegue usar o Gestão3D. O cálculo completo leva menos de 2 minutos na primeira vez. Depois disso, menos de 30 segundos por peça."
+  },
+  {
+    question: "Vale R$ 29,90 por mês?",
+    answer: "Depende. Se você vende pelo menos 5 peças por mês e cobra R$ 5 a mais em cada uma porque agora sabe o custo real, o sistema já se pagou. A maioria dos usuários recupera o investimento na primeira semana."
+  },
+  {
+    question: "E se eu não gostar?",
+    answer: "Comece grátis, sem cartão de crédito. Teste com 2 orçamentos reais. Se não fizer sentido para o seu negócio, não assine. Simples assim."
+  },
+  {
+    question: "Funciona para qualquer impressora?",
+    answer: "Sim. O sistema tem impressoras pré-cadastradas das marcas mais usadas no Brasil Bambu Lab, Creality, Prusa, FLSUN e outras. Você também pode cadastrar a sua com as especificações exatas."
+  },
+  {
+    question: "Os dados ficam salvos?",
+    answer: "Sim. Todos os seus orçamentos, vendas e histórico ficam salvos na sua conta, acessíveis de qualquer dispositivo a qualquer momento."
+  }
+];
+
 const CalculatorSEOPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -15,9 +38,6 @@ const CalculatorSEOPage = () => {
         <title>Calculadora de Preço para Impressão 3D Grátis | Gestão3D</title>
         <meta name="description" content="Calcule o preço correto de qualquer impressão 3D gratuitamente. Nossa calculadora considera filamento, energia, depreciação, mão de obra e margem de lucro. Resultado em segundos." />
       </Helmet>
-
-  return (
-    <div className="min-h-screen bg-background text-foreground font-sans">
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[#0B1020]/80 backdrop-blur-md border-b border-white/5">
