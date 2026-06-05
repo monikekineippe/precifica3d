@@ -15,6 +15,7 @@ import PlansPage from "@/pages/PlansPage";
 import ReportsPage from "@/pages/ReportsPage";
 import InventoryPage from "@/pages/InventoryPage";
 import LandingPage from "@/pages/LandingPage";
+import CalculatorSEOPage from "@/pages/CalculatorSEOPage";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -22,6 +23,7 @@ import SalesPage from "@/pages/SalesPage";
 import ClientsPage from "@/pages/ClientsPage";
 import MarketplacePage from "@/pages/MarketplacePage";
 import NotFound from "@/pages/NotFound";
+
 
 
 const queryClient = new QueryClient();
@@ -37,6 +39,8 @@ const App = () => (
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/software-gestao-impressao-3d" element={<LandingPage />} />
+            <Route path="/calculadora-preco-impressao-3d" element={<CalculatorSEOPage />} />
+
             <Route path="/login" element={<AuthPage />} />
             <Route path="/signup" element={<AuthPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
