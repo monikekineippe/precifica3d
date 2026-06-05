@@ -4,7 +4,7 @@ import { CheckCircle2, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import logo from "@/assets/logo-precifica3d.png";
 import PlansPage from "./PlansPage";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const FAQ_ITEMS = [
   {
