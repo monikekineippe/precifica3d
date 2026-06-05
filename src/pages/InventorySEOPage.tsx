@@ -37,6 +37,9 @@ const InventorySEOPage = () => {
       <Helmet>
         <title>Controle de Estoque de Filamento para Impressão 3D | Gestão3D</title>
         <meta name="description" content="Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda. Grátis para começar." />
+        <link rel="canonical" href="https://gestao3d.agenciaai.com.br/controle-estoque-filamento" />
+        <meta property="og:title" content="Controle de Estoque de Filamento para Impressão 3D | Gestão3D" />
+        <meta property="og:description" content="Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda." />
       </Helmet>
 
       {/* Navigation */}

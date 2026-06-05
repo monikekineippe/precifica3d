@@ -45,6 +45,9 @@ const SoftwareGestaoPage = () => {
           name="description" 
           content="O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas, relatórios e preços para marketplace. Grátis para começar." 
         />
+        <link rel="canonical" href="https://gestao3d.agenciaai.com.br/software-gestao-impressao-3d" />
+        <meta property="og:title" content="Software de Gestão para Impressão 3D | Gestão3D" />
+        <meta property="og:description" content="O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas e marketplaces." />
       </Helmet>
       
       {/* Basic Navigation Mock or Minimalist Header since separate Nav component is missing */}
