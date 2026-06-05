@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 import { CheckCircle2, Calculator, Package, Wallet, ShoppingCart, BarChart3, History } from "lucide-react";
 
 const SoftwareGestaoPage = () => {
@@ -37,18 +37,25 @@ const SoftwareGestaoPage = () => {
     }
   ];
 
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Software de Gestão para Impressão 3D | Gestão3D";
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const prevDescription = metaDescription?.getAttribute('content');
+    
+    metaDescription?.setAttribute('content', 'O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas, relatórios e preços para marketplace. Grátis para começar.');
+    
+    return () => {
+      document.title = prevTitle;
+      if (prevDescription) {
+        metaDescription?.setAttribute('content', prevDescription);
+      }
+    };
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Helmet>
-        <title>Software de Gestão para Impressão 3D | Gestão3D</title>
-        <meta 
-          name="description" 
-          content="O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas, relatórios e preços para marketplace. Grátis para começar." 
-        />
-        <link rel="canonical" href="https://gestao3d.agenciaai.com.br/software-gestao-impressao-3d" />
-        <meta property="og:title" content="Software de Gestão para Impressão 3D | Gestão3D" />
-        <meta property="og:description" content="O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas e marketplaces." />
-      </Helmet>
       
       {/* Basic Navigation Mock or Minimalist Header since separate Nav component is missing */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b">
