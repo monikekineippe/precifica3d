@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import logo from "@/assets/logo-precifica3d.png";
 import PlansPage from "./PlansPage";
 
@@ -24,32 +25,19 @@ const FAQ_ITEMS = [
   },
   {
     question: "Os dados ficam salvos?",
-    answer: "Sim. Todo o seu histórico de compras, entradas e saídas de estoque fica salvo na sua conta, acessível de qualquer dispositivo a qualquer momento."
+    answer: "Sim. Todo o seu histórico de compras, entradas e saídas de estoque fica salvo na sua conta, acessíveis de qualquer dispositivo a qualquer momento."
   }
 ];
 
 const InventorySEOPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Controle de Estoque de Filamento para Impressão 3D | Gestão3D";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const prevDescription = metaDescription?.getAttribute('content');
-    
-    metaDescription?.setAttribute('content', 'Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda. Grátis para começar.');
-    
-    return () => {
-      document.title = prevTitle;
-      if (prevDescription) {
-        metaDescription?.setAttribute('content', prevDescription);
-      }
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
+      <Helmet>
+        <title>Controle de Estoque de Filamento para Impressão 3D | Gestão3D</title>
+        <meta name="description" content="Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda. Grátis para começar." />
+      </Helmet>
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[#0B1020]/80 backdrop-blur-md border-b border-white/5">

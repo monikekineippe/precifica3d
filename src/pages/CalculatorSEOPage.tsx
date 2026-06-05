@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import logo from "@/assets/logo-precifica3d.png";
 import PlansPage from "./PlansPage";
 
@@ -31,25 +32,12 @@ const FAQ_ITEMS = [
 const CalculatorSEOPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Calculadora de Preço para Impressão 3D Grátis | Gestão3D";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const prevDescription = metaDescription?.getAttribute('content');
-    
-    metaDescription?.setAttribute('content', 'Calcule o preço correto de qualquer impressão 3D gratuitamente. Nossa calculadora considera filamento, energia, depreciação, mão de obra e margem de lucro. Resultado em segundos.');
-    
-    return () => {
-      document.title = prevTitle;
-      if (prevDescription) {
-        metaDescription?.setAttribute('content', prevDescription);
-      }
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
+      <Helmet>
+        <title>Calculadora de Preço para Impressão 3D Grátis | Gestão3D</title>
+        <meta name="description" content="Calcule o preço correto de qualquer impressão 3D gratuitamente. Nossa calculadora considera filamento, energia, depreciação, mão de obra e margem de lucro. Resultado em segundos." />
+      </Helmet>
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-[#0B1020]/80 backdrop-blur-md border-b border-white/5">
