@@ -1,58 +1,19 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { Helmet } from 'react-helmet-async';
 import { CheckCircle2, Calculator, Package, Wallet, ShoppingCart, BarChart3, History } from "lucide-react";
-
+...
 const SoftwareGestaoPage = () => {
   const features = [
-    {
-      title: "Precificação com IA",
-      description: "Calcule o custo real de cada peça em segundos. O sistema considera filamento, energia com a tarifa real da sua distribuidora, depreciação da impressora, mão de obra e acessórios. A IA sugere a margem ideal por tipo de produto.",
-      icon: <Calculator className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "Controle de Estoque",
-      description: "Gerencie filamentos, embalagens e acessórios com custo médio ponderado, alertas de mínimo e baixa automática na venda. Ao lançar uma compra no caixa, o item entra no estoque automaticamente.",
-      icon: <Package className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "Gestão de Caixa",
-      description: "Registre vendas com canal de origem, forma de pagamento e lucro líquido real. Separe gastos operacionais de investimento em estoque. Veja faturamento, lucro e ticket médio do mês no dashboard.",
-      icon: <Wallet className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "Preços para Marketplace",
-      description: "Calcule o preço ideal para Shopee, Mercado Livre, Amazon e TikTok Shop com as taxas reais de cada plataforma. Nunca mais use o mesmo preço em todas as plataformas e perca margem sem perceber.",
-      icon: <ShoppingCart className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "Relatórios e Análises",
-      description: "Descubra quais produtos geram mais lucro, qual canal traz mais vendas e como sua margem evolui ao longo do tempo. Tome decisões com dados reais, não com estimativas.",
-      icon: <BarChart3 className="w-6 h-6 text-primary" />
-    },
-    {
-      title: "Histórico de Orçamentos",
-      description: "Salve todos os seus orçamentos com custo, margem e preço sugerido. Use orçamentos anteriores como base para novos pedidos similares.",
-      icon: <History className="w-6 h-6 text-primary" />
-    }
+...
   ];
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Software de Gestão para Impressão 3D | Gestão3D";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const prevDescription = metaDescription?.getAttribute('content');
-    
-    metaDescription?.setAttribute('content', 'O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas, relatórios e preços para marketplace. Grátis para começar.');
-    
-    return () => {
-      document.title = prevTitle;
-      if (prevDescription) {
-        metaDescription?.setAttribute('content', prevDescription);
-      }
-    };
-  }, []);
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Helmet>
+        <title>Software de Gestão para Impressão 3D | Gestão3D</title>
+        <meta name="description" content="O software completo para quem vende impressão 3D: precificação com IA, controle de estoque, gestão de vendas, relatórios e preços para marketplace. Grátis para começar." />
+      </Helmet>
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

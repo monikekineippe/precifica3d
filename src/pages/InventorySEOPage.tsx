@@ -1,52 +1,20 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ChevronDown } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import logo from "@/assets/logo-precifica3d.png";
 import PlansPage from "./PlansPage";
-
-const FAQ_ITEMS = [
-  {
-    question: "É complicado de usar?",
-    answer: "Não. Se você consegue preencher uma ficha de pedido, consegue usar o Gestão3D. O controle de estoque é integrado à precificação e ao caixa, economizando seu tempo."
-  },
-  {
-    question: "Vale R$ 29,90 por mês?",
-    answer: "Se você evitar perder um único rolo de filamento por mês porque agora sabe exatamente o que tem em estoque, o sistema já se pagou. Além disso, a precificação correta baseada no custo médio aumenta seu lucro real."
-  },
-  {
-    question: "E se eu não gostar?",
-    answer: "Comece grátis, sem cartão de crédito. Teste todas as funcionalidades. Se não fizer sentido para o seu negócio, não assine. Simples assim."
-  },
-  {
-    question: "Funciona para qualquer marca de filamento?",
-    answer: "Sim. Você pode cadastrar qualquer marca, tipo (PLA, ABS, PETG, TPU, Resina) e cor. O sistema permite um controle total independente do fabricante."
-  },
-  {
-    question: "Os dados ficam salvos?",
-    answer: "Sim. Todo o seu histórico de compras, entradas e saídas de estoque fica salvo na sua conta, acessível de qualquer dispositivo a qualquer momento."
-  }
-];
-
+...
 const InventorySEOPage = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  useEffect(() => {
-    const prevTitle = document.title;
-    document.title = "Controle de Estoque de Filamento para Impressão 3D | Gestão3D";
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    const prevDescription = metaDescription?.getAttribute('content');
-    
-    metaDescription?.setAttribute('content', 'Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda. Grátis para começar.');
-    
-    return () => {
-      document.title = prevTitle;
-      if (prevDescription) {
-        metaDescription?.setAttribute('content', prevDescription);
-      }
-    };
-  }, []);
+  return (
+    <div className="min-h-screen bg-background text-foreground font-sans">
+      <Helmet>
+        <title>Controle de Estoque de Filamento para Impressão 3D | Gestão3D</title>
+        <meta name="description" content="Gerencie seu estoque de filamento com alertas de mínimo, custo médio ponderado e baixa automática na venda. Grátis para começar." />
+      </Helmet>
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans">
