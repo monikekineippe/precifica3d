@@ -24,6 +24,15 @@ const POSTS = [
     date: "06 de junho de 2026",
     readTime: "6 min",
   },
+  {
+    tag: "Marketplace",
+    title: "Como vender impressão 3D na Shopee com lucro",
+    description:
+      "Aprenda a precificar suas peças 3D para a Shopee considerando as taxas reais da plataforma e garanta lucro real em cada venda.",
+    href: "/blog/como-vender-impressao-3d-shopee-com-lucro",
+    date: "06 de junho de 2026",
+    readTime: "7 min",
+  },
 ];
 
 const BlogPage = () => {
