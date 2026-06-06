@@ -35,12 +35,14 @@ const EMPTY_FORM = {
   name: '', type: 'filament', quantity: 0, unit: 'g',
   cost_per_unit: 0, min_stock: 0, color: '', brand: '',
   category: 'raw_material' as 'raw_material' | 'finished_product',
+  last_purchase_date: '',
 };
 
 const PURCHASE_FORM = {
   itemId: '',
   quantity: 0,
   cost: 0,
+  date: new Date().toISOString().slice(0, 10),
 };
 
 export default function InventoryPage() {
