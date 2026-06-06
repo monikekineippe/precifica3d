@@ -115,6 +115,7 @@ export default function InventoryPage() {
       color: item.color || '', 
       brand: item.brand || '',
       category: item.category,
+      last_purchase_date: item.last_purchase_date ? item.last_purchase_date.slice(0, 10) : '',
     });
     setDialogOpen(true);
   };
@@ -124,6 +125,7 @@ export default function InventoryPage() {
       itemId: item.id,
       quantity: 0,
       cost: item.cost_per_unit,
+      date: new Date().toISOString().slice(0, 10),
     });
     setPurchaseDialogOpen(true);
   };
