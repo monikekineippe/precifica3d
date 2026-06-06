@@ -21,6 +21,7 @@ import InventorySEOPage from "@/pages/InventorySEOPage";
 import SoftwareGestaoPage from "@/pages/SoftwareGestaoPage";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostCalcular from "@/pages/BlogPostCalcular";
+import BlogPostHora from "@/pages/BlogPostHora";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/software-gestao-impressao-3d" element={<SoftwareGestaoPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/como-calcular-preco-impressao-3d" element={<BlogPostCalcular />} />
+            <Route path="/blog/quanto-cobrar-hora-impressao-3d" element={<BlogPostHora />} />
 
             <Route path="/login" element={<AuthPage />} />
              <Route path="/signup" element={<AuthPage initialIsLogin={false} />} />
