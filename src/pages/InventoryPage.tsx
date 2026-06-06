@@ -432,6 +432,16 @@ export default function InventoryPage() {
                 onChange={e => setPurchaseForm(f => ({ ...f, cost: +e.target.value }))} 
                 className="bg-muted border-border" 
               />
+              <p className="text-[10px] text-muted-foreground">O custo médio ponderado será recalculado automaticamente.</p>
+            </div>
+            <div className="grid gap-2">
+              <Label>Data da compra</Label>
+              <Input
+                type="date"
+                value={purchaseForm.date}
+                onChange={e => setPurchaseForm(f => ({ ...f, date: e.target.value }))}
+                className="bg-muted border-border"
+              />
             </div>
           </div>
           <DialogFooter>
