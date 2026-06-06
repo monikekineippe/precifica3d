@@ -543,28 +543,28 @@ export default function SalesPage() {
     setTransactionDialogOpen(true);
   };
 
-  const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  const totalInflow = periodTransactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
   
   // Categorize outflows
   const operationalCategories = ['despesa_fixa', 'despesa_variavel', 'retirada'];
   const investmentStockCategories = ['insumo_estoque', 'investimento_equipamento'];
 
-  const totalOperationalOutflow = transactions
+  const totalOperationalOutflow = periodTransactions
     .filter(t => t.type === 'outflow' && operationalCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const totalInvestmentStockOutflow = transactions
+  const totalInvestmentStockOutflow = periodTransactions
     .filter(t => t.type === 'outflow' && investmentStockCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + transactions
+  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + periodTransactions
     .filter(t => t.type === 'outflow' && !operationalCategories.includes(t.category) && !investmentStockCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
   const balance = totalInflow - totalOutflow;
 
   // Calculate item performance
-  const itemPerformance = sales.reduce((acc: any, sale) => {
+  const itemPerformance = periodSales.reduce((acc: any, sale) => {
     const quote = quotes.find(q => q.id === sale.orcamento_id);
     const itemName = quote ? quote.nome_peca : (sale.notes || "Venda Direta");
     const profit = Number(sale.profit_amount || 0);
@@ -588,7 +588,7 @@ export default function SalesPage() {
 
   const performanceList = Object.values(itemPerformance).sort((a: any, b: any) => b.totalProfit - a.totalProfit);
 
-  const filteredSales = sales.filter(s => 
+  const filteredSales = periodSales.filter(s => 
     (s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (s.notes?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
