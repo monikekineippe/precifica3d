@@ -691,6 +691,53 @@ export default function SalesPage() {
         </DialogContent>
       </Dialog>
 
+      <Card className="bg-card border-border p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {([
+            { id: "today", label: "Hoje" },
+            { id: "week", label: "Esta semana" },
+            { id: "month", label: "Este mês" },
+            { id: "year", label: "Este ano" },
+            { id: "custom", label: "Personalizado" },
+          ] as { id: PeriodPreset; label: string }[]).map(p => (
+            <Button
+              key={p.id}
+              size="sm"
+              variant={periodPreset === p.id ? "default" : "outline"}
+              onClick={() => setPeriodPreset(p.id)}
+              className={periodPreset === p.id ? "bg-primary text-primary-foreground" : "border-border"}
+            >
+              {p.label}
+            </Button>
+          ))}
+          {periodPreset === "custom" && (
+            <div className="flex items-center gap-2 ml-2">
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Início</Label>
+                <Input
+                  type="date"
+                  value={customStart}
+                  onChange={e => setCustomStart(e.target.value)}
+                  className="bg-muted border-border h-8 w-[150px]"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Fim</Label>
+                <Input
+                  type="date"
+                  value={customEnd}
+                  onChange={e => setCustomEnd(e.target.value)}
+                  className="bg-muted border-border h-8 w-[150px]"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Exibindo dados de {format(periodStart, "dd/MM/yyyy", { locale: ptBR })} a {format(periodEnd, "dd/MM/yyyy", { locale: ptBR })}
+        </p>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-card border-border border-t-4 border-white/40 p-6">
           <div className="space-y-2">
