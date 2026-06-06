@@ -199,7 +199,7 @@ export default function InventoryPage() {
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
       {itemsList.map(item => (
-        <Card key={item.id} className="border-border bg-card hover:border-primary/30 transition-colors">
+        <Card key={item.id} className={`bg-card transition-colors ${isCritical(item) ? 'border-destructive ring-1 ring-destructive/40' : 'border-border hover:border-primary/30'}`}>
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between">
               <CardTitle className="text-sm font-semibold text-foreground leading-tight truncate max-w-[150px]">
@@ -213,7 +213,12 @@ export default function InventoryPage() {
                 <button onClick={() => handleDelete(item.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
               </div>
             </div>
-            <div className="flex gap-1.5 mt-1">
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {isCritical(item) && (
+                <Badge className="text-[10px] bg-destructive text-destructive-foreground border-transparent">
+                  <AlertTriangle size={10} className="mr-1" /> Estoque crítico
+                </Badge>
+              )}
               <Badge variant="outline" className="text-[10px] border-primary/30 text-primary capitalize">
                 {item.type === 'filament' ? 'Filamento' : 
                  item.type === 'packaging' ? 'Embalagem' : 
