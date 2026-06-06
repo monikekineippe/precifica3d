@@ -102,7 +102,7 @@ export default function Dashboard() {
         .select("*")
         .eq("user_id", user.id);
       
-      const criticalCount = inventory ? inventory.filter((i: any) => i.quantity <= i.min_stock).length : 0;
+      const criticalCount = inventory ? inventory.filter((i: any) => i.category === 'raw_material' && Number(i.min_stock) > 0 && Number(i.quantity) <= Number(i.min_stock)).length : 0;
 
       // 4. Get Monthly Expenses (Other Movements)
       const { data: expenses } = await supabase
