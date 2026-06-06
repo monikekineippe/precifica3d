@@ -23,6 +23,7 @@ import BlogPage from "@/pages/BlogPage";
 import BlogPostCalcular from "@/pages/BlogPostCalcular";
 import BlogPostHora from "@/pages/BlogPostHora";
 import BlogPostShopee from "@/pages/BlogPostShopee";
+import BlogPostPlanilha from "@/pages/BlogPostPlanilha";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
@@ -52,6 +53,7 @@ const App = () => (
             <Route path="/blog/como-calcular-preco-impressao-3d" element={<BlogPostCalcular />} />
             <Route path="/blog/quanto-cobrar-hora-impressao-3d" element={<BlogPostHora />} />
             <Route path="/blog/como-vender-impressao-3d-shopee-com-lucro" element={<BlogPostShopee />} />
+            <Route path="/blog/planilha-ou-sistema-gestao-impressao-3d" element={<BlogPostPlanilha />} />
 
             <Route path="/login" element={<AuthPage />} />
              <Route path="/signup" element={<AuthPage initialIsLogin={false} />} />
