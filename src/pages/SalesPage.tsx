@@ -81,6 +81,45 @@ export default function SalesPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  type PeriodPreset = "today" | "week" | "month" | "year" | "custom";
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("month");
+  const [customStart, setCustomStart] = useState<string>("");
+  const [customEnd, setCustomEnd] = useState<string>("");
+
+  const { periodStart, periodEnd } = (() => {
+    const now = new Date();
+    let start = new Date();
+    let end = new Date();
+    end.setHours(23, 59, 59, 999);
+    if (periodPreset === "today") {
+      start.setHours(0, 0, 0, 0);
+    } else if (periodPreset === "week") {
+      const day = now.getDay();
+      const diff = day === 0 ? 6 : day - 1; // semana inicia na segunda
+      start = new Date(now);
+      start.setDate(now.getDate() - diff);
+      start.setHours(0, 0, 0, 0);
+    } else if (periodPreset === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (periodPreset === "year") {
+      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (periodPreset === "custom") {
+      start = customStart ? new Date(customStart + "T00:00:00") : new Date(now.getFullYear(), now.getMonth(), 1);
+      end = customEnd ? new Date(customEnd + "T23:59:59") : now;
+    }
+    return { periodStart: start, periodEnd: end };
+  })();
+
+  const inPeriod = (iso: string) => {
+    const d = new Date(iso);
+    return d >= periodStart && d <= periodEnd;
+  };
+
+  const periodSales = sales.filter(s => inPeriod(s.created_at));
+  const periodTransactions = transactions.filter(t => inPeriod(t.created_at));
+
   const [saleForm, setSaleForm] = useState({
     customer_id: "none",
     customer_name: "",
@@ -504,28 +543,28 @@ export default function SalesPage() {
     setTransactionDialogOpen(true);
   };
 
-  const totalInflow = transactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
+  const totalInflow = periodTransactions.filter(t => t.type === 'inflow').reduce((acc, t) => acc + Number(t.amount), 0);
   
   // Categorize outflows
   const operationalCategories = ['despesa_fixa', 'despesa_variavel', 'retirada'];
   const investmentStockCategories = ['insumo_estoque', 'investimento_equipamento'];
 
-  const totalOperationalOutflow = transactions
+  const totalOperationalOutflow = periodTransactions
     .filter(t => t.type === 'outflow' && operationalCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const totalInvestmentStockOutflow = transactions
+  const totalInvestmentStockOutflow = periodTransactions
     .filter(t => t.type === 'outflow' && investmentStockCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
-  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + transactions
+  const totalOutflow = totalOperationalOutflow + totalInvestmentStockOutflow + periodTransactions
     .filter(t => t.type === 'outflow' && !operationalCategories.includes(t.category) && !investmentStockCategories.includes(t.category))
     .reduce((acc, t) => acc + Number(t.amount), 0);
 
   const balance = totalInflow - totalOutflow;
 
   // Calculate item performance
-  const itemPerformance = sales.reduce((acc: any, sale) => {
+  const itemPerformance = periodSales.reduce((acc: any, sale) => {
     const quote = quotes.find(q => q.id === sale.orcamento_id);
     const itemName = quote ? quote.nome_peca : (sale.notes || "Venda Direta");
     const profit = Number(sale.profit_amount || 0);
@@ -549,7 +588,7 @@ export default function SalesPage() {
 
   const performanceList = Object.values(itemPerformance).sort((a: any, b: any) => b.totalProfit - a.totalProfit);
 
-  const filteredSales = sales.filter(s => 
+  const filteredSales = periodSales.filter(s => 
     (s.customer_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (s.notes?.toLowerCase().includes(searchTerm.toLowerCase()))
   );
@@ -651,6 +690,53 @@ export default function SalesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Card className="bg-card border-border p-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {([
+            { id: "today", label: "Hoje" },
+            { id: "week", label: "Esta semana" },
+            { id: "month", label: "Este mês" },
+            { id: "year", label: "Este ano" },
+            { id: "custom", label: "Personalizado" },
+          ] as { id: PeriodPreset; label: string }[]).map(p => (
+            <Button
+              key={p.id}
+              size="sm"
+              variant={periodPreset === p.id ? "default" : "outline"}
+              onClick={() => setPeriodPreset(p.id)}
+              className={periodPreset === p.id ? "bg-primary text-primary-foreground" : "border-border"}
+            >
+              {p.label}
+            </Button>
+          ))}
+          {periodPreset === "custom" && (
+            <div className="flex items-center gap-2 ml-2">
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Início</Label>
+                <Input
+                  type="date"
+                  value={customStart}
+                  onChange={e => setCustomStart(e.target.value)}
+                  className="bg-muted border-border h-8 w-[150px]"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <Label className="text-xs text-muted-foreground">Fim</Label>
+                <Input
+                  type="date"
+                  value={customEnd}
+                  onChange={e => setCustomEnd(e.target.value)}
+                  className="bg-muted border-border h-8 w-[150px]"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Exibindo dados de {format(periodStart, "dd/MM/yyyy", { locale: ptBR })} a {format(periodEnd, "dd/MM/yyyy", { locale: ptBR })}
+        </p>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-card border-border border-t-4 border-white/40 p-6">
@@ -819,12 +905,12 @@ export default function SalesPage() {
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-foreground">Outras Movimentações</h2>
           <div className="space-y-2">
-            {transactions.filter(t => t.category !== 'venda').length === 0 ? (
+            {periodTransactions.filter(t => t.category !== 'venda').length === 0 ? (
               <div className="py-8 text-center bg-muted/20 rounded-xl border border-dashed border-border">
                 <p className="text-muted-foreground text-sm">Nenhuma outra movimentação registrada.</p>
               </div>
             ) : (
-              transactions.filter(t => t.category !== 'venda').map(transaction => (
+              periodTransactions.filter(t => t.category !== 'venda').map(transaction => (
                 <Card key={transaction.id} className="border-border bg-card">
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-2">
