@@ -23,6 +23,7 @@ import BlogPage from "@/pages/BlogPage";
 import BlogPostCalcular from "@/pages/BlogPostCalcular";
 import BlogPostHora from "@/pages/BlogPostHora";
 import BlogPostShopee from "@/pages/BlogPostShopee";
+import BlogPostPlanilha from "@/pages/BlogPostPlanilha";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
