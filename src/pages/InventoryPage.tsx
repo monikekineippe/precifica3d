@@ -134,9 +134,10 @@ export default function InventoryPage() {
     if (!form.name.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!user) return;
 
-    const payload = {
+    const payload: any = {
       ...form,
-      user_id: user.id
+      user_id: user.id,
+      last_purchase_date: form.last_purchase_date ? new Date(form.last_purchase_date).toISOString() : null,
     };
 
     if (editing) {
@@ -156,15 +157,23 @@ export default function InventoryPage() {
     const item = items.find(i => i.id === purchaseForm.itemId);
     if (!item) return;
 
-    const newQuantity = Number(item.quantity) + Number(purchaseForm.quantity);
-    
+    const currentQty = Number(item.quantity) || 0;
+    const currentCost = Number(item.cost_per_unit) || 0;
+    const addedQty = Number(purchaseForm.quantity);
+    const addedCost = Number(purchaseForm.cost);
+
+    const newQuantity = currentQty + addedQty;
+    const weightedCost = newQuantity > 0
+      ? ((currentQty * currentCost) + (addedQty * addedCost)) / newQuantity
+      : addedCost;
+
     await supabase.from("inventory").update({
       quantity: newQuantity,
-      cost_per_unit: purchaseForm.cost,
-      last_purchase_date: new Date().toISOString()
+      cost_per_unit: weightedCost,
+      last_purchase_date: purchaseForm.date ? new Date(purchaseForm.date).toISOString() : new Date().toISOString()
     }).eq("id", item.id);
 
-    toast.success("Entrada registrada com sucesso!");
+    toast.success(`Entrada registrada! Novo custo médio: R$ ${weightedCost.toFixed(2)}`);
     setPurchaseDialogOpen(false);
     loadInventory();
   };
@@ -178,7 +187,13 @@ export default function InventoryPage() {
 
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
-  const rawMaterials = items.filter(i => i.category === 'raw_material');
+  const isCritical = (item: InventoryItem) =>
+    item.category === 'raw_material' && Number(item.min_stock) > 0 && Number(item.quantity) <= Number(item.min_stock);
+
+  const sortByCritical = (list: InventoryItem[]) =>
+    [...list].sort((a, b) => Number(isCritical(b)) - Number(isCritical(a)));
+
+  const rawMaterials = sortByCritical(items.filter(i => i.category === 'raw_material'));
   const finishedProducts = items.filter(i => i.category === 'finished_product');
 
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
