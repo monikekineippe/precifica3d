@@ -367,6 +367,7 @@ export default function InventoryPage() {
                     <SelectItem value="g">Gramas (g)</SelectItem>
                     <SelectItem value="kg">Quilos (kg)</SelectItem>
                     <SelectItem value="unidade">Unidade</SelectItem>
+                    <SelectItem value="metro">Metro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
