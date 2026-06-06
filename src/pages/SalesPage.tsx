@@ -81,6 +81,45 @@ export default function SalesPage() {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
 
+  type PeriodPreset = "today" | "week" | "month" | "year" | "custom";
+  const [periodPreset, setPeriodPreset] = useState<PeriodPreset>("month");
+  const [customStart, setCustomStart] = useState<string>("");
+  const [customEnd, setCustomEnd] = useState<string>("");
+
+  const { periodStart, periodEnd } = (() => {
+    const now = new Date();
+    let start = new Date();
+    let end = new Date();
+    end.setHours(23, 59, 59, 999);
+    if (periodPreset === "today") {
+      start.setHours(0, 0, 0, 0);
+    } else if (periodPreset === "week") {
+      const day = now.getDay();
+      const diff = day === 0 ? 6 : day - 1; // semana inicia na segunda
+      start = new Date(now);
+      start.setDate(now.getDate() - diff);
+      start.setHours(0, 0, 0, 0);
+    } else if (periodPreset === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    } else if (periodPreset === "year") {
+      start = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+      end = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+    } else if (periodPreset === "custom") {
+      start = customStart ? new Date(customStart + "T00:00:00") : new Date(now.getFullYear(), now.getMonth(), 1);
+      end = customEnd ? new Date(customEnd + "T23:59:59") : now;
+    }
+    return { periodStart: start, periodEnd: end };
+  })();
+
+  const inPeriod = (iso: string) => {
+    const d = new Date(iso);
+    return d >= periodStart && d <= periodEnd;
+  };
+
+  const periodSales = sales.filter(s => inPeriod(s.created_at));
+  const periodTransactions = transactions.filter(t => inPeriod(t.created_at));
+
   const [saleForm, setSaleForm] = useState({
     customer_id: "none",
     customer_name: "",
