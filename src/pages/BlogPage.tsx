@@ -33,6 +33,15 @@ const POSTS = [
     date: "06 de junho de 2026",
     readTime: "7 min",
   },
+  {
+    tag: "Gestão",
+    title: "Planilha ou sistema para gestão de impressão 3D",
+    description:
+      "Compare planilha e sistema de gestão e descubra qual é mais eficiente para controlar custos, estoque e lucro no seu negócio de impressão 3D.",
+    href: "/blog/planilha-ou-sistema-gestao-impressao-3d",
+    date: "06 de junho de 2026",
+    readTime: "6 min",
+  },
 ];
 
 const BlogPage = () => {
