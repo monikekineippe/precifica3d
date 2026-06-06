@@ -69,6 +69,7 @@ const LandingPage = () => {
           </div>
           <div className="flex items-center gap-4">
             <a href="#planos" className="text-sm font-medium hover:text-primary transition-colors">Planos</a>
+            <Link to="/blog" className="text-sm font-medium hover:text-primary transition-colors">Blog</Link>
             <Link to="/login">
               <Button variant="outline" size="sm">Entrar</Button>
             </Link>
