@@ -35,12 +35,14 @@ const EMPTY_FORM = {
   name: '', type: 'filament', quantity: 0, unit: 'g',
   cost_per_unit: 0, min_stock: 0, color: '', brand: '',
   category: 'raw_material' as 'raw_material' | 'finished_product',
+  last_purchase_date: '',
 };
 
 const PURCHASE_FORM = {
   itemId: '',
   quantity: 0,
   cost: 0,
+  date: new Date().toISOString().slice(0, 10),
 };
 
 export default function InventoryPage() {
@@ -113,6 +115,7 @@ export default function InventoryPage() {
       color: item.color || '', 
       brand: item.brand || '',
       category: item.category,
+      last_purchase_date: item.last_purchase_date ? item.last_purchase_date.slice(0, 10) : '',
     });
     setDialogOpen(true);
   };
@@ -122,6 +125,7 @@ export default function InventoryPage() {
       itemId: item.id,
       quantity: 0,
       cost: item.cost_per_unit,
+      date: new Date().toISOString().slice(0, 10),
     });
     setPurchaseDialogOpen(true);
   };
@@ -130,9 +134,10 @@ export default function InventoryPage() {
     if (!form.name.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!user) return;
 
-    const payload = {
+    const payload: any = {
       ...form,
-      user_id: user.id
+      user_id: user.id,
+      last_purchase_date: form.last_purchase_date ? new Date(form.last_purchase_date).toISOString() : null,
     };
 
     if (editing) {
@@ -152,15 +157,23 @@ export default function InventoryPage() {
     const item = items.find(i => i.id === purchaseForm.itemId);
     if (!item) return;
 
-    const newQuantity = Number(item.quantity) + Number(purchaseForm.quantity);
-    
+    const currentQty = Number(item.quantity) || 0;
+    const currentCost = Number(item.cost_per_unit) || 0;
+    const addedQty = Number(purchaseForm.quantity);
+    const addedCost = Number(purchaseForm.cost);
+
+    const newQuantity = currentQty + addedQty;
+    const weightedCost = newQuantity > 0
+      ? ((currentQty * currentCost) + (addedQty * addedCost)) / newQuantity
+      : addedCost;
+
     await supabase.from("inventory").update({
       quantity: newQuantity,
-      cost_per_unit: purchaseForm.cost,
-      last_purchase_date: new Date().toISOString()
+      cost_per_unit: weightedCost,
+      last_purchase_date: purchaseForm.date ? new Date(purchaseForm.date).toISOString() : new Date().toISOString()
     }).eq("id", item.id);
 
-    toast.success("Entrada registrada com sucesso!");
+    toast.success(`Entrada registrada! Novo custo médio: R$ ${weightedCost.toFixed(2)}`);
     setPurchaseDialogOpen(false);
     loadInventory();
   };
@@ -174,13 +187,19 @@ export default function InventoryPage() {
 
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
-  const rawMaterials = items.filter(i => i.category === 'raw_material');
+  const isCritical = (item: InventoryItem) =>
+    item.category === 'raw_material' && Number(item.min_stock) > 0 && Number(item.quantity) <= Number(item.min_stock);
+
+  const sortByCritical = (list: InventoryItem[]) =>
+    [...list].sort((a, b) => Number(isCritical(b)) - Number(isCritical(a)));
+
+  const rawMaterials = sortByCritical(items.filter(i => i.category === 'raw_material'));
   const finishedProducts = items.filter(i => i.category === 'finished_product');
 
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
       {itemsList.map(item => (
-        <Card key={item.id} className="border-border bg-card hover:border-primary/30 transition-colors">
+        <Card key={item.id} className={`bg-card transition-colors ${isCritical(item) ? 'border-destructive ring-1 ring-destructive/40' : 'border-border hover:border-primary/30'}`}>
           <CardHeader className="pb-2">
             <div className="flex items-start justify-between">
               <CardTitle className="text-sm font-semibold text-foreground leading-tight truncate max-w-[150px]">
@@ -194,7 +213,12 @@ export default function InventoryPage() {
                 <button onClick={() => handleDelete(item.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
               </div>
             </div>
-            <div className="flex gap-1.5 mt-1">
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {isCritical(item) && (
+                <Badge className="text-[10px] bg-destructive text-destructive-foreground border-transparent">
+                  <AlertTriangle size={10} className="mr-1" /> Estoque crítico
+                </Badge>
+              )}
               <Badge variant="outline" className="text-[10px] border-primary/30 text-primary capitalize">
                 {item.type === 'filament' ? 'Filamento' : 
                  item.type === 'packaging' ? 'Embalagem' : 
@@ -343,6 +367,7 @@ export default function InventoryPage() {
                     <SelectItem value="g">Gramas (g)</SelectItem>
                     <SelectItem value="kg">Quilos (kg)</SelectItem>
                     <SelectItem value="unidade">Unidade</SelectItem>
+                    <SelectItem value="metro">Metro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -365,6 +390,13 @@ export default function InventoryPage() {
               <Label>Custo Unitário (R$)</Label>
               <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
             </div>
+
+            {form.category === 'raw_material' && (
+              <div className="grid gap-2">
+                <Label>Data da última compra</Label>
+                <Input type="date" value={form.last_purchase_date} onChange={e => setField('last_purchase_date', e.target.value)} className="bg-muted border-border" />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
@@ -399,6 +431,16 @@ export default function InventoryPage() {
                 value={purchaseForm.cost} 
                 onChange={e => setPurchaseForm(f => ({ ...f, cost: +e.target.value }))} 
                 className="bg-muted border-border" 
+              />
+              <p className="text-[10px] text-muted-foreground">O custo médio ponderado será recalculado automaticamente.</p>
+            </div>
+            <div className="grid gap-2">
+              <Label>Data da compra</Label>
+              <Input
+                type="date"
+                value={purchaseForm.date}
+                onChange={e => setPurchaseForm(f => ({ ...f, date: e.target.value }))}
+                className="bg-muted border-border"
               />
             </div>
           </div>
