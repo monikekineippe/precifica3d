@@ -15,6 +15,15 @@ const POSTS = [
     date: "06 de junho de 2026",
     readTime: "7 min",
   },
+  {
+    tag: "Precificação",
+    title: "Quanto cobrar por hora de impressão 3D",
+    description:
+      "Descubra como calcular o valor correto da hora de impressão 3D considerando energia, depreciação, manutenção e mão de obra.",
+    href: "/blog/quanto-cobrar-hora-impressao-3d",
+    date: "06 de junho de 2026",
+    readTime: "6 min",
+  },
 ];
 
 const BlogPage = () => {
