@@ -858,12 +858,12 @@ export default function SalesPage() {
         <div className="space-y-4">
           <h2 className="text-lg font-bold text-foreground">Outras Movimentações</h2>
           <div className="space-y-2">
-            {transactions.filter(t => t.category !== 'venda').length === 0 ? (
+            {periodTransactions.filter(t => t.category !== 'venda').length === 0 ? (
               <div className="py-8 text-center bg-muted/20 rounded-xl border border-dashed border-border">
                 <p className="text-muted-foreground text-sm">Nenhuma outra movimentação registrada.</p>
               </div>
             ) : (
-              transactions.filter(t => t.category !== 'venda').map(transaction => (
+              periodTransactions.filter(t => t.category !== 'venda').map(transaction => (
                 <Card key={transaction.id} className="border-border bg-card">
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-2">
