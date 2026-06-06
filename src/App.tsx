@@ -38,9 +38,6 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
-          <Helmet>
-            <link rel="canonical" href={window.location.origin + window.location.pathname} />
-          </Helmet>
           <Routes>
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
