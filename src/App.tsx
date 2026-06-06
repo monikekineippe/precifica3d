@@ -20,6 +20,7 @@ import CalculatorSEOPage from "@/pages/CalculatorSEOPage";
 import InventorySEOPage from "@/pages/InventorySEOPage";
 import SoftwareGestaoPage from "@/pages/SoftwareGestaoPage";
 import BlogPage from "@/pages/BlogPage";
+import BlogPostCalcular from "@/pages/BlogPostCalcular";
 import AuthPage from "@/pages/AuthPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
