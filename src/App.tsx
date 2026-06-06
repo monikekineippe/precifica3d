@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Helmet } from 'react-helmet-async';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -37,6 +38,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <AuthProvider>
+          <Helmet>
+            <link rel="canonical" href={window.location.origin + window.location.pathname} />
+          </Helmet>
           <Routes>
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
