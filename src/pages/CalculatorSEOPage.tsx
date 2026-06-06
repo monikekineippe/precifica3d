@@ -37,6 +37,7 @@ const CalculatorSEOPage = () => {
       <Helmet>
         <title>Calculadora de Preço para Impressão 3D Grátis | Gestão3D</title>
         <meta name="description" content="Calcule o preço correto de qualquer impressão 3D gratuitamente. Nossa calculadora considera filamento, energia, depreciação, mão de obra e margem de lucro. Resultado em segundos." />
+        <link rel="canonical" href="https://gestao3d.agenciaai.com.br/calculadora-preco-impressao-3d" />
       </Helmet>
 
       {/* Navigation */}
