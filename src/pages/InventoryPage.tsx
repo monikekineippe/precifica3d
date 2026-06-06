@@ -390,6 +390,13 @@ export default function InventoryPage() {
               <Label>Custo Unitário (R$)</Label>
               <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
             </div>
+
+            {form.category === 'raw_material' && (
+              <div className="grid gap-2">
+                <Label>Data da última compra</Label>
+                <Input type="date" value={form.last_purchase_date} onChange={e => setField('last_purchase_date', e.target.value)} className="bg-muted border-border" />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
