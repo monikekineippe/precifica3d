@@ -47,6 +47,7 @@ const App = () => (
             <Route path="/controle-estoque-filamento" element={<InventorySEOPage />} />
             <Route path="/software-gestao-impressao-3d" element={<SoftwareGestaoPage />} />
             <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/como-calcular-preco-impressao-3d" element={<BlogPostCalcular />} />
 
             <Route path="/login" element={<AuthPage />} />
              <Route path="/signup" element={<AuthPage initialIsLogin={false} />} />
