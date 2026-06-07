@@ -158,6 +158,73 @@ export default function MarketplacePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
+              <Label className="text-gray-400 flex items-center gap-1.5">
+                <FileText size={14} className="text-[#00D4FF]" />
+                Importar orçamento salvo
+              </Label>
+              {orcamentos.length === 0 ? (
+                <div className="text-xs text-gray-400 bg-[#0B1020] border border-white/10 rounded-md px-3 py-2.5">
+                  Nenhum orçamento salvo ainda. Crie um na aba Precificação.
+                </div>
+              ) : (
+                <Popover open={comboOpen} onOpenChange={setComboOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={comboOpen}
+                      className="w-full justify-between bg-[#0B1020] border-white/10 text-white hover:bg-[#0B1020] hover:text-white font-normal"
+                    >
+                      <span className="truncate">
+                        {selectedOrcamento
+                          ? `${selectedOrcamento.nome_peca} — R$ ${Number(selectedOrcamento.preco_sugerido ?? 0).toFixed(2)}`
+                          : "Selecione um orçamento..."}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-[#111827] border-white/10" align="start">
+                    <Command className="bg-[#111827]">
+                      <CommandInput placeholder="Buscar orçamento..." className="text-white" />
+                      <CommandList>
+                        <CommandEmpty>Nenhum orçamento encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {orcamentos.map((o) => (
+                            <CommandItem
+                              key={o.id}
+                              value={`${o.nome_peca} ${o.id}`}
+                              onSelect={() => handleSelectOrcamento(o.id)}
+                              className="text-white aria-selected:bg-white/10"
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedOrcamentoId === o.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              <span className="flex-1 truncate">{o.nome_peca}</span>
+                              <span className="text-xs text-[#00D4FF] font-mono ml-2">
+                                R$ {Number(o.preco_sugerido ?? 0).toFixed(2)}
+                              </span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              )}
+            </div>
+
+            <div className="relative flex items-center py-1">
+              <div className="flex-grow border-t border-white/10" />
+              <span className="flex-shrink mx-3 text-[10px] uppercase tracking-wider text-gray-500">
+                ou preencha manualmente
+              </span>
+              <div className="flex-grow border-t border-white/10" />
+            </div>
+
+            <div className="space-y-2">
               <Label className="text-gray-400">Nome do Produto</Label>
               <div className="relative">
                 <Input 
