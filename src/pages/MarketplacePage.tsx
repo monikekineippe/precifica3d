@@ -40,11 +40,40 @@ export default function MarketplacePage() {
   const location = useLocation();
   const initialCost = location.state?.cost || 0;
 
+  const { user } = useAuth();
   const [productName, setProductName] = useState("");
   const [baseCost, setBaseCost] = useState(initialCost);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0].name);
   const [targetMargin, setTargetMargin] = useState(50);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  type Orcamento = { id: string; nome_peca: string; custo_total: number | null; preco_sugerido: number | null };
+  const [orcamentos, setOrcamentos] = useState<Orcamento[]>([]);
+  const [selectedOrcamentoId, setSelectedOrcamentoId] = useState<string>("");
+  const [comboOpen, setComboOpen] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("orcamentos")
+      .select("id, nome_peca, custo_total, preco_sugerido")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) setOrcamentos(data as Orcamento[]);
+      });
+  }, [user]);
+
+  const handleSelectOrcamento = (id: string) => {
+    const o = orcamentos.find((x) => x.id === id);
+    if (!o) return;
+    setSelectedOrcamentoId(id);
+    setProductName(o.nome_peca || "");
+    setBaseCost(Number(o.custo_total ?? 0));
+    setComboOpen(false);
+  };
+
+  const selectedOrcamento = orcamentos.find((o) => o.id === selectedOrcamentoId);
 
   const analysis = useMemo(() => {
     const category = CATEGORIES.find(c => c.name === selectedCategory);
