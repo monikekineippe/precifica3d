@@ -271,19 +271,24 @@ const LandingPage = () => {
               </thead>
               <tbody className="text-sm">
                 {[
-                  "Custo real do filamento com custo médio ponderado",
-                  "Tarifa de energia da sua distribuidora por cidade",
+                  "Cálculo de custo de filamento (gramas)",
+                  "Cálculo de custo de energia por tempo",
+                  "Custo real do filamento (Média Ponderada)",
+                  "Tarifa de energia real por cidade/distribuidora",
                   "Depreciação e manutenção da impressora por hora",
-                  "Preço ideal por marketplace com taxas reais",
+                  "Preço ideal por marketplace (Shopee, ML, etc)",
+                  "Gestão de estoque com alerta de nível crítico",
                   "Baixa automática do estoque ao registrar venda",
-                  "Lucro real por peça com snapshot financeiro imutável",
+                  "Lucro real por peça (Snapshot Financeiro)",
+                  "Acompanhamento de Caixa (Entradas e Saídas)",
+                  "Relatórios e Dashboard de Desempenho Real",
                   "IA sugerindo margem por tipo de produto",
-                  "Dashboard com faturamento, lucro e meta do mês",
+                  "Exportação de dados em PDF e CSV",
                 ].map((item, idx) => (
                   <tr key={idx} className={idx % 2 === 0 ? "bg-white/[0.02]" : "bg-transparent"}>
                     <td className="p-4 text-white/80 border-b border-white/5">{item}</td>
                     <td className="p-4 text-center border-b border-x border-white/5 bg-[#111827]/50">
-                      <X className="w-5 h-5 text-[#EF4444] mx-auto" />
+                      {idx < 2 ? <CheckCircle2 className="w-5 h-5 text-[#22C55E] mx-auto" /> : <X className="w-5 h-5 text-[#EF4444] mx-auto" />}
                     </td>
                     <td className="p-4 text-center border-b border-x border-[#00D4FF]/10 bg-[#00D4FF]/5">
                       <CheckCircle2 className="w-5 h-5 text-[#22C55E] mx-auto" />

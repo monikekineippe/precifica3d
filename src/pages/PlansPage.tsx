@@ -12,14 +12,15 @@ const FEATURES = [
   { name: "Orçamentos por mês", free: "Ilimitados", mensal: "Ilimitados", anual: "Ilimitados" },
   { name: "Impressoras personalizadas", free: "1", mensal: "Ilimitadas", anual: "Ilimitadas" },
   { name: "Impressoras pré-cadastradas", free: true, mensal: true, anual: true },
-  { name: "Cálculos em tempo real", free: true, mensal: true, anual: true },
+  { name: "Busca automática de tarifa de energia", free: true, mensal: true, anual: true },
   { name: "Histórico completo", free: false, mensal: true, anual: true },
+  { name: "Gestão de estoque", free: false, mensal: true, anual: true },
+  { name: "Gestão de caixa", free: false, mensal: true, anual: true },
+  { name: "Calculadora de Marketplace", free: false, mensal: true, anual: true },
   { name: "Relatórios e gráficos", free: false, mensal: true, anual: true },
-  { name: "Busca automática de tarifa", free: true, mensal: true, anual: true },
-  { name: "Controle de estoque", free: false, mensal: true, anual: true },
-  { name: "Exportar PDF", free: false, mensal: true, anual: true },
-  { name: "Exportar CSV", free: false, mensal: true, anual: true },
-  { name: "Todas as atualizações futuras", free: false, mensal: true, anual: true },
+  { name: "IA de Sugestão de Margem", free: false, mensal: true, anual: true },
+  { name: "Exportar PDF e CSV", free: false, mensal: false, anual: true },
+  { name: "Todas as atualizações futuras", free: false, mensal: false, anual: true },
 ];
 
 function FeatureCell({ value }: { value: boolean | string }) {

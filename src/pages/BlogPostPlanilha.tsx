@@ -37,10 +37,10 @@ const COMPARATIVO = [
   ["Custo médio ponderado do filamento", "Manual", "Automático a cada nova compra"],
   ["Preço por marketplace com taxas reais", "Fórmula manual por plataforma", "Calculado automaticamente para 4 plataformas"],
   ["Baixa de estoque ao vender", "Manual", "Automático ao registrar a venda"],
-  ["Histórico de orçamentos", "Planilha separada", "Integrado e pesquisável"],
   ["Alerta de estoque mínimo", "Não existe", "Configurável por item"],
-  ["Dashboard com lucro do mês", "Tabela manual", "Atualizado em tempo real"],
+  ["Dashboard de Desempenho Real", "Tabela manual", "Atualizado em tempo real"],
   ["IA sugerindo margem por tipo de peça", "Não existe", "Integrado"],
+  ["Exportação de dados (PDF/CSV)", "Copiar e colar", "Disponível no Plano Anual"],
 ];
 
 const BlogPostPlanilha = () => {
