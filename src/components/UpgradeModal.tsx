@@ -7,9 +7,10 @@ import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 
 const FEATURES = [
   { name: "Orçamentos ilimitados", mensal: true, anual: true },
-  { name: "Impressoras ilimitadas", mensal: true, anual: true },
-  { name: "Histórico completo", mensal: true, anual: true },
+  { name: "Gestão de estoque", mensal: true, anual: true },
+  { name: "Gestão de caixa", mensal: true, anual: true },
   { name: "Relatórios e gráficos", mensal: true, anual: true },
+  { name: "Calculadora Marketplace", mensal: true, anual: true },
   { name: "Exportar PDF/CSV", mensal: false, anual: true },
   { name: "Todas as atualizações futuras", mensal: false, anual: true },
 ];
