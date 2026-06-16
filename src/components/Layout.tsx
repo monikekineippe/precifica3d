@@ -24,8 +24,12 @@ const NAV = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const { profile, isPro, signOut } = useAuth();
+  const { profile, isPro, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const navItems = isAdmin
+    ? [...NAV, { to: "/central", icon: Shield, label: "Central" }]
+    : NAV;
 
   const handleSignOut = async () => {
     await signOut();
