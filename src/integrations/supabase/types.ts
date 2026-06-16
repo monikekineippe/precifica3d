@@ -94,6 +94,27 @@ export type Database = {
         }
         Relationships: []
       }
+      eventos_uso: {
+        Row: {
+          created_at: string
+          id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       impressoras: {
         Row: {
           cinematica: string
@@ -386,13 +407,16 @@ export type Database = {
           greenn_assinatura_id: string | null
           id: string
           instagram: string
+          is_admin: boolean
           nome: string
           plano: string
           plano_expiracao: string | null
           primary_printer_id: string | null
           telefone: string
+          ultimo_acesso: string | null
           updated_at: string
           user_id: string
+          whatsapp: string | null
         }
         Insert: {
           created_at?: string
@@ -400,13 +424,16 @@ export type Database = {
           greenn_assinatura_id?: string | null
           id?: string
           instagram?: string
+          is_admin?: boolean
           nome?: string
           plano?: string
           plano_expiracao?: string | null
           primary_printer_id?: string | null
           telefone?: string
+          ultimo_acesso?: string | null
           updated_at?: string
           user_id: string
+          whatsapp?: string | null
         }
         Update: {
           created_at?: string
@@ -414,13 +441,16 @@ export type Database = {
           greenn_assinatura_id?: string | null
           id?: string
           instagram?: string
+          is_admin?: boolean
           nome?: string
           plano?: string
           plano_expiracao?: string | null
           primary_printer_id?: string | null
           telefone?: string
+          ultimo_acesso?: string | null
           updated_at?: string
           user_id?: string
+          whatsapp?: string | null
         }
         Relationships: [
           {
