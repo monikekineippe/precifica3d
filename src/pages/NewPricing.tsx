@@ -350,7 +350,7 @@ export default function NewPricing() {
       name: pieceName,
       quantity: 1,
       variation: "",
-      costPerUnit: Number(totalCost.toFixed(2))
+      costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção (filamento + energia + mão de obra + manutenção + depreciação + embalagem + acessórios)
     });
     setAddToInventory(false);
     setSaveInventoryOpen(true);
