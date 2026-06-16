@@ -1326,7 +1326,7 @@ export default function NewPricing() {
                         setInventoryForm({ 
                           ...inventoryForm, 
                           quantity: qty,
-                          costPerUnit: Number((totalCost / (qty || 1)).toFixed(2))
+                          costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção (não divide por quantidade)
                         });
                       }} 
                       className="bg-muted border-border"
