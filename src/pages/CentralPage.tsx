@@ -139,8 +139,9 @@ export default function CentralPage() {
       setEventos((prev) => prev.filter((e) => e.user_id !== deleteTarget.user_id));
       setOrcs((prev) => prev.filter((o) => o.user_id !== deleteTarget.user_id));
       setDeleteTarget(null);
-    } catch (e: any) {
-      toast.error(`Erro ao excluir: ${e.message || e}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(`Erro ao excluir: ${message}`);
     } finally {
       setDeleting(false);
     }
@@ -152,11 +153,12 @@ export default function CentralPage() {
     (async () => {
       setLoading(true);
       const [{ data: ps }, { data: es }, { data: os }] = await Promise.all([
-        (supabase.from("profiles") as any)
+        supabase
+          .from("profiles")
           .select("user_id, nome, email, instagram, whatsapp, telefone, created_at, ultimo_acesso, plano, is_admin")
           .order("created_at", { ascending: false }),
-        (supabase.from("eventos_uso") as any).select("user_id, tipo, created_at"),
-        (supabase.from("orcamentos") as any).select("user_id, created_at"),
+        supabase.from("eventos_uso").select("user_id, tipo, created_at"),
+        supabase.from("orcamentos").select("user_id, created_at"),
       ]);
       setProfiles((ps as ProfileRow[]) || []);
       setEventos((es as EventoRow[]) || []);
