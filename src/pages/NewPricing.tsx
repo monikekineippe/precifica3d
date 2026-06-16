@@ -1297,7 +1297,7 @@ export default function NewPricing() {
                   if (checked) {
                     setInventoryForm({
                       ...inventoryForm,
-                      costPerUnit: Number((totalCost / (inventoryForm.quantity || 1)).toFixed(2))
+                      costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção, igual ao custo_total salvo no histórico
                     });
                   }
                 }} 
