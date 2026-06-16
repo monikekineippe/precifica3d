@@ -19,7 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Instagram, MessageCircle, Search, Users, UserPlus, Activity, Calculator, FileText, Percent, ArrowUpDown, Shield } from "lucide-react";
+import { Loader2, Instagram, MessageCircle, Search, Users, UserPlus, Activity, Calculator, FileText, Percent, ArrowUpDown, Shield, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import {
   ResponsiveContainer,
   LineChart,
@@ -88,7 +99,7 @@ function waUrl(num: string | null) {
 }
 
 export default function CentralPage() {
-  const { isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [eventos, setEventos] = useState<EventoRow[]>([]);
@@ -98,6 +109,29 @@ export default function CentralPage() {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDesc, setSortDesc] = useState(true);
   const [period, setPeriod] = useState<PeriodKey>("30");
+
+  const [deleteTarget, setDeleteTarget] = useState<ProfileRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: deleteTarget.user_id },
+      });
+      if (error) throw error;
+      toast.success(`${deleteTarget.nome || deleteTarget.email || "Usuário"} excluído.`);
+      setProfiles((prev) => prev.filter((p) => p.user_id !== deleteTarget.user_id));
+      setEventos((prev) => prev.filter((e) => e.user_id !== deleteTarget.user_id));
+      setDeleteTarget(null);
+    } catch (e: any) {
+      toast.error(`Erro ao excluir: ${e.message || e}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -366,6 +400,7 @@ export default function CentralPage() {
                     <TableHead className="text-right">Cálc.</TableHead>
                     <TableHead className="text-right">Orç.</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -406,12 +441,25 @@ export default function CentralPage() {
                             <Badge variant="outline" className="text-muted-foreground">Só cadastrou</Badge>
                           )}
                         </TableCell>
+                        <TableCell className="text-right">
+                          {user?.id !== r.user_id && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive h-8 w-8"
+                              onClick={() => setDeleteTarget(r)}
+                              title="Excluir usuário"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
                   {visibleRows.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={10} className="text-center text-muted-foreground py-10">
                         Nenhum usuário encontrado.
                       </TableCell>
                     </TableRow>
@@ -422,6 +470,30 @@ export default function CentralPage() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir cadastro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é permanente. Todos os dados de{" "}
+              <strong>{deleteTarget?.nome || deleteTarget?.email}</strong> (orçamentos,
+              estoque, clientes, vendas, impressoras e eventos) serão removidos junto
+              com a conta de acesso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="animate-spin" size={14} /> : "Excluir definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
