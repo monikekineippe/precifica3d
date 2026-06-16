@@ -99,7 +99,7 @@ function waUrl(num: string | null) {
 }
 
 export default function CentralPage() {
-  const { isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [eventos, setEventos] = useState<EventoRow[]>([]);
@@ -109,6 +109,29 @@ export default function CentralPage() {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDesc, setSortDesc] = useState(true);
   const [period, setPeriod] = useState<PeriodKey>("30");
+
+  const [deleteTarget, setDeleteTarget] = useState<ProfileRow | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: deleteTarget.user_id },
+      });
+      if (error) throw error;
+      toast.success(`${deleteTarget.nome || deleteTarget.email || "Usuário"} excluído.`);
+      setProfiles((prev) => prev.filter((p) => p.user_id !== deleteTarget.user_id));
+      setEventos((prev) => prev.filter((e) => e.user_id !== deleteTarget.user_id));
+      setDeleteTarget(null);
+    } catch (e: any) {
+      toast.error(`Erro ao excluir: ${e.message || e}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
 
   useEffect(() => {
     if (!isAdmin) return;
