@@ -456,10 +456,16 @@ export default function CentralPage() {
                         <TableCell className="text-right tabular-nums">{r.calculos}</TableCell>
                         <TableCell className="text-right tabular-nums">{r.orcamentos}</TableCell>
                         <TableCell>
-                          {ativo ? (
-                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Ativo</Badge>
+                          {r.is_admin ? (
+                            <Badge className="bg-primary/15 text-primary border border-primary/30">ADM</Badge>
+                          ) : r.plano === "anual" ? (
+                            <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/30">Anual</Badge>
+                          ) : r.plano === "mensal" ? (
+                            <Badge className="bg-sky-500/15 text-sky-400 border border-sky-500/30">Mensal</Badge>
+                          ) : ativo ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Free (ativo)</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-muted-foreground">Só cadastrou</Badge>
+                            <Badge variant="outline" className="text-muted-foreground">Free</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
