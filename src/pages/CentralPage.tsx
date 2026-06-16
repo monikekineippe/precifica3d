@@ -470,6 +470,10 @@ export default function CentralPage() {
                             <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/30">Anual</Badge>
                           ) : r.plano === "mensal" ? (
                             <Badge className="bg-sky-500/15 text-sky-400 border border-sky-500/30">Mensal</Badge>
+                          ) : r.plano && r.plano !== "free" ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              {formatPlanLabel(r.plano)}
+                            </Badge>
                           ) : ativo ? (
                             <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Free (ativo)</Badge>
                           ) : (
