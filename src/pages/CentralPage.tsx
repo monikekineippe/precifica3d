@@ -441,6 +441,19 @@ export default function CentralPage() {
                             <Badge variant="outline" className="text-muted-foreground">Só cadastrou</Badge>
                           )}
                         </TableCell>
+                        <TableCell className="text-right">
+                          {user?.id !== r.user_id && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-muted-foreground hover:text-destructive h-8 w-8"
+                              onClick={() => setDeleteTarget(r)}
+                              title="Excluir usuário"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
