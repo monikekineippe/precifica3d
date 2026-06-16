@@ -104,8 +104,7 @@ export default function CentralPage() {
     (async () => {
       setLoading(true);
       const [{ data: ps }, { data: es }] = await Promise.all([
-        supabase
-          .from("profiles")
+        (supabase.from("profiles") as any)
           .select("user_id, nome, email, instagram, whatsapp, telefone, created_at, ultimo_acesso")
           .order("created_at", { ascending: false }),
         (supabase.from("eventos_uso") as any).select("user_id, tipo, created_at"),
