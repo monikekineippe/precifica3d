@@ -19,7 +19,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Instagram, MessageCircle, Search, Users, UserPlus, Activity, Calculator, FileText, Percent, ArrowUpDown, Shield } from "lucide-react";
+import { Loader2, Instagram, MessageCircle, Search, Users, UserPlus, Activity, Calculator, FileText, Percent, ArrowUpDown, Shield, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 import {
   ResponsiveContainer,
   LineChart,
