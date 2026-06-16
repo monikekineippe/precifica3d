@@ -459,7 +459,7 @@ export default function CentralPage() {
                   })}
                   {visibleRows.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="text-center text-muted-foreground py-10">
+                      <TableCell colSpan={10} className="text-center text-muted-foreground py-10">
                         Nenhum usuário encontrado.
                       </TableCell>
                     </TableRow>
@@ -470,6 +470,30 @@ export default function CentralPage() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir cadastro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação é permanente. Todos os dados de{" "}
+              <strong>{deleteTarget?.nome || deleteTarget?.email}</strong> (orçamentos,
+              estoque, clientes, vendas, impressoras e eventos) serão removidos junto
+              com a conta de acesso.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="animate-spin" size={14} /> : "Excluir definitivamente"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
