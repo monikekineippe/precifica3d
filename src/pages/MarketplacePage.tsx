@@ -119,6 +119,12 @@ export default function MarketplacePage() {
     }
     
     setIsAnalyzing(true);
+    if (user) {
+      (supabase.from("eventos_uso") as any)
+        .insert([{ user_id: user.id, tipo: "calculo" }])
+        .then(() => {})
+        .catch(() => {});
+    }
     try {
       const { data, error } = await supabase.functions.invoke('margin-suggestion', {
         body: { pieceName: productName, marketplaceAnalysis: true },

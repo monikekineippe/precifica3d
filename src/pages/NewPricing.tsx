@@ -412,6 +412,17 @@ export default function NewPricing() {
 
       console.log("Quote saved successfully:", data);
 
+      // Track usage events (calculo + orcamento)
+      try {
+        await (supabase.from("eventos_uso") as any).insert([
+          { user_id: user.id, tipo: "calculo" },
+          { user_id: user.id, tipo: "orcamento" },
+        ]);
+      } catch (e) {
+        console.warn("Could not log usage events", e);
+      }
+
+
       if (withInventory) {
         const invData = {
           user_id: user.id,

@@ -10,6 +10,12 @@ interface Profile {
   plano_expiracao: string | null;
   primary_printer_id: string | null;
   greenn_assinatura_id: string | null;
+  is_admin?: boolean;
+  email?: string;
+  instagram?: string;
+  whatsapp?: string;
+  telefone?: string;
+  ultimo_acesso?: string | null;
 }
 
 interface AuthContextType {
@@ -18,6 +24,7 @@ interface AuthContextType {
   loading: boolean;
   isPro: boolean;
   isAnual: boolean;
+  isAdmin: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -28,6 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isPro: false,
   isAnual: false,
+  isAdmin: false,
   signOut: async () => {},
   refreshProfile: async () => {},
 });
@@ -52,6 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const touchLastAccess = async (userId: string) => {
+    try {
+      await (supabase.from("profiles") as any)
+        .update({ ultimo_acesso: new Date().toISOString() })
+        .eq("user_id", userId);
+    } catch (e) {
+      console.warn("Could not update ultimo_acesso", e);
+    }
+  };
+
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
   };
@@ -63,6 +81,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(currentUser);
         if (currentUser) {
           setTimeout(() => fetchProfile(currentUser.id), 0);
+          if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+            setTimeout(() => touchLastAccess(currentUser.id), 0);
+          }
         } else {
           setProfile(null);
         }
@@ -75,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentUser);
       if (currentUser) {
         fetchProfile(currentUser.id);
+        touchLastAccess(currentUser.id);
       }
       setLoading(false);
     });
@@ -92,6 +114,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     )
   );
 
+  const isAdmin = profile?.is_admin === true;
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -99,7 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isPro, isAnual, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, isPro, isAnual, isAdmin, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet, Users, ShoppingBag } from "lucide-react";
+import { LayoutDashboard, Printer, PlusCircle, History, Settings, Menu, X, Crown, BarChart3, LogOut, Package, Wallet, Users, ShoppingBag, Shield } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,8 +24,12 @@ const NAV = [
 
 export default function Layout() {
   const [open, setOpen] = useState(false);
-  const { profile, isPro, signOut } = useAuth();
+  const { profile, isPro, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const navItems = isAdmin
+    ? [...NAV, { to: "/central", icon: Shield, label: "Central" }]
+    : NAV;
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,7 +64,7 @@ export default function Layout() {
         </div>
 
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {NAV.map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
