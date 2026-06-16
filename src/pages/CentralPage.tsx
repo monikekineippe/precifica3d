@@ -54,6 +54,8 @@ type ProfileRow = {
   telefone: string | null;
   created_at: string;
   ultimo_acesso: string | null;
+  plano: string | null;
+  is_admin: boolean | null;
 };
 
 type EventoRow = {
@@ -61,6 +63,8 @@ type EventoRow = {
   tipo: "calculo" | "orcamento";
   created_at: string;
 };
+
+type OrcRow = { user_id: string; created_at: string };
 
 type Row = ProfileRow & {
   calculos: number;
@@ -103,6 +107,7 @@ export default function CentralPage() {
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [eventos, setEventos] = useState<EventoRow[]>([]);
+  const [orcs, setOrcs] = useState<OrcRow[]>([]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -124,6 +129,7 @@ export default function CentralPage() {
       toast.success(`${deleteTarget.nome || deleteTarget.email || "Usuário"} excluído.`);
       setProfiles((prev) => prev.filter((p) => p.user_id !== deleteTarget.user_id));
       setEventos((prev) => prev.filter((e) => e.user_id !== deleteTarget.user_id));
+      setOrcs((prev) => prev.filter((o) => o.user_id !== deleteTarget.user_id));
       setDeleteTarget(null);
     } catch (e: any) {
       toast.error(`Erro ao excluir: ${e.message || e}`);
@@ -137,28 +143,43 @@ export default function CentralPage() {
     if (!isAdmin) return;
     (async () => {
       setLoading(true);
-      const [{ data: ps }, { data: es }] = await Promise.all([
+      const [{ data: ps }, { data: es }, { data: os }] = await Promise.all([
         (supabase.from("profiles") as any)
-          .select("user_id, nome, email, instagram, whatsapp, telefone, created_at, ultimo_acesso")
+          .select("user_id, nome, email, instagram, whatsapp, telefone, created_at, ultimo_acesso, plano, is_admin")
           .order("created_at", { ascending: false }),
         (supabase.from("eventos_uso") as any).select("user_id, tipo, created_at"),
+        (supabase.from("orcamentos") as any).select("user_id, created_at"),
       ]);
       setProfiles((ps as ProfileRow[]) || []);
       setEventos((es as EventoRow[]) || []);
+      setOrcs((os as OrcRow[]) || []);
       setLoading(false);
     })();
   }, [isAdmin]);
 
   const eventCounts = useMemo(() => {
     const map = new Map<string, { calculos: number; orcamentos: number }>();
+    // Prefer eventos_uso when present
     for (const e of eventos) {
       const cur = map.get(e.user_id) || { calculos: 0, orcamentos: 0 };
       if (e.tipo === "calculo") cur.calculos++;
       else if (e.tipo === "orcamento") cur.orcamentos++;
       map.set(e.user_id, cur);
     }
+    // Fallback: count saved orçamentos as both calc + orc (legacy data
+    // saved before usage tracking existed).
+    for (const o of orcs) {
+      const cur = map.get(o.user_id) || { calculos: 0, orcamentos: 0 };
+      // Only fill if no events were logged for this user
+      const hadEvent = eventos.some((e) => e.user_id === o.user_id);
+      if (!hadEvent) {
+        cur.calculos++;
+        cur.orcamentos++;
+        map.set(o.user_id, cur);
+      }
+    }
     return map;
-  }, [eventos]);
+  }, [eventos, orcs]);
 
   const rows: Row[] = useMemo(
     () =>
@@ -435,10 +456,16 @@ export default function CentralPage() {
                         <TableCell className="text-right tabular-nums">{r.calculos}</TableCell>
                         <TableCell className="text-right tabular-nums">{r.orcamentos}</TableCell>
                         <TableCell>
-                          {ativo ? (
-                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Ativo</Badge>
+                          {r.is_admin ? (
+                            <Badge className="bg-primary/15 text-primary border border-primary/30">ADM</Badge>
+                          ) : r.plano === "anual" ? (
+                            <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/30">Anual</Badge>
+                          ) : r.plano === "mensal" ? (
+                            <Badge className="bg-sky-500/15 text-sky-400 border border-sky-500/30">Mensal</Badge>
+                          ) : ativo ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Free (ativo)</Badge>
                           ) : (
-                            <Badge variant="outline" className="text-muted-foreground">Só cadastrou</Badge>
+                            <Badge variant="outline" className="text-muted-foreground">Free</Badge>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
