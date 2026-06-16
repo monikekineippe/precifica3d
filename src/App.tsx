@@ -30,6 +30,7 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import SalesPage from "@/pages/SalesPage";
 import ClientsPage from "@/pages/ClientsPage";
 import MarketplacePage from "@/pages/MarketplacePage";
+import CentralPage from "@/pages/CentralPage";
 import NotFound from "@/pages/NotFound";
 
 
