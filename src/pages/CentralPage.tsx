@@ -400,6 +400,7 @@ export default function CentralPage() {
                     <TableHead className="text-right">Cálc.</TableHead>
                     <TableHead className="text-right">Orç.</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
