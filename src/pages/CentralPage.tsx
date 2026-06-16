@@ -54,6 +54,8 @@ type ProfileRow = {
   telefone: string | null;
   created_at: string;
   ultimo_acesso: string | null;
+  plano: string | null;
+  is_admin: boolean | null;
 };
 
 type EventoRow = {
@@ -61,6 +63,8 @@ type EventoRow = {
   tipo: "calculo" | "orcamento";
   created_at: string;
 };
+
+type OrcRow = { user_id: string; created_at: string };
 
 type Row = ProfileRow & {
   calculos: number;
