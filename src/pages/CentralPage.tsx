@@ -75,6 +75,14 @@ type StatusFilter = "all" | "active" | "inactive";
 type SortKey = "created_at" | "ultimo_acesso" | "calculos";
 type PeriodKey = "7" | "30" | "all";
 
+function formatPlanLabel(plan: string | null) {
+  const normalized = (plan || "free").toLowerCase();
+  if (normalized === "anual" || normalized === "yearly") return "Anual";
+  if (normalized === "mensal" || normalized === "monthly") return "Mensal";
+  if (normalized === "free") return "Free";
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
 function formatDate(d: string | null) {
   if (!d) return "—";
   try {
@@ -131,8 +139,9 @@ export default function CentralPage() {
       setEventos((prev) => prev.filter((e) => e.user_id !== deleteTarget.user_id));
       setOrcs((prev) => prev.filter((o) => o.user_id !== deleteTarget.user_id));
       setDeleteTarget(null);
-    } catch (e: any) {
-      toast.error(`Erro ao excluir: ${e.message || e}`);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(`Erro ao excluir: ${message}`);
     } finally {
       setDeleting(false);
     }
@@ -144,11 +153,12 @@ export default function CentralPage() {
     (async () => {
       setLoading(true);
       const [{ data: ps }, { data: es }, { data: os }] = await Promise.all([
-        (supabase.from("profiles") as any)
+        supabase
+          .from("profiles")
           .select("user_id, nome, email, instagram, whatsapp, telefone, created_at, ultimo_acesso, plano, is_admin")
           .order("created_at", { ascending: false }),
-        (supabase.from("eventos_uso") as any).select("user_id, tipo, created_at"),
-        (supabase.from("orcamentos") as any).select("user_id, created_at"),
+        supabase.from("eventos_uso").select("user_id, tipo, created_at"),
+        supabase.from("orcamentos").select("user_id, created_at"),
       ]);
       setProfiles((ps as ProfileRow[]) || []);
       setEventos((es as EventoRow[]) || []);
@@ -159,6 +169,7 @@ export default function CentralPage() {
 
   const eventCounts = useMemo(() => {
     const map = new Map<string, { calculos: number; orcamentos: number }>();
+    const usersWithEvents = new Set(eventos.map((e) => e.user_id));
     // Prefer eventos_uso when present
     for (const e of eventos) {
       const cur = map.get(e.user_id) || { calculos: 0, orcamentos: 0 };
@@ -171,8 +182,7 @@ export default function CentralPage() {
     for (const o of orcs) {
       const cur = map.get(o.user_id) || { calculos: 0, orcamentos: 0 };
       // Only fill if no events were logged for this user
-      const hadEvent = eventos.some((e) => e.user_id === o.user_id);
-      if (!hadEvent) {
+      if (!usersWithEvents.has(o.user_id)) {
         cur.calculos++;
         cur.orcamentos++;
         map.set(o.user_id, cur);
@@ -196,11 +206,11 @@ export default function CentralPage() {
     const sevenAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     const novos = rows.filter((r) => new Date(r.created_at).getTime() >= sevenAgo).length;
     const ativos = rows.filter((r) => r.calculos + r.orcamentos > 0).length;
-    const totalCalc = eventos.filter((e) => e.tipo === "calculo").length;
-    const totalOrc = eventos.filter((e) => e.tipo === "orcamento").length;
+    const totalCalc = rows.reduce((sum, r) => sum + r.calculos, 0);
+    const totalOrc = rows.reduce((sum, r) => sum + r.orcamentos, 0);
     const ativacao = total > 0 ? (ativos / total) * 100 : 0;
     return { total, novos, ativos, totalCalc, totalOrc, ativacao };
-  }, [rows, eventos]);
+  }, [rows]);
 
   // Chart data
   const chartData = useMemo(() => {
@@ -462,6 +472,10 @@ export default function CentralPage() {
                             <Badge className="bg-amber-500/15 text-amber-400 border border-amber-500/30">Anual</Badge>
                           ) : r.plano === "mensal" ? (
                             <Badge className="bg-sky-500/15 text-sky-400 border border-sky-500/30">Mensal</Badge>
+                          ) : r.plano && r.plano !== "free" ? (
+                            <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              {formatPlanLabel(r.plano)}
+                            </Badge>
                           ) : ativo ? (
                             <Badge className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Free (ativo)</Badge>
                           ) : (
