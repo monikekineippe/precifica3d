@@ -350,7 +350,7 @@ export default function NewPricing() {
       name: pieceName,
       quantity: 1,
       variation: "",
-      costPerUnit: Number(totalCost.toFixed(2))
+      costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção (filamento + energia + mão de obra + manutenção + depreciação + embalagem + acessórios)
     });
     setAddToInventory(false);
     setSaveInventoryOpen(true);
@@ -1297,7 +1297,7 @@ export default function NewPricing() {
                   if (checked) {
                     setInventoryForm({
                       ...inventoryForm,
-                      costPerUnit: Number((totalCost / (inventoryForm.quantity || 1)).toFixed(2))
+                      costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção, igual ao custo_total salvo no histórico
                     });
                   }
                 }} 
@@ -1326,7 +1326,7 @@ export default function NewPricing() {
                         setInventoryForm({ 
                           ...inventoryForm, 
                           quantity: qty,
-                          costPerUnit: Number((totalCost / (qty || 1)).toFixed(2))
+                          costPerUnit: Number(totalCost.toFixed(2)) // Custo total da produção (não divide por quantidade)
                         });
                       }} 
                       className="bg-muted border-border"
