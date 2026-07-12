@@ -87,6 +87,7 @@ export default function OrdersPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Encomenda[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -98,13 +99,15 @@ export default function OrdersPage() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [{ data: enc }, { data: inv }] = await Promise.all([
+    const [{ data: enc }, { data: inv }, { data: qts }] = await Promise.all([
       (supabase.from("encomendas" as any) as any)
         .select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("inventory").select("id, name, quantity").eq("user_id", user.id),
+      supabase.from("inventory").select("id, name, quantity, cost_per_unit").eq("user_id", user.id),
+      supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setRows((enc || []) as Encomenda[]);
     setInventory((inv || []) as InventoryItem[]);
+    setQuotesCatalog((qts || []) as QuoteItem[]);
     setLoading(false);
   };
 
