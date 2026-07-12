@@ -79,6 +79,8 @@ const emptyForm = {
   sinal_valor: 0,
   observacoes: "",
   inventory_item_id: "none",
+  catalog_key: "custom" as string, // "custom" ou key do catálogo
+  unit_price: 0,
 };
 
 export default function OrdersPage() {
