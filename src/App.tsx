@@ -30,6 +30,7 @@ import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import SalesPage from "@/pages/SalesPage";
 import ClientsPage from "@/pages/ClientsPage";
 import MarketplacePage from "@/pages/MarketplacePage";
+import OrdersPage from "@/pages/OrdersPage";
 import CentralPage from "@/pages/CentralPage";
 import NotFound from "@/pages/NotFound";
 
@@ -75,6 +76,7 @@ const App = () => (
               <Route path="/clients" element={<ClientsPage />} />
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               <Route path="/central" element={<CentralPage />} />
             </Route>
 
