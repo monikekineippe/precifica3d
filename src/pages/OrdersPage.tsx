@@ -157,6 +157,8 @@ export default function OrdersPage() {
       sinal_valor: Number(r.sinal_valor),
       observacoes: r.observacoes || "",
       inventory_item_id: r.inventory_item_id || "none",
+      catalog_key: r.inventory_item_id ? `inv:${r.inventory_item_id}` : "custom",
+      unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
     });
     setOpen(true);
   };
