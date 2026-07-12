@@ -94,6 +94,72 @@ export type Database = {
         }
         Relationships: []
       }
+      encomendas: {
+        Row: {
+          cliente_nome: string
+          codigo: string
+          created_at: string
+          data_encomenda: string
+          data_entrega: string | null
+          descricao: string | null
+          estoque_deduzido: boolean
+          id: string
+          inventory_item_id: string | null
+          observacoes: string | null
+          produto: string
+          quantidade: number
+          sinal_recebido: boolean
+          sinal_valor: number
+          status: string
+          updated_at: string
+          user_id: string
+          valor_total: number
+          whatsapp: string | null
+        }
+        Insert: {
+          cliente_nome: string
+          codigo: string
+          created_at?: string
+          data_encomenda?: string
+          data_entrega?: string | null
+          descricao?: string | null
+          estoque_deduzido?: boolean
+          id?: string
+          inventory_item_id?: string | null
+          observacoes?: string | null
+          produto: string
+          quantidade?: number
+          sinal_recebido?: boolean
+          sinal_valor?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          valor_total?: number
+          whatsapp?: string | null
+        }
+        Update: {
+          cliente_nome?: string
+          codigo?: string
+          created_at?: string
+          data_encomenda?: string
+          data_entrega?: string | null
+          descricao?: string | null
+          estoque_deduzido?: boolean
+          id?: string
+          inventory_item_id?: string | null
+          observacoes?: string | null
+          produto?: string
+          quantidade?: number
+          sinal_recebido?: boolean
+          sinal_valor?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+          valor_total?: number
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       eventos_uso: {
         Row: {
           created_at: string
