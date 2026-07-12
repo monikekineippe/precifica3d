@@ -35,7 +35,16 @@ interface Encomenda {
   estoque_deduzido: boolean;
 }
 
-interface InventoryItem { id: string; name: string; quantity: number; }
+interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; }
+interface QuoteItem { id: string; piece_name: string; suggested_price: number | null; }
+interface CatalogOption {
+  key: string;
+  source: "inventory" | "quote";
+  id: string;
+  name: string;
+  unitPrice: number;
+  stock?: number;
+}
 
 const STATUS_LABEL: Record<Status, string> = {
   recebida: "Encomenda recebida",
@@ -70,12 +79,15 @@ const emptyForm = {
   sinal_valor: 0,
   observacoes: "",
   inventory_item_id: "none",
+  catalog_key: "custom" as string, // "custom" ou key do catálogo
+  unit_price: 0,
 };
 
 export default function OrdersPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Encomenda[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -87,13 +99,15 @@ export default function OrdersPage() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [{ data: enc }, { data: inv }] = await Promise.all([
+    const [{ data: enc }, { data: inv }, { data: qts }] = await Promise.all([
       (supabase.from("encomendas" as any) as any)
         .select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("inventory").select("id, name, quantity").eq("user_id", user.id),
+      supabase.from("inventory").select("id, name, quantity, cost_per_unit").eq("user_id", user.id),
+      supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setRows((enc || []) as Encomenda[]);
     setInventory((inv || []) as InventoryItem[]);
+    setQuotesCatalog((qts || []) as QuoteItem[]);
     setLoading(false);
   };
 
@@ -124,6 +138,59 @@ export default function OrdersPage() {
     };
   }, [rows]);
 
+  const catalog = useMemo<CatalogOption[]>(() => {
+    const invOpts: CatalogOption[] = inventory.map((i) => ({
+      key: `inv:${i.id}`,
+      source: "inventory",
+      id: i.id,
+      name: i.name,
+      unitPrice: Number(i.cost_per_unit || 0),
+      stock: Number(i.quantity),
+    }));
+    const qOpts: CatalogOption[] = quotesCatalog.map((q) => ({
+      key: `qte:${q.id}`,
+      source: "quote",
+      id: q.id,
+      name: q.piece_name,
+      unitPrice: Number(q.suggested_price || 0),
+    }));
+    // Dedup por nome (prefere inventory)
+    const seen = new Set(invOpts.map((o) => o.name.toLowerCase()));
+    const merged = [...invOpts, ...qOpts.filter((o) => !seen.has(o.name.toLowerCase()))];
+    return merged.sort((a, b) => a.name.localeCompare(b.name));
+  }, [inventory, quotesCatalog]);
+
+  const handleCatalogChange = (key: string) => {
+    if (key === "custom") {
+      setForm((f) => ({ ...f, catalog_key: "custom", produto: "", unit_price: 0, valor_total: 0, inventory_item_id: "none" }));
+      return;
+    }
+    const opt = catalog.find((c) => c.key === key);
+    if (!opt) return;
+    const qty = Number(form.quantidade) || 1;
+    setForm((f) => ({
+      ...f,
+      catalog_key: key,
+      produto: opt.name,
+      unit_price: opt.unitPrice,
+      valor_total: Number((opt.unitPrice * qty).toFixed(2)),
+      inventory_item_id: opt.source === "inventory" ? opt.id : "none",
+    }));
+  };
+
+  const handleQtyChange = (n: number) => {
+    setForm((f) => {
+      const qty = Number.isFinite(n) && n > 0 ? n : 1;
+      const isCatalog = f.catalog_key !== "custom";
+      return {
+        ...f,
+        quantidade: qty,
+        valor_total: isCatalog ? Number((f.unit_price * qty).toFixed(2)) : f.valor_total,
+      };
+    });
+  };
+
+
   const openNew = () => {
     setEditing(null);
     setForm({ ...emptyForm });
@@ -143,6 +210,8 @@ export default function OrdersPage() {
       sinal_valor: Number(r.sinal_valor),
       observacoes: r.observacoes || "",
       inventory_item_id: r.inventory_item_id || "none",
+      catalog_key: r.inventory_item_id ? `inv:${r.inventory_item_id}` : "custom",
+      unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
     });
     setOpen(true);
   };
@@ -356,32 +425,54 @@ export default function OrdersPage() {
                 <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
-                <Label>Produto *</Label>
-                <Input value={form.produto} onChange={(e) => setForm({ ...form, produto: e.target.value })} />
+            <div>
+              <Label>Produto *</Label>
+              <Select value={form.catalog_key} onValueChange={handleCatalogChange}>
+                <SelectTrigger><SelectValue placeholder="Selecione um produto..." /></SelectTrigger>
+                <SelectContent>
+                  {catalog.length > 0 && (
+                    <>
+                      {catalog.map((opt) => (
+                        <SelectItem key={opt.key} value={opt.key}>
+                          {opt.name}
+                          {opt.source === "inventory" && typeof opt.stock === "number" ? ` — estoque: ${opt.stock}` : ""}
+                          {opt.unitPrice > 0 ? ` — R$ ${opt.unitPrice.toFixed(2)}` : ""}
+                        </SelectItem>
+                      ))}
+                      <div className="h-px bg-border my-1" />
+                    </>
+                  )}
+                  <SelectItem value="custom" className="text-primary font-medium">+ Personalizado / novo produto</SelectItem>
+                </SelectContent>
+              </Select>
+              {form.catalog_key !== "custom" && form.inventory_item_id !== "none" && (
+                <p className="text-xs text-muted-foreground mt-1">Vinculado ao estoque — a quantidade será deduzida ao marcar "Entregue".</p>
+              )}
+            </div>
+            {form.catalog_key === "custom" && (
+              <div>
+                <Label>Nome do produto *</Label>
+                <Input value={form.produto} onChange={(e) => setForm({ ...form, produto: e.target.value })} placeholder="Ex.: Chaveiro personalizado" />
               </div>
+            )}
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <Label>Quantidade</Label>
-                <Input type="number" min={1} value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: Number(e.target.value) })} />
+                <Input type="number" min={1} value={form.quantidade} onChange={(e) => handleQtyChange(Number(e.target.value))} />
               </div>
+              {form.catalog_key !== "custom" && (
+                <div>
+                  <Label>Valor unitário (R$)</Label>
+                  <Input type="number" step="0.01" value={form.unit_price} onChange={(e) => {
+                    const up = Number(e.target.value) || 0;
+                    setForm((f) => ({ ...f, unit_price: up, valor_total: Number((up * (Number(f.quantidade) || 1)).toFixed(2)) }));
+                  }} />
+                </div>
+              )}
             </div>
             <div>
               <Label>Descrição / personalização</Label>
               <Textarea rows={2} value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
-            </div>
-            <div>
-              <Label>Item de estoque vinculado (opcional)</Label>
-              <Select value={form.inventory_item_id} onValueChange={(v) => setForm({ ...form, inventory_item_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {inventory.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>{i.name} (estoque: {i.quantity})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-1">Se vinculado, ao marcar "Entregue" a quantidade será deduzida do estoque.</p>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
