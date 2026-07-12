@@ -425,32 +425,54 @@ export default function OrdersPage() {
                 <Input value={form.whatsapp} onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
-                <Label>Produto *</Label>
-                <Input value={form.produto} onChange={(e) => setForm({ ...form, produto: e.target.value })} />
+            <div>
+              <Label>Produto *</Label>
+              <Select value={form.catalog_key} onValueChange={handleCatalogChange}>
+                <SelectTrigger><SelectValue placeholder="Selecione um produto..." /></SelectTrigger>
+                <SelectContent>
+                  {catalog.length > 0 && (
+                    <>
+                      {catalog.map((opt) => (
+                        <SelectItem key={opt.key} value={opt.key}>
+                          {opt.name}
+                          {opt.source === "inventory" && typeof opt.stock === "number" ? ` — estoque: ${opt.stock}` : ""}
+                          {opt.unitPrice > 0 ? ` — R$ ${opt.unitPrice.toFixed(2)}` : ""}
+                        </SelectItem>
+                      ))}
+                      <div className="h-px bg-border my-1" />
+                    </>
+                  )}
+                  <SelectItem value="custom" className="text-primary font-medium">+ Personalizado / novo produto</SelectItem>
+                </SelectContent>
+              </Select>
+              {form.catalog_key !== "custom" && form.inventory_item_id !== "none" && (
+                <p className="text-xs text-muted-foreground mt-1">Vinculado ao estoque — a quantidade será deduzida ao marcar "Entregue".</p>
+              )}
+            </div>
+            {form.catalog_key === "custom" && (
+              <div>
+                <Label>Nome do produto *</Label>
+                <Input value={form.produto} onChange={(e) => setForm({ ...form, produto: e.target.value })} placeholder="Ex.: Chaveiro personalizado" />
               </div>
+            )}
+            <div className="grid grid-cols-3 gap-3">
               <div>
                 <Label>Quantidade</Label>
-                <Input type="number" min={1} value={form.quantidade} onChange={(e) => setForm({ ...form, quantidade: Number(e.target.value) })} />
+                <Input type="number" min={1} value={form.quantidade} onChange={(e) => handleQtyChange(Number(e.target.value))} />
               </div>
+              {form.catalog_key !== "custom" && (
+                <div>
+                  <Label>Valor unitário (R$)</Label>
+                  <Input type="number" step="0.01" value={form.unit_price} onChange={(e) => {
+                    const up = Number(e.target.value) || 0;
+                    setForm((f) => ({ ...f, unit_price: up, valor_total: Number((up * (Number(f.quantidade) || 1)).toFixed(2)) }));
+                  }} />
+                </div>
+              )}
             </div>
             <div>
               <Label>Descrição / personalização</Label>
               <Textarea rows={2} value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
-            </div>
-            <div>
-              <Label>Item de estoque vinculado (opcional)</Label>
-              <Select value={form.inventory_item_id} onValueChange={(v) => setForm({ ...form, inventory_item_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Nenhum</SelectItem>
-                  {inventory.map((i) => (
-                    <SelectItem key={i.id} value={i.id}>{i.name} (estoque: {i.quantity})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-1">Se vinculado, ao marcar "Entregue" a quantidade será deduzida do estoque.</p>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
