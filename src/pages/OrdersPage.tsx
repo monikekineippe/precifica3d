@@ -138,6 +138,59 @@ export default function OrdersPage() {
     };
   }, [rows]);
 
+  const catalog = useMemo<CatalogOption[]>(() => {
+    const invOpts: CatalogOption[] = inventory.map((i) => ({
+      key: `inv:${i.id}`,
+      source: "inventory",
+      id: i.id,
+      name: i.name,
+      unitPrice: Number(i.cost_per_unit || 0),
+      stock: Number(i.quantity),
+    }));
+    const qOpts: CatalogOption[] = quotesCatalog.map((q) => ({
+      key: `qte:${q.id}`,
+      source: "quote",
+      id: q.id,
+      name: q.piece_name,
+      unitPrice: Number(q.suggested_price || 0),
+    }));
+    // Dedup por nome (prefere inventory)
+    const seen = new Set(invOpts.map((o) => o.name.toLowerCase()));
+    const merged = [...invOpts, ...qOpts.filter((o) => !seen.has(o.name.toLowerCase()))];
+    return merged.sort((a, b) => a.name.localeCompare(b.name));
+  }, [inventory, quotesCatalog]);
+
+  const handleCatalogChange = (key: string) => {
+    if (key === "custom") {
+      setForm((f) => ({ ...f, catalog_key: "custom", produto: "", unit_price: 0, valor_total: 0, inventory_item_id: "none" }));
+      return;
+    }
+    const opt = catalog.find((c) => c.key === key);
+    if (!opt) return;
+    const qty = Number(form.quantidade) || 1;
+    setForm((f) => ({
+      ...f,
+      catalog_key: key,
+      produto: opt.name,
+      unit_price: opt.unitPrice,
+      valor_total: Number((opt.unitPrice * qty).toFixed(2)),
+      inventory_item_id: opt.source === "inventory" ? opt.id : "none",
+    }));
+  };
+
+  const handleQtyChange = (n: number) => {
+    setForm((f) => {
+      const qty = Number.isFinite(n) && n > 0 ? n : 1;
+      const isCatalog = f.catalog_key !== "custom";
+      return {
+        ...f,
+        quantidade: qty,
+        valor_total: isCatalog ? Number((f.unit_price * qty).toFixed(2)) : f.valor_total,
+      };
+    });
+  };
+
+
   const openNew = () => {
     setEditing(null);
     setForm({ ...emptyForm });
