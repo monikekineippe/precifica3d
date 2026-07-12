@@ -35,7 +35,16 @@ interface Encomenda {
   estoque_deduzido: boolean;
 }
 
-interface InventoryItem { id: string; name: string; quantity: number; }
+interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; }
+interface QuoteItem { id: string; piece_name: string; suggested_price: number | null; }
+interface CatalogOption {
+  key: string;
+  source: "inventory" | "quote";
+  id: string;
+  name: string;
+  unitPrice: number;
+  stock?: number;
+}
 
 const STATUS_LABEL: Record<Status, string> = {
   recebida: "Encomenda recebida",
