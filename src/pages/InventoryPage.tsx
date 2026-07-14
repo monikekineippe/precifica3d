@@ -22,6 +22,7 @@ interface InventoryItem {
   quantity: number;
   unit: string;
   cost_per_unit: number;
+  sale_price: number;
   min_stock: number;
   color?: string;
   brand?: string;
@@ -33,7 +34,7 @@ interface InventoryItem {
 
 const EMPTY_FORM = {
   name: '', type: 'filament', quantity: 0, unit: 'g',
-  cost_per_unit: 0, min_stock: 0, color: '', brand: '',
+  cost_per_unit: 0, sale_price: 0, min_stock: 0, color: '', brand: '',
   category: 'raw_material' as 'raw_material' | 'finished_product',
   last_purchase_date: '',
 };
