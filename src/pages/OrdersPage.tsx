@@ -139,12 +139,21 @@ export default function OrdersPage() {
   }, [rows]);
 
   const catalog = useMemo<CatalogOption[]>(() => {
+    // Mapa de preço de venda (suggested_price) por nome, vindo da precificação
+    const priceByName = new Map<string, number>();
+    for (const q of quotesCatalog) {
+      const key = q.piece_name.toLowerCase();
+      const price = Number(q.suggested_price || 0);
+      // Mantém o preço mais recente (quotes já vem ordenado desc por created_at)
+      if (!priceByName.has(key)) priceByName.set(key, price);
+    }
     const invOpts: CatalogOption[] = inventory.map((i) => ({
       key: `inv:${i.id}`,
       source: "inventory",
       id: i.id,
       name: i.name,
-      unitPrice: Number(i.cost_per_unit || 0),
+      // Preço de VENDA (nunca custo). Busca na precificação pelo nome.
+      unitPrice: priceByName.get(i.name.toLowerCase()) ?? 0,
       stock: Number(i.quantity),
     }));
     const qOpts: CatalogOption[] = quotesCatalog.map((q) => ({
