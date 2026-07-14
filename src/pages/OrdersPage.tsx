@@ -152,8 +152,10 @@ export default function OrdersPage() {
       source: "inventory",
       id: i.id,
       name: i.name,
-      // Preço de VENDA (nunca custo). Busca na precificação pelo nome.
-      unitPrice: priceByName.get(i.name.toLowerCase()) ?? 0,
+      // Preço de VENDA (nunca custo). Prioriza sale_price do estoque; fallback na precificação.
+      unitPrice: Number(i.sale_price || 0) > 0
+        ? Number(i.sale_price)
+        : (priceByName.get(i.name.toLowerCase()) ?? 0),
       stock: Number(i.quantity),
     }));
     const qOpts: CatalogOption[] = quotesCatalog.map((q) => ({
