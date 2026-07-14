@@ -245,9 +245,16 @@ export default function InventoryPage() {
             )}
 
             <div className="flex justify-between">
-              <span>Custo/Unidade</span>
+              <span>{item.category === 'finished_product' ? 'Custo de produção' : 'Custo/Unidade'}</span>
               <span className="font-mono text-foreground">R$ {Number(item.cost_per_unit).toFixed(2)}/{item.unit}</span>
             </div>
+
+            {item.category === 'finished_product' && (
+              <div className="flex justify-between">
+                <span>Preço de venda</span>
+                <span className="font-mono font-semibold text-primary">R$ {Number(item.sale_price || 0).toFixed(2)}</span>
+              </div>
+            )}
 
             {item.category === 'raw_material' ? (
               <>
