@@ -47,8 +47,8 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "html-nav" },
           },
           {
-            urlPattern: ({ url, request }) =>
-              url.origin === self.location.origin &&
+            urlPattern: ({ sameOrigin, request }) =>
+              sameOrigin &&
               ["style", "script", "worker", "image", "font"].includes(request.destination),
             handler: "CacheFirst",
             options: {
