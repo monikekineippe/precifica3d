@@ -1,0 +1,1 @@
+ALTER TABLE public.inventory ADD COLUMN IF NOT EXISTS sale_price numeric NOT NULL DEFAULT 0;

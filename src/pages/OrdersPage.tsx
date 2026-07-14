@@ -35,7 +35,7 @@ interface Encomenda {
   estoque_deduzido: boolean;
 }
 
-interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; }
+interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; sale_price: number | null; }
 interface QuoteItem { id: string; piece_name: string; suggested_price: number | null; }
 interface CatalogOption {
   key: string;
@@ -102,7 +102,7 @@ export default function OrdersPage() {
     const [{ data: enc }, { data: inv }, { data: qts }] = await Promise.all([
       (supabase.from("encomendas" as any) as any)
         .select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("inventory").select("id, name, quantity, cost_per_unit, category").eq("user_id", user.id).eq("category", "finished_product"),
+      supabase.from("inventory").select("id, name, quantity, cost_per_unit, sale_price, category").eq("user_id", user.id).eq("category", "finished_product"),
       supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setRows((enc || []) as Encomenda[]);
@@ -152,8 +152,10 @@ export default function OrdersPage() {
       source: "inventory",
       id: i.id,
       name: i.name,
-      // Preço de VENDA (nunca custo). Busca na precificação pelo nome.
-      unitPrice: priceByName.get(i.name.toLowerCase()) ?? 0,
+      // Preço de VENDA (nunca custo). Prioriza sale_price do estoque; fallback na precificação.
+      unitPrice: Number(i.sale_price || 0) > 0
+        ? Number(i.sale_price)
+        : (priceByName.get(i.name.toLowerCase()) ?? 0),
       stock: Number(i.quantity),
     }));
     const qOpts: CatalogOption[] = quotesCatalog.map((q) => ({

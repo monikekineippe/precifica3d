@@ -22,6 +22,7 @@ interface InventoryItem {
   quantity: number;
   unit: string;
   cost_per_unit: number;
+  sale_price: number;
   min_stock: number;
   color?: string;
   brand?: string;
@@ -33,7 +34,7 @@ interface InventoryItem {
 
 const EMPTY_FORM = {
   name: '', type: 'filament', quantity: 0, unit: 'g',
-  cost_per_unit: 0, min_stock: 0, color: '', brand: '',
+  cost_per_unit: 0, sale_price: 0, min_stock: 0, color: '', brand: '',
   category: 'raw_material' as 'raw_material' | 'finished_product',
   last_purchase_date: '',
 };
@@ -110,7 +111,8 @@ export default function InventoryPage() {
       type: item.type, 
       quantity: item.quantity, 
       unit: item.unit,
-      cost_per_unit: item.cost_per_unit, 
+      cost_per_unit: item.cost_per_unit,
+      sale_price: Number(item.sale_price) || 0,
       min_stock: item.min_stock, 
       color: item.color || '', 
       brand: item.brand || '',
@@ -243,9 +245,16 @@ export default function InventoryPage() {
             )}
 
             <div className="flex justify-between">
-              <span>Custo/Unidade</span>
+              <span>{item.category === 'finished_product' ? 'Custo de produção' : 'Custo/Unidade'}</span>
               <span className="font-mono text-foreground">R$ {Number(item.cost_per_unit).toFixed(2)}/{item.unit}</span>
             </div>
+
+            {item.category === 'finished_product' && (
+              <div className="flex justify-between">
+                <span>Preço de venda</span>
+                <span className="font-mono font-semibold text-primary">R$ {Number(item.sale_price || 0).toFixed(2)}</span>
+              </div>
+            )}
 
             {item.category === 'raw_material' ? (
               <>
@@ -386,9 +395,17 @@ export default function InventoryPage() {
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label>Custo Unitário (R$)</Label>
-              <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>{form.category === 'finished_product' ? 'Custo de produção (R$)' : 'Custo Unitário (R$)'}</Label>
+                <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
+              </div>
+              {form.category === 'finished_product' && (
+                <div className="grid gap-2">
+                  <Label>Preço de venda (R$)</Label>
+                  <Input type="number" value={form.sale_price} onChange={e => setField('sale_price', +e.target.value)} className="bg-muted border-border" />
+                </div>
+              )}
             </div>
 
             {form.category === 'raw_material' && (
