@@ -395,9 +395,17 @@ export default function InventoryPage() {
               )}
             </div>
 
-            <div className="grid gap-2">
-              <Label>Custo Unitário (R$)</Label>
-              <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>{form.category === 'finished_product' ? 'Custo de produção (R$)' : 'Custo Unitário (R$)'}</Label>
+                <Input type="number" value={form.cost_per_unit} onChange={e => setField('cost_per_unit', +e.target.value)} className="bg-muted border-border" />
+              </div>
+              {form.category === 'finished_product' && (
+                <div className="grid gap-2">
+                  <Label>Preço de venda (R$)</Label>
+                  <Input type="number" value={form.sale_price} onChange={e => setField('sale_price', +e.target.value)} className="bg-muted border-border" />
+                </div>
+              )}
             </div>
 
             {form.category === 'raw_material' && (
