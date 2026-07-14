@@ -35,7 +35,7 @@ interface Encomenda {
   estoque_deduzido: boolean;
 }
 
-interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; }
+interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; sale_price: number | null; }
 interface QuoteItem { id: string; piece_name: string; suggested_price: number | null; }
 interface CatalogOption {
   key: string;
