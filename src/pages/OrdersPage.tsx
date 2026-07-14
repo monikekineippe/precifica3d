@@ -102,7 +102,7 @@ export default function OrdersPage() {
     const [{ data: enc }, { data: inv }, { data: qts }] = await Promise.all([
       (supabase.from("encomendas" as any) as any)
         .select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("inventory").select("id, name, quantity, cost_per_unit, category").eq("user_id", user.id).eq("category", "finished_product"),
+      supabase.from("inventory").select("id, name, quantity, cost_per_unit, sale_price, category").eq("user_id", user.id).eq("category", "finished_product"),
       supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setRows((enc || []) as Encomenda[]);
