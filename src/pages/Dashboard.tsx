@@ -27,6 +27,9 @@ import { ptBR } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from "sonner";
 
+const formatBRL = (v: number) =>
+  `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
