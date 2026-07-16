@@ -179,6 +179,8 @@ export type Database = {
           id: string
           inventory_item_id: string | null
           observacoes: string | null
+          origem: string | null
+          origem_outro: string | null
           produto: string
           quantidade: number
           sinal_recebido: boolean
@@ -200,6 +202,8 @@ export type Database = {
           id?: string
           inventory_item_id?: string | null
           observacoes?: string | null
+          origem?: string | null
+          origem_outro?: string | null
           produto: string
           quantidade?: number
           sinal_recebido?: boolean
@@ -221,6 +225,8 @@ export type Database = {
           id?: string
           inventory_item_id?: string | null
           observacoes?: string | null
+          origem?: string | null
+          origem_outro?: string | null
           produto?: string
           quantidade?: number
           sinal_recebido?: boolean
