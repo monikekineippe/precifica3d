@@ -95,7 +95,7 @@ const LandingPage = () => {
                 <span className="text-[#00D4FF]">Mas está lucrando de verdade?</span>
               </h1>
               <p className="text-lg text-gray-400 mt-4 max-w-lg leading-relaxed">
-                A maioria dos impressores descobre tarde demais que estava vendendo no prejuízo. O Gestão3D mostra o lucro real de cada peça antes, durante e depois da venda, com os custos que você estava esquecendo.
+                Da precificação à entrega: preveja seus preços, controle sua produção 3D e acompanhe cada encomenda sem perder nenhum pedido de vista. O Gestão3D mostra o lucro real de cada peça antes, durante e depois da venda.
               </p>
               <div className="flex flex-col gap-3 mt-8 w-full max-w-md">
                 <a href="/signup" className="w-full text-center bg-[#00D4FF] text-[#0B1020] 
@@ -518,11 +518,51 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Encomendas Highlight Section */}
+      <section className="py-20 bg-[#0B1020]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative bg-[#111827] border border-white/10 rounded-2xl p-8 sm:p-12 overflow-hidden group hover:border-[#00D4FF]/30 transition-colors">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#00D4FF]/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-[#7C3AED]/10 rounded-full blur-3xl" />
+            <div className="relative grid grid-cols-1 md:grid-cols-[auto_1fr] gap-8 items-start">
+              <div className="w-16 h-16 rounded-2xl bg-[#00D4FF]/10 flex items-center justify-center border border-[#00D4FF]/20 shadow-[0_0_20px_rgba(0,212,255,0.15)]">
+                <ClipboardList className="w-8 h-8 text-[#00D4FF]" />
+              </div>
+              <div>
+                <Badge className="mb-4 bg-[#00D4FF]/10 text-[#00D4FF] border-[#00D4FF]/20 hover:bg-[#00D4FF]/20">Novo: Gestão de Encomendas</Badge>
+                <h2 className="text-3xl font-bold text-white mb-4">Nenhuma encomenda esquecida</h2>
+                <p className="text-gray-300 text-base leading-relaxed mb-6">
+                  Chega de anotar pedido em caderno e perder o controle do que já foi pago. Cadastre o cliente, selecione os produtos, registre sinal e saldo e veja o status de cada encomenda em tempo real: recebida, em produção, pronta e entregue. Você sabe exatamente quanto tem a receber e o que precisa produzir hoje.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-white/80 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                    <Circle className="w-2 h-2 fill-[#00D4FF] text-[#00D4FF]" /> Recebida
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-white/80 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                    <Circle className="w-2 h-2 fill-[#F59E0B] text-[#F59E0B]" /> Em produção
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-white/80 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                    <Circle className="w-2 h-2 fill-[#7C3AED] text-[#7C3AED]" /> Pronta
+                  </span>
+                  <span className="inline-flex items-center gap-2 text-xs font-medium text-white/80 bg-white/5 border border-white/10 rounded-full px-3 py-1.5">
+                    <Circle className="w-2 h-2 fill-[#22C55E] text-[#22C55E]" /> Entregue
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Interstitial CTA */}
       <section className="py-20 bg-primary/10 border-y border-primary/20">
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Pronto para saber o preço certo de cada peça?</h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground mb-4">
+            Precificação inteligente, produção organizada e controle total de pedidos e recebimentos em um só lugar.
+          </p>
+          <p className="text-base text-muted-foreground mb-8">
             Crie sua conta grátis agora. Sem cartão de crédito, sem compromisso.
           </p>
           <Link to="/signup">
