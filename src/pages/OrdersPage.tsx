@@ -194,7 +194,12 @@ export default function OrdersPage() {
     for (const q of quotesCatalog) {
       const key = q.piece_name.toLowerCase();
       const price = Number(q.suggested_price || 0);
-      if (!priceByName.has(key)) priceByName.set(key, price);
+      if (price > 0 && !priceByName.has(key)) priceByName.set(key, price);
+    }
+    for (const o of orcamentosCatalog) {
+      const key = (o.nome_peca || "").toLowerCase();
+      const price = Number(o.preco_sugerido || 0);
+      if (price > 0 && !priceByName.has(key)) priceByName.set(key, price);
     }
     const invOpts: CatalogOption[] = inventory.map((i) => ({
       key: `inv:${i.id}`,
@@ -213,10 +218,22 @@ export default function OrdersPage() {
       name: q.piece_name,
       unitPrice: Number(q.suggested_price || 0),
     }));
+    const oOpts: CatalogOption[] = orcamentosCatalog.map((o) => ({
+      key: `orc:${o.id}`,
+      source: "quote",
+      id: o.id,
+      name: o.nome_peca,
+      unitPrice: Number(o.preco_sugerido || 0),
+    }));
     const seen = new Set(invOpts.map((o) => o.name.toLowerCase()));
-    const merged = [...invOpts, ...qOpts.filter((o) => !seen.has(o.name.toLowerCase()))];
-    return merged.sort((a, b) => a.name.localeCompare(b.name));
-  }, [inventory, quotesCatalog]);
+    const extras = [...qOpts, ...oOpts].filter((o) => {
+      const k = (o.name || "").toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    return [...invOpts, ...extras].sort((a, b) => a.name.localeCompare(b.name));
+  }, [inventory, quotesCatalog, orcamentosCatalog]);
 
   const handleCatalogChange = (key: string) => {
     if (key === "custom") {
