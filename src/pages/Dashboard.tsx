@@ -473,6 +473,9 @@ export default function Dashboard() {
         <Button asChild variant="outline" className="border-border">
           <Link to="/inventory"><Package size={16} className="mr-2" />Estoque</Link>
         </Button>
+        <Button asChild variant="outline" className="border-border">
+          <Link to="/caixa"><Wallet size={16} className="mr-2" />Caixa</Link>
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
