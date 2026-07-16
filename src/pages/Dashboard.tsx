@@ -40,7 +40,11 @@ export default function Dashboard() {
     materialExpenses: 0,
     investmentExpenses: 0,
     printersCount: 0,
-    activePrinter: null as any
+    activePrinter: null as any,
+    cashBalance: 0,
+    cashInflowsMonth: 0,
+    cashOutflowsMonth: 0,
+    aReceber: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
