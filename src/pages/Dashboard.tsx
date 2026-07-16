@@ -164,13 +164,52 @@ export default function Dashboard() {
       });
 
 
-      // 5. Recent 5 Sales
-      const { data: recent } = await supabase
-        .from("sales")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      // 5. Encomendas quitadas: usadas como "vendas" para os widgets
+      const { data: encRows } = await supabase
+        .from("encomendas")
+        .select("id, cliente_nome, produto, quantidade, valor_total, created_at")
+        .eq("user_id", user.id);
+      const { data: pagRows } = await supabase
+        .from("encomenda_pagamentos")
+        .select("encomenda_id, valor, data_pagamento, created_at")
+        .eq("user_id", user.id);
+
+      const pagosMap: Record<string, { total: number; last: string }> = {};
+      (pagRows || []).forEach((p: any) => {
+        const key = p.encomenda_id as string;
+        const cur = pagosMap[key] || { total: 0, last: "" };
+        cur.total += Number(p.valor || 0);
+        const dateStr = (p.data_pagamento || p.created_at || "") as string;
+        if (!cur.last || dateStr > cur.last) cur.last = dateStr;
+        pagosMap[key] = cur;
+      });
+
+      const quitadas = (encRows || [])
+        .map((e: any) => {
+          const total = Number(e.valor_total || 0);
+          const info = pagosMap[e.id] || { total: 0, last: "" };
+          const pago = info.total;
+          const isQuitado = total > 0 && pago + 0.001 >= total;
+          return { ...e, _pago: pago, _quitadoEm: info.last || e.created_at, _isQuitado: isQuitado };
+        })
+        .filter((e: any) => e._isQuitado);
+
+      const recent = [...quitadas]
+        .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
+        .slice(0, 10);
+
+      const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
+      quitadas.forEach((e: any) => {
+        const nome = (e.produto || "Sem nome").trim();
+        const cur = topAgg[nome] || { produto: nome, quantidade: 0, valor: 0 };
+        cur.quantidade += Number(e.quantidade || 0);
+        cur.valor += Number(e.valor_total || 0);
+        topAgg[nome] = cur;
+      });
+      const topList = Object.values(topAgg)
+        .sort((a, b) => b.quantidade - a.quantidade)
+        .slice(0, 5);
+
 
       // 6. Last 30 days evolution
       const last30Days = eachDayOfInterval({
