@@ -226,7 +226,11 @@ export default function Dashboard() {
         materialExpenses: material,
         investmentExpenses: investment,
         printersCount: printersCount,
-        activePrinter: activePrinter
+        activePrinter: activePrinter,
+        cashBalance,
+        cashInflowsMonth,
+        cashOutflowsMonth,
+        aReceber,
       });
       setRecentSales(recent || []);
       setChartData(chartDataFormatted);
