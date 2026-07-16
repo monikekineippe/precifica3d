@@ -364,7 +364,7 @@ export default function Dashboard() {
                 <Wallet size={14} className="text-primary/60" />
               </p>
               <div className={`text-3xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
-                R$ {stats.cashBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatBRL(stats.cashBalance)}
               </div>
               <p className="text-[10px] text-muted-foreground">Saldo atual acumulado</p>
             </div>
@@ -378,7 +378,7 @@ export default function Dashboard() {
               <ArrowUpRight size={14} className="text-profit/60" />
             </p>
             <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              R$ {stats.cashInflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.cashInflowsMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">Total recebido no mês</p>
           </div>
@@ -391,7 +391,7 @@ export default function Dashboard() {
               <ArrowDownRight size={14} className="text-alert/60" />
             </p>
             <div className="text-3xl font-bold font-mono text-alert tracking-tight">
-              R$ {stats.cashOutflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.cashOutflowsMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">Total pago no mês</p>
           </div>
@@ -405,7 +405,7 @@ export default function Dashboard() {
                 <Clock size={14} className="text-primary/60" />
               </p>
               <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                R$ {stats.aReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatBRL(stats.aReceber)}
               </div>
               <p className="text-[10px] text-muted-foreground">Saldo pendente de encomendas</p>
             </div>
@@ -422,7 +422,7 @@ export default function Dashboard() {
               <DollarSign size={14} className="text-primary/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              R$ {stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.monthlyRevenue)}
             </div>
           </div>
         </Card>
@@ -434,7 +434,7 @@ export default function Dashboard() {
               <TrendingUp size={14} className="text-profit/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              R$ {stats.monthlyGrossProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.monthlyGrossProfit)}
             </div>
           </div>
         </Card>
@@ -447,7 +447,7 @@ export default function Dashboard() {
             </p>
             <div className="space-y-3">
               <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                R$ {stats.monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                {formatBRL(stats.monthlyGoal)}
               </div>
               <Progress value={goalCompletion} className="h-1.5" />
             </div>
@@ -461,7 +461,7 @@ export default function Dashboard() {
               <ArrowUpRight size={14} className="text-primary/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              R$ {stats.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.ticketMedio)}
             </div>
           </div>
         </Card>
@@ -516,19 +516,19 @@ export default function Dashboard() {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Operacional:</span>
-                <span className="font-mono text-alert">R$ {stats.operationalExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Material/Estoque:</span>
-                <span className="font-mono text-alert">R$ {stats.materialExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.materialExpenses)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Investimento:</span>
-                <span className="font-mono text-alert">R$ {stats.investmentExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.investmentExpenses)}</span>
               </div>
               <div className="pt-2 border-t border-border mt-1.5 flex justify-between text-xs font-bold">
                 <span className="text-foreground">Total:</span>
-                <span className="font-mono text-alert">R$ {(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses).toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses)}</span>
               </div>
             </div>
           </div>
@@ -627,7 +627,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.valor_total || 0).toFixed(2)}</p>
+                      <p className="font-bold font-mono text-primary text-sm">{formatBRL(Number(sale.valor_total || 0))}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yyyy") : ""}
                       </p>
@@ -663,7 +663,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <p className="font-bold font-mono text-foreground text-sm">{item.quantidade} un.</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">R$ {item.valor.toFixed(2)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{formatBRL(item.valor)}</p>
                   </div>
                 </div>
               ))}
