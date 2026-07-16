@@ -31,6 +31,7 @@ import SalesPage from "@/pages/SalesPage";
 import ClientsPage from "@/pages/ClientsPage";
 import MarketplacePage from "@/pages/MarketplacePage";
 import OrdersPage from "@/pages/OrdersPage";
+import CashflowPage from "@/pages/CashflowPage";
 import CentralPage from "@/pages/CentralPage";
 import NotFound from "@/pages/NotFound";
 
@@ -77,6 +78,7 @@ const App = () => (
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/marketplace" element={<MarketplacePage />} />
               <Route path="/orders" element={<OrdersPage />} />
+              <Route path="/caixa" element={<CashflowPage />} />
               <Route path="/central" element={<CentralPage />} />
             </Route>
 
