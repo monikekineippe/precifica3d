@@ -47,6 +47,7 @@ export default function Dashboard() {
     aReceber: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
+  const [topItems, setTopItems] = useState<{ produto: string; quantidade: number; valor: number }[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
