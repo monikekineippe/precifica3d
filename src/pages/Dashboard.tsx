@@ -167,12 +167,22 @@ export default function Dashboard() {
       // 5. Encomendas quitadas: usadas como "vendas" para os widgets
       const { data: encRows } = await supabase
         .from("encomendas")
-        .select("id, cliente_nome, produto, quantidade, valor_total, created_at")
+        .select("id, cliente_nome, produto, quantidade, valor_total, created_at, inventory_item_id")
         .eq("user_id", user.id);
       const { data: pagRows } = await supabase
         .from("encomenda_pagamentos")
         .select("encomenda_id, valor, data_pagamento, created_at")
         .eq("user_id", user.id);
+
+      // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
+      const { data: invRows } = await supabase
+        .from("inventory")
+        .select("id, cost_per_unit")
+        .eq("user_id", user.id);
+      const costByInv: Record<string, number> = {};
+      (invRows || []).forEach((i: any) => {
+        costByInv[i.id] = Number(i.cost_per_unit || 0);
+      });
 
       const pagosMap: Record<string, { total: number; last: string }> = {};
       (pagRows || []).forEach((p: any) => {
@@ -198,12 +208,24 @@ export default function Dashboard() {
         .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
         .slice(0, 10);
 
-      // Faturamento do mês: soma valor_total das encomendas quitadas cujo _quitadoEm está no mês corrente
-      const firstDayIso = firstDay.toISOString();
-      const monthlyRevenueEncomendas = quitadas.reduce((sum: number, e: any) => {
-        const dt = e._quitadoEm ? new Date(e._quitadoEm).toISOString() : "";
-        return dt >= firstDayIso ? sum + Number(e.valor_total || 0) : sum;
+      // Encomendas quitadas no mês atual (data de quitação dentro do mês)
+      const quitadasMes = quitadas.filter((e: any) => {
+        if (!e._quitadoEm) return false;
+        const d = new Date(e._quitadoEm);
+        return d >= firstDay && d <= lastDay;
+      });
+      const monthlyRevenueEncomendas = quitadasMes.reduce(
+        (sum: number, e: any) => sum + Number(e.valor_total || 0),
+        0
+      );
+      const monthlySalesCountEnc = quitadasMes.length;
+      const ticketMedioEnc = monthlySalesCountEnc > 0 ? monthlyRevenueEncomendas / monthlySalesCountEnc : 0;
+      const monthlyCogsEnc = quitadasMes.reduce((sum: number, e: any) => {
+        const qty = Number(e.quantidade || 0);
+        const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
+        return sum + qty * unitCost;
       }, 0);
+      const monthlyGrossProfitEnc = monthlyRevenueEncomendas - monthlyCogsEnc;
 
       const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
       quitadas.forEach((e: any) => {
