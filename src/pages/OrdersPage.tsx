@@ -306,6 +306,8 @@ export default function OrdersPage() {
       inventory_item_id: r.inventory_item_id || "none",
       catalog_key: r.inventory_item_id ? `inv:${r.inventory_item_id}` : "custom",
       unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
+      origem: r.origem || "",
+      origem_outro: r.origem_outro || "",
     });
     setOpen(true);
   };
