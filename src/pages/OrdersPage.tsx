@@ -336,6 +336,8 @@ export default function OrdersPage() {
       sinal_valor: form.sinal_recebido ? Number(form.sinal_valor) || 0 : 0,
       observacoes: form.observacoes.trim() || null,
       inventory_item_id: form.inventory_item_id === "none" ? null : form.inventory_item_id,
+      origem: form.origem || null,
+      origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
