@@ -286,10 +286,10 @@ export default function Dashboard() {
 
       setStats({
         monthlyRevenue: monthlyRevenueEncomendas,
-        monthlyGrossProfit: profit,
+        monthlyGrossProfit: monthlyGrossProfitEnc,
         monthlyGoal: userSettings?.monthly_revenue_goal || 0,
-        monthlySalesCount: count,
-        ticketMedio: ticket,
+        monthlySalesCount: monthlySalesCountEnc,
+        ticketMedio: ticketMedioEnc,
         criticalStock: criticalCount,
         operationalExpenses: operational,
         materialExpenses: material,
