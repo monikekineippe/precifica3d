@@ -312,7 +312,7 @@ export default function OrdersPage() {
   const advance = async (r: Encomenda) => {
     const next = NEXT[r.status];
     if (!next) return;
-    const update: Record<string, unknown> = { status: next };
+    const update: { status: Status; data_entrega?: string; estoque_deduzido?: boolean } = { status: next };
     if (next === "entregue") {
       update.data_entrega = new Date().toISOString();
       if (r.inventory_item_id && !r.estoque_deduzido) {
