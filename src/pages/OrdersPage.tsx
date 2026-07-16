@@ -482,6 +482,7 @@ export default function OrdersPage() {
                     </div>
                   )}
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
+                  <p className="text-xs text-muted-foreground">Origem: {formatOrigem(r)}</p>
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
                   <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
                     <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="flex-1">
