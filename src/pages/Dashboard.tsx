@@ -281,6 +281,65 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Cash & Receivables Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link to="/caixa">
+          <Card className="bg-card border-border border-t-4 border-primary p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+                Saldo do Caixa
+                <Wallet size={14} className="text-primary/60" />
+              </p>
+              <div className={`text-3xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
+                R$ {stats.cashBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Saldo atual acumulado</p>
+            </div>
+          </Card>
+        </Link>
+
+        <Card className="bg-card border-border border-t-4 border-profit p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+              Entradas (Mês)
+              <ArrowUpRight size={14} className="text-profit/60" />
+            </p>
+            <div className="text-3xl font-bold font-mono text-profit tracking-tight">
+              R$ {stats.cashInflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Total recebido no mês</p>
+          </div>
+        </Card>
+
+        <Card className="bg-card border-border border-t-4 border-alert p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+              Saídas (Mês)
+              <ArrowDownRight size={14} className="text-alert/60" />
+            </p>
+            <div className="text-3xl font-bold font-mono text-alert tracking-tight">
+              R$ {stats.cashOutflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Total pago no mês</p>
+          </div>
+        </Card>
+
+        <Link to="/orders">
+          <Card className="bg-card border-border border-t-4 border-primary/40 p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+                A Receber
+                <Clock size={14} className="text-primary/60" />
+              </p>
+              <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
+                R$ {stats.aReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Saldo pendente de encomendas</p>
+            </div>
+          </Card>
+        </Link>
+      </div>
+
       {/* Main Stats (Line 1) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-card border-border border-t-4 border-white/40 p-6">
