@@ -12,7 +12,9 @@ import {
   ChevronRight,
   ArrowUpRight,
   ArrowDownRight,
-  RefreshCcw
+  RefreshCcw,
+  Wallet,
+  Clock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +40,11 @@ export default function Dashboard() {
     materialExpenses: 0,
     investmentExpenses: 0,
     printersCount: 0,
-    activePrinter: null as any
+    activePrinter: null as any,
+    cashBalance: 0,
+    cashInflowsMonth: 0,
+    cashOutflowsMonth: 0,
+    aReceber: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -113,6 +119,50 @@ export default function Dashboard() {
         .gte("created_at", firstDay.toISOString())
         .lte("created_at", lastDay.toISOString());
 
+      // 4b. Cash summary: all-time balance and month totals
+      const { data: allCash } = await supabase
+        .from("cash_transactions")
+        .select("type, amount, created_at")
+        .eq("user_id", user.id);
+
+      let cashBalance = 0;
+      let cashInflowsMonth = 0;
+      let cashOutflowsMonth = 0;
+      if (allCash) {
+        for (const t of allCash as any[]) {
+          const amt = Number(t.amount || 0);
+          if (t.type === "inflow") cashBalance += amt;
+          else if (t.type === "outflow") cashBalance -= amt;
+          const d = new Date(t.created_at);
+          if (d >= firstDay && d <= lastDay) {
+            if (t.type === "inflow") cashInflowsMonth += amt;
+            else if (t.type === "outflow") cashOutflowsMonth += amt;
+          }
+        }
+      }
+
+      // 4c. A receber: encomendas com saldo pendente
+      const { data: encomendas } = await supabase
+        .from("encomendas")
+        .select("id, valor_total")
+        .eq("user_id", user.id);
+      const { data: pagamentos } = await supabase
+        .from("encomenda_pagamentos")
+        .select("encomenda_id, valor")
+        .eq("user_id", user.id);
+      const paidByOrder: Record<string, number> = {};
+      (pagamentos || []).forEach((p: any) => {
+        paidByOrder[p.encomenda_id] = (paidByOrder[p.encomenda_id] || 0) + Number(p.valor || 0);
+      });
+      let aReceber = 0;
+      (encomendas || []).forEach((e: any) => {
+        const total = Number(e.valor_total || 0);
+        const paid = paidByOrder[e.id] || 0;
+        const pending = total - paid;
+        if (pending > 0.005) aReceber += pending;
+      });
+
+
       // 5. Recent 5 Sales
       const { data: recent } = await supabase
         .from("sales")
@@ -176,7 +226,11 @@ export default function Dashboard() {
         materialExpenses: material,
         investmentExpenses: investment,
         printersCount: printersCount,
-        activePrinter: activePrinter
+        activePrinter: activePrinter,
+        cashBalance,
+        cashInflowsMonth,
+        cashOutflowsMonth,
+        aReceber,
       });
       setRecentSales(recent || []);
       setChartData(chartDataFormatted);
@@ -225,6 +279,65 @@ export default function Dashboard() {
             <Link to="/settings"><Target size={14} className="mr-2" /> Ajustar Meta</Link>
           </Button>
         </div>
+      </div>
+
+      {/* Cash & Receivables Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Link to="/caixa">
+          <Card className="bg-card border-border border-t-4 border-primary p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+                Saldo do Caixa
+                <Wallet size={14} className="text-primary/60" />
+              </p>
+              <div className={`text-3xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
+                R$ {stats.cashBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Saldo atual acumulado</p>
+            </div>
+          </Card>
+        </Link>
+
+        <Card className="bg-card border-border border-t-4 border-profit p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+              Entradas (Mês)
+              <ArrowUpRight size={14} className="text-profit/60" />
+            </p>
+            <div className="text-3xl font-bold font-mono text-profit tracking-tight">
+              R$ {stats.cashInflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Total recebido no mês</p>
+          </div>
+        </Card>
+
+        <Card className="bg-card border-border border-t-4 border-alert p-6">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+              Saídas (Mês)
+              <ArrowDownRight size={14} className="text-alert/60" />
+            </p>
+            <div className="text-3xl font-bold font-mono text-alert tracking-tight">
+              R$ {stats.cashOutflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </div>
+            <p className="text-[10px] text-muted-foreground">Total pago no mês</p>
+          </div>
+        </Card>
+
+        <Link to="/orders">
+          <Card className="bg-card border-border border-t-4 border-primary/40 p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
+                A Receber
+                <Clock size={14} className="text-primary/60" />
+              </p>
+              <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
+                R$ {stats.aReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </div>
+              <p className="text-[10px] text-muted-foreground">Saldo pendente de encomendas</p>
+            </div>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Stats (Line 1) */}
@@ -359,6 +472,9 @@ export default function Dashboard() {
         </Button>
         <Button asChild variant="outline" className="border-border">
           <Link to="/inventory"><Package size={16} className="mr-2" />Estoque</Link>
+        </Button>
+        <Button asChild variant="outline" className="border-border">
+          <Link to="/caixa"><Wallet size={16} className="mr-2" />Caixa</Link>
         </Button>
       </div>
 
