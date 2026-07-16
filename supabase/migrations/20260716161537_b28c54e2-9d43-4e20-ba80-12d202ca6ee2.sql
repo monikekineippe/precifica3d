@@ -1,0 +1,1 @@
+ALTER TABLE public.encomendas ADD COLUMN IF NOT EXISTS origem text, ADD COLUMN IF NOT EXISTS origem_outro text;

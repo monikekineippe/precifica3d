@@ -34,6 +34,24 @@ interface Encomenda {
   observacoes: string | null;
   inventory_item_id: string | null;
   estoque_deduzido: boolean;
+  origem: string | null;
+  origem_outro: string | null;
+}
+
+const ORIGEM_OPTIONS = [
+  { value: "indicacao", label: "Indicação" },
+  { value: "amigos_familiares", label: "Amigos/Familiares" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "site", label: "Site" },
+  { value: "feira_eventos", label: "Feira e Eventos" },
+  { value: "outros", label: "Outros" },
+];
+const ORIGEM_LABEL = Object.fromEntries(ORIGEM_OPTIONS.map(o => [o.value, o.label])) as Record<string, string>;
+function formatOrigem(r: { origem: string | null; origem_outro: string | null }) {
+  if (!r.origem) return "Não informado";
+  if (r.origem === "outros") return r.origem_outro?.trim() ? `Outros: ${r.origem_outro.trim()}` : "Outros";
+  return ORIGEM_LABEL[r.origem] || "Não informado";
 }
 
 interface Pagamento {
@@ -112,6 +130,8 @@ const emptyForm = {
   inventory_item_id: "none",
   catalog_key: "custom" as string,
   unit_price: 0,
+  origem: "",
+  origem_outro: "",
 };
 
 function computeFinStatus(total: number, pago: number): FinStatus {
@@ -286,6 +306,8 @@ export default function OrdersPage() {
       inventory_item_id: r.inventory_item_id || "none",
       catalog_key: r.inventory_item_id ? `inv:${r.inventory_item_id}` : "custom",
       unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
+      origem: r.origem || "",
+      origem_outro: r.origem_outro || "",
     });
     setOpen(true);
   };
@@ -314,6 +336,8 @@ export default function OrdersPage() {
       sinal_valor: form.sinal_recebido ? Number(form.sinal_valor) || 0 : 0,
       observacoes: form.observacoes.trim() || null,
       inventory_item_id: form.inventory_item_id === "none" ? null : form.inventory_item_id,
+      origem: form.origem || null,
+      origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
@@ -458,6 +482,7 @@ export default function OrdersPage() {
                     </div>
                   )}
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
+                  <p className="text-xs text-muted-foreground">Origem: {formatOrigem(r)}</p>
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
                   <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
                     <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="flex-1">
@@ -558,6 +583,29 @@ export default function OrdersPage() {
             <div>
               <Label>Observações internas</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Origem da encomenda</Label>
+                <Select
+                  value={form.origem || "__none"}
+                  onValueChange={(v) => setForm({ ...form, origem: v === "__none" ? "" : v, origem_outro: v === "outros" ? form.origem_outro : "" })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Não informado</SelectItem>
+                    {ORIGEM_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {form.origem === "outros" && (
+                <div>
+                  <Label>Especifique a origem</Label>
+                  <Input value={form.origem_outro} onChange={(e) => setForm({ ...form, origem_outro: e.target.value })} placeholder="Ex.: WhatsApp, Marketplace" />
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>
