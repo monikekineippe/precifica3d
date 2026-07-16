@@ -21,9 +21,13 @@ export type Database = {
           category: string | null
           created_at: string
           description: string
+          encomenda_id: string | null
+          encomenda_pagamento_id: string | null
           id: string
           inventory_data: Json | null
+          payment_method: string | null
           sale_id: string | null
+          transaction_date: string | null
           type: string
           user_id: string
         }
@@ -33,9 +37,13 @@ export type Database = {
           category?: string | null
           created_at?: string
           description: string
+          encomenda_id?: string | null
+          encomenda_pagamento_id?: string | null
           id?: string
           inventory_data?: Json | null
+          payment_method?: string | null
           sale_id?: string | null
+          transaction_date?: string | null
           type: string
           user_id: string
         }
@@ -45,13 +53,31 @@ export type Database = {
           category?: string | null
           created_at?: string
           description?: string
+          encomenda_id?: string | null
+          encomenda_pagamento_id?: string | null
           id?: string
           inventory_data?: Json | null
+          payment_method?: string | null
           sale_id?: string | null
+          transaction_date?: string | null
           type?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "cash_transactions_encomenda_id_fkey"
+            columns: ["encomenda_id"]
+            isOneToOne: false
+            referencedRelation: "encomendas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cash_transactions_encomenda_pagamento_id_fkey"
+            columns: ["encomenda_pagamento_id"]
+            isOneToOne: false
+            referencedRelation: "encomenda_pagamentos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cash_transactions_sale_id_fkey"
             columns: ["sale_id"]
@@ -93,6 +119,53 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      encomenda_pagamentos: {
+        Row: {
+          cash_transaction_id: string | null
+          created_at: string
+          data_pagamento: string
+          encomenda_id: string
+          forma_pagamento: string
+          id: string
+          observacao: string | null
+          updated_at: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          cash_transaction_id?: string | null
+          created_at?: string
+          data_pagamento?: string
+          encomenda_id: string
+          forma_pagamento?: string
+          id?: string
+          observacao?: string | null
+          updated_at?: string
+          user_id: string
+          valor?: number
+        }
+        Update: {
+          cash_transaction_id?: string | null
+          created_at?: string
+          data_pagamento?: string
+          encomenda_id?: string
+          forma_pagamento?: string
+          id?: string
+          observacao?: string | null
+          updated_at?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "encomenda_pagamentos_encomenda_id_fkey"
+            columns: ["encomenda_id"]
+            isOneToOne: false
+            referencedRelation: "encomendas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       encomendas: {
         Row: {
