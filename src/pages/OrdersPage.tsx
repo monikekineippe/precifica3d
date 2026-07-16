@@ -34,6 +34,24 @@ interface Encomenda {
   observacoes: string | null;
   inventory_item_id: string | null;
   estoque_deduzido: boolean;
+  origem: string | null;
+  origem_outro: string | null;
+}
+
+const ORIGEM_OPTIONS = [
+  { value: "indicacao", label: "Indicação" },
+  { value: "amigos_familiares", label: "Amigos/Familiares" },
+  { value: "instagram", label: "Instagram" },
+  { value: "tiktok", label: "TikTok" },
+  { value: "site", label: "Site" },
+  { value: "feira_eventos", label: "Feira e Eventos" },
+  { value: "outros", label: "Outros" },
+];
+const ORIGEM_LABEL = Object.fromEntries(ORIGEM_OPTIONS.map(o => [o.value, o.label])) as Record<string, string>;
+function formatOrigem(r: { origem: string | null; origem_outro: string | null }) {
+  if (!r.origem) return "Não informado";
+  if (r.origem === "outros") return r.origem_outro?.trim() ? `Outros: ${r.origem_outro.trim()}` : "Outros";
+  return ORIGEM_LABEL[r.origem] || "Não informado";
 }
 
 interface Pagamento {
