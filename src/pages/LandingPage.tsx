@@ -559,7 +559,10 @@ const LandingPage = () => {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Pronto para saber o preço certo de cada peça?</h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-xl text-muted-foreground mb-4">
+            Precificação inteligente, produção organizada e controle total de pedidos e recebimentos em um só lugar.
+          </p>
+          <p className="text-base text-muted-foreground mb-8">
             Crie sua conta grátis agora. Sem cartão de crédito, sem compromisso.
           </p>
           <Link to="/signup">
