@@ -119,6 +119,50 @@ export default function Dashboard() {
         .gte("created_at", firstDay.toISOString())
         .lte("created_at", lastDay.toISOString());
 
+      // 4b. Cash summary: all-time balance and month totals
+      const { data: allCash } = await supabase
+        .from("cash_transactions")
+        .select("type, amount, created_at")
+        .eq("user_id", user.id);
+
+      let cashBalance = 0;
+      let cashInflowsMonth = 0;
+      let cashOutflowsMonth = 0;
+      if (allCash) {
+        for (const t of allCash as any[]) {
+          const amt = Number(t.amount || 0);
+          if (t.type === "inflow") cashBalance += amt;
+          else if (t.type === "outflow") cashBalance -= amt;
+          const d = new Date(t.created_at);
+          if (d >= firstDay && d <= lastDay) {
+            if (t.type === "inflow") cashInflowsMonth += amt;
+            else if (t.type === "outflow") cashOutflowsMonth += amt;
+          }
+        }
+      }
+
+      // 4c. A receber: encomendas com saldo pendente
+      const { data: encomendas } = await supabase
+        .from("encomendas")
+        .select("id, valor_total")
+        .eq("user_id", user.id);
+      const { data: pagamentos } = await supabase
+        .from("encomenda_pagamentos")
+        .select("encomenda_id, valor")
+        .eq("user_id", user.id);
+      const paidByOrder: Record<string, number> = {};
+      (pagamentos || []).forEach((p: any) => {
+        paidByOrder[p.encomenda_id] = (paidByOrder[p.encomenda_id] || 0) + Number(p.valor || 0);
+      });
+      let aReceber = 0;
+      (encomendas || []).forEach((e: any) => {
+        const total = Number(e.valor_total || 0);
+        const paid = paidByOrder[e.id] || 0;
+        const pending = total - paid;
+        if (pending > 0.005) aReceber += pending;
+      });
+
+
       // 5. Recent 5 Sales
       const { data: recent } = await supabase
         .from("sales")
