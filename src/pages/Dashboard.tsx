@@ -47,6 +47,7 @@ export default function Dashboard() {
     aReceber: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
+  const [topItems, setTopItems] = useState<{ produto: string; quantidade: number; valor: number }[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -163,13 +164,52 @@ export default function Dashboard() {
       });
 
 
-      // 5. Recent 5 Sales
-      const { data: recent } = await supabase
-        .from("sales")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
+      // 5. Encomendas quitadas: usadas como "vendas" para os widgets
+      const { data: encRows } = await supabase
+        .from("encomendas")
+        .select("id, cliente_nome, produto, quantidade, valor_total, created_at")
+        .eq("user_id", user.id);
+      const { data: pagRows } = await supabase
+        .from("encomenda_pagamentos")
+        .select("encomenda_id, valor, data_pagamento, created_at")
+        .eq("user_id", user.id);
+
+      const pagosMap: Record<string, { total: number; last: string }> = {};
+      (pagRows || []).forEach((p: any) => {
+        const key = p.encomenda_id as string;
+        const cur = pagosMap[key] || { total: 0, last: "" };
+        cur.total += Number(p.valor || 0);
+        const dateStr = (p.data_pagamento || p.created_at || "") as string;
+        if (!cur.last || dateStr > cur.last) cur.last = dateStr;
+        pagosMap[key] = cur;
+      });
+
+      const quitadas = (encRows || [])
+        .map((e: any) => {
+          const total = Number(e.valor_total || 0);
+          const info = pagosMap[e.id] || { total: 0, last: "" };
+          const pago = info.total;
+          const isQuitado = total > 0 && pago + 0.001 >= total;
+          return { ...e, _pago: pago, _quitadoEm: info.last || e.created_at, _isQuitado: isQuitado };
+        })
+        .filter((e: any) => e._isQuitado);
+
+      const recent = [...quitadas]
+        .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
+        .slice(0, 10);
+
+      const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
+      quitadas.forEach((e: any) => {
+        const nome = (e.produto || "Sem nome").trim();
+        const cur = topAgg[nome] || { produto: nome, quantidade: 0, valor: 0 };
+        cur.quantidade += Number(e.quantidade || 0);
+        cur.valor += Number(e.valor_total || 0);
+        topAgg[nome] = cur;
+      });
+      const topList = Object.values(topAgg)
+        .sort((a, b) => b.quantidade - a.quantidade)
+        .slice(0, 5);
+
 
       // 6. Last 30 days evolution
       const last30Days = eachDayOfInterval({
@@ -233,6 +273,7 @@ export default function Dashboard() {
         aReceber,
       });
       setRecentSales(recent || []);
+      setTopItems(topList);
       setChartData(chartDataFormatted);
 
       if (isManual) {
@@ -520,45 +561,44 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Recent Sales List */}
+        {/* Recent Sales List (Encomendas Quitadas) */}
         <Card className="border-border bg-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <ShoppingCart size={16} className="text-primary" /> Últimas 5 Vendas
+              <ShoppingCart size={16} className="text-primary" /> Vendas Recentes
             </CardTitle>
             <Button asChild variant="ghost" size="sm" className="text-xs h-8 text-muted-foreground hover:text-primary">
-              <Link to="/sales">Ver todas <ChevronRight size={12} className="ml-1" /></Link>
+              <Link to="/orders">Ver encomendas <ChevronRight size={12} className="ml-1" /></Link>
             </Button>
           </CardHeader>
           <CardContent>
             {recentSales.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-muted-foreground text-sm">Nenhuma venda registrada ainda.</p>
+                <p className="text-muted-foreground text-sm">Nenhuma encomenda quitada ainda.</p>
                 <Button asChild variant="link" className="text-primary text-xs mt-2">
-                  <Link to="/sales">Registrar minha primeira venda</Link>
+                  <Link to="/orders">Ir para Encomendas</Link>
                 </Button>
               </div>
             ) : (
               <div className="space-y-3">
-                {recentSales.map(sale => (
+                {recentSales.map((sale: any) => (
                   <div key={sale.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 group hover:border-primary/30 transition-colors">
                     <div className="min-w-0">
-                      <p className="font-semibold text-sm text-foreground truncate">{sale.customer_name}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="outline" className="text-[9px] py-0 px-1 border-primary/20 text-primary uppercase">
-                          {sale.origin_channel || 'Geral'}
+                      <p className="font-semibold text-sm text-foreground truncate">{sale.cliente_nome}</p>
+                      <div className="flex items-center gap-2 mt-0.5 min-w-0">
+                        <Badge variant="outline" className="text-[9px] py-0 px-1 border-profit/30 text-profit uppercase shrink-0">
+                          Quitado
                         </Badge>
-                        <span className="text-[10px] text-muted-foreground">
-                          {format(new Date(sale.created_at), "dd/MM")}
+                        <span className="text-[10px] text-muted-foreground truncate">
+                          {sale.produto}
                         </span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.gross_value || 0).toFixed(2)}</p>
-                      <div className="flex items-center justify-end gap-1 text-[10px] text-profit font-medium">
-                        <ArrowUpRight size={10} />
-                        R$ {Number(sale.profit_amount || 0).toFixed(2)}
-                      </div>
+                    <div className="text-right shrink-0 ml-3">
+                      <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.valor_total || 0).toFixed(2)}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yyyy") : ""}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -567,6 +607,38 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Itens mais vendidos */}
+      <Card className="border-border bg-card">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Package size={16} className="text-primary" /> Itens mais vendidos
+          </CardTitle>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Somente encomendas quitadas</span>
+        </CardHeader>
+        <CardContent>
+          {topItems.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground text-sm">Nenhum item vendido ainda.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {topItems.map((item, idx) => (
+                <div key={item.produto} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xs font-mono text-primary/70 w-5">#{idx + 1}</span>
+                    <p className="font-medium text-sm text-foreground truncate">{item.produto}</p>
+                  </div>
+                  <div className="text-right shrink-0 ml-3">
+                    <p className="font-bold font-mono text-foreground text-sm">{item.quantidade} un.</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">R$ {item.valor.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
