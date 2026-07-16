@@ -27,6 +27,9 @@ import { ptBR } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from "sonner";
 
+const formatBRL = (v: number) =>
+  `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState({
@@ -167,12 +170,22 @@ export default function Dashboard() {
       // 5. Encomendas quitadas: usadas como "vendas" para os widgets
       const { data: encRows } = await supabase
         .from("encomendas")
-        .select("id, cliente_nome, produto, quantidade, valor_total, created_at")
+        .select("id, cliente_nome, produto, quantidade, valor_total, created_at, inventory_item_id")
         .eq("user_id", user.id);
       const { data: pagRows } = await supabase
         .from("encomenda_pagamentos")
         .select("encomenda_id, valor, data_pagamento, created_at")
         .eq("user_id", user.id);
+
+      // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
+      const { data: invRows } = await supabase
+        .from("inventory")
+        .select("id, cost_per_unit")
+        .eq("user_id", user.id);
+      const costByInv: Record<string, number> = {};
+      (invRows || []).forEach((i: any) => {
+        costByInv[i.id] = Number(i.cost_per_unit || 0);
+      });
 
       const pagosMap: Record<string, { total: number; last: string }> = {};
       (pagRows || []).forEach((p: any) => {
@@ -198,12 +211,24 @@ export default function Dashboard() {
         .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
         .slice(0, 10);
 
-      // Faturamento do mês: soma valor_total das encomendas quitadas cujo _quitadoEm está no mês corrente
-      const firstDayIso = firstDay.toISOString();
-      const monthlyRevenueEncomendas = quitadas.reduce((sum: number, e: any) => {
-        const dt = e._quitadoEm ? new Date(e._quitadoEm).toISOString() : "";
-        return dt >= firstDayIso ? sum + Number(e.valor_total || 0) : sum;
+      // Encomendas quitadas no mês atual (data de quitação dentro do mês)
+      const quitadasMes = quitadas.filter((e: any) => {
+        if (!e._quitadoEm) return false;
+        const d = new Date(e._quitadoEm);
+        return d >= firstDay && d <= lastDay;
+      });
+      const monthlyRevenueEncomendas = quitadasMes.reduce(
+        (sum: number, e: any) => sum + Number(e.valor_total || 0),
+        0
+      );
+      const monthlySalesCountEnc = quitadasMes.length;
+      const ticketMedioEnc = monthlySalesCountEnc > 0 ? monthlyRevenueEncomendas / monthlySalesCountEnc : 0;
+      const monthlyCogsEnc = quitadasMes.reduce((sum: number, e: any) => {
+        const qty = Number(e.quantidade || 0);
+        const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
+        return sum + qty * unitCost;
       }, 0);
+      const monthlyGrossProfitEnc = monthlyRevenueEncomendas - monthlyCogsEnc;
 
       const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
       quitadas.forEach((e: any) => {
@@ -264,10 +289,10 @@ export default function Dashboard() {
 
       setStats({
         monthlyRevenue: monthlyRevenueEncomendas,
-        monthlyGrossProfit: profit,
+        monthlyGrossProfit: monthlyGrossProfitEnc,
         monthlyGoal: userSettings?.monthly_revenue_goal || 0,
-        monthlySalesCount: count,
-        ticketMedio: ticket,
+        monthlySalesCount: monthlySalesCountEnc,
+        ticketMedio: ticketMedioEnc,
         criticalStock: criticalCount,
         operationalExpenses: operational,
         materialExpenses: material,
@@ -339,7 +364,7 @@ export default function Dashboard() {
                 <Wallet size={14} className="text-primary/60" />
               </p>
               <div className={`text-3xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
-                R$ {stats.cashBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatBRL(stats.cashBalance)}
               </div>
               <p className="text-[10px] text-muted-foreground">Saldo atual acumulado</p>
             </div>
@@ -353,7 +378,7 @@ export default function Dashboard() {
               <ArrowUpRight size={14} className="text-profit/60" />
             </p>
             <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              R$ {stats.cashInflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.cashInflowsMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">Total recebido no mês</p>
           </div>
@@ -366,7 +391,7 @@ export default function Dashboard() {
               <ArrowDownRight size={14} className="text-alert/60" />
             </p>
             <div className="text-3xl font-bold font-mono text-alert tracking-tight">
-              R$ {stats.cashOutflowsMonth.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.cashOutflowsMonth)}
             </div>
             <p className="text-[10px] text-muted-foreground">Total pago no mês</p>
           </div>
@@ -380,7 +405,7 @@ export default function Dashboard() {
                 <Clock size={14} className="text-primary/60" />
               </p>
               <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                R$ {stats.aReceber.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                {formatBRL(stats.aReceber)}
               </div>
               <p className="text-[10px] text-muted-foreground">Saldo pendente de encomendas</p>
             </div>
@@ -397,7 +422,7 @@ export default function Dashboard() {
               <DollarSign size={14} className="text-primary/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              R$ {stats.monthlyRevenue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.monthlyRevenue)}
             </div>
           </div>
         </Card>
@@ -409,7 +434,7 @@ export default function Dashboard() {
               <TrendingUp size={14} className="text-profit/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              R$ {stats.monthlyGrossProfit.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.monthlyGrossProfit)}
             </div>
           </div>
         </Card>
@@ -422,7 +447,7 @@ export default function Dashboard() {
             </p>
             <div className="space-y-3">
               <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                R$ {stats.monthlyGoal.toLocaleString('pt-BR', { minimumFractionDigits: 0 })}
+                {formatBRL(stats.monthlyGoal)}
               </div>
               <Progress value={goalCompletion} className="h-1.5" />
             </div>
@@ -436,7 +461,7 @@ export default function Dashboard() {
               <ArrowUpRight size={14} className="text-primary/40" />
             </p>
             <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              R$ {stats.ticketMedio.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              {formatBRL(stats.ticketMedio)}
             </div>
           </div>
         </Card>
@@ -491,19 +516,19 @@ export default function Dashboard() {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Operacional:</span>
-                <span className="font-mono text-alert">R$ {stats.operationalExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Material/Estoque:</span>
-                <span className="font-mono text-alert">R$ {stats.materialExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.materialExpenses)}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Investimento:</span>
-                <span className="font-mono text-alert">R$ {stats.investmentExpenses.toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.investmentExpenses)}</span>
               </div>
               <div className="pt-2 border-t border-border mt-1.5 flex justify-between text-xs font-bold">
                 <span className="text-foreground">Total:</span>
-                <span className="font-mono text-alert">R$ {(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses).toFixed(2)}</span>
+                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses)}</span>
               </div>
             </div>
           </div>
@@ -602,7 +627,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <p className="font-bold font-mono text-primary text-sm">R$ {Number(sale.valor_total || 0).toFixed(2)}</p>
+                      <p className="font-bold font-mono text-primary text-sm">{formatBRL(Number(sale.valor_total || 0))}</p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yyyy") : ""}
                       </p>
@@ -638,7 +663,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <p className="font-bold font-mono text-foreground text-sm">{item.quantidade} un.</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">R$ {item.valor.toFixed(2)}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{formatBRL(item.valor)}</p>
                   </div>
                 </div>
               ))}
