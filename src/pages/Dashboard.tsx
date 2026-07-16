@@ -263,7 +263,7 @@ export default function Dashboard() {
       }
 
       setStats({
-        monthlyRevenue: revenue,
+        monthlyRevenue: monthlyRevenueEncomendas,
         monthlyGrossProfit: profit,
         monthlyGoal: userSettings?.monthly_revenue_goal || 0,
         monthlySalesCount: count,
