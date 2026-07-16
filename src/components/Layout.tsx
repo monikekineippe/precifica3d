@@ -18,6 +18,7 @@ const NAV = [
   { to: "/inventory", icon: Package, label: "Estoque" },
   { to: "/clients", icon: Users, label: "Clientes" },
   { to: "/sales", icon: Wallet, label: "Gestão de Caixa" },
+  { to: "/caixa", icon: Wallet, label: "Caixa" },
   { to: "/planos", icon: Crown, label: "Planos" },
 
   { to: "/settings", icon: Settings, label: "Configurações" },

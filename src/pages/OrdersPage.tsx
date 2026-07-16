@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet } from "lucide-react";
 
 type Status = "recebida" | "producao" | "pronto" | "entregue" | "cancelada";
+type FinStatus = "aberto" | "parcial" | "quitado";
 
 interface Encomenda {
   id: string;
@@ -33,6 +34,16 @@ interface Encomenda {
   observacoes: string | null;
   inventory_item_id: string | null;
   estoque_deduzido: boolean;
+}
+
+interface Pagamento {
+  id: string;
+  encomenda_id: string;
+  valor: number;
+  data_pagamento: string;
+  forma_pagamento: string;
+  observacao: string | null;
+  cash_transaction_id: string | null;
 }
 
 interface InventoryItem { id: string; name: string; quantity: number; cost_per_unit: number | null; sale_price: number | null; }
@@ -62,6 +73,25 @@ const STATUS_COLOR: Record<Status, string> = {
   cancelada: "bg-red-500/15 text-red-400 border-red-500/30",
 };
 
+const FIN_LABEL: Record<FinStatus, string> = {
+  aberto: "Em aberto",
+  parcial: "Parcial",
+  quitado: "Quitado",
+};
+
+const FIN_COLOR: Record<FinStatus, string> = {
+  aberto: "bg-red-500/15 text-red-400 border-red-500/30",
+  parcial: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  quitado: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+};
+
+const FORMAS = [
+  { value: "pix", label: "Pix" },
+  { value: "dinheiro", label: "Dinheiro" },
+  { value: "cartao", label: "Cartão" },
+  { value: "transferencia", label: "Transferência" },
+];
+
 const NEXT: Partial<Record<Status, Status>> = {
   recebida: "producao",
   producao: "pronto",
@@ -79,13 +109,20 @@ const emptyForm = {
   sinal_valor: 0,
   observacoes: "",
   inventory_item_id: "none",
-  catalog_key: "custom" as string, // "custom" ou key do catálogo
+  catalog_key: "custom" as string,
   unit_price: 0,
 };
+
+function computeFinStatus(total: number, pago: number): FinStatus {
+  if (pago <= 0) return "aberto";
+  if (pago + 0.001 < total) return "parcial";
+  return "quitado";
+}
 
 export default function OrdersPage() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Encomenda[]>([]);
+  const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,23 +132,33 @@ export default function OrdersPage() {
   const [editing, setEditing] = useState<Encomenda | null>(null);
   const [form, setForm] = useState({ ...emptyForm });
   const [deleteTarget, setDeleteTarget] = useState<Encomenda | null>(null);
+  const [paymentsTarget, setPaymentsTarget] = useState<Encomenda | null>(null);
 
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [{ data: enc }, { data: inv }, { data: qts }] = await Promise.all([
-      (supabase.from("encomendas" as any) as any)
-        .select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+    const [{ data: enc }, { data: pags }, { data: inv }, { data: qts }] = await Promise.all([
+      supabase.from("encomendas").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("encomenda_pagamentos").select("*").eq("user_id", user.id).order("data_pagamento", { ascending: true }),
       supabase.from("inventory").select("id, name, quantity, cost_per_unit, sale_price, category").eq("user_id", user.id).eq("category", "finished_product"),
       supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setRows((enc || []) as Encomenda[]);
+    setPagamentos((pags || []) as Pagamento[]);
     setInventory((inv || []) as InventoryItem[]);
     setQuotesCatalog((qts || []) as QuoteItem[]);
     setLoading(false);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
+
+  const pagosByEnc = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of pagamentos) {
+      m.set(p.encomenda_id, (m.get(p.encomenda_id) || 0) + Number(p.valor || 0));
+    }
+    return m;
+  }, [pagamentos]);
 
   const filtered = useMemo(() => {
     return rows.filter((r) => {
@@ -127,24 +174,22 @@ export default function OrdersPage() {
   const summary = useMemo(() => {
     const ativos = rows.filter((r) => r.status !== "cancelada");
     const receitaEsperada = ativos.reduce((s, r) => s + Number(r.valor_total || 0), 0);
-    const recebido = ativos.reduce((s, r) => s + (r.sinal_recebido ? Number(r.sinal_valor || 0) : 0), 0);
+    const recebido = ativos.reduce((s, r) => s + (pagosByEnc.get(r.id) || 0), 0);
     const entregues = rows.filter((r) => r.status === "entregue");
     const entreguesPagos = entregues.reduce((s, r) => s + Number(r.valor_total || 0), 0);
     return {
       receitaEsperada,
       recebido,
-      aReceber: receitaEsperada - recebido,
+      aReceber: Math.max(0, receitaEsperada - recebido),
       entreguesPagos,
     };
-  }, [rows]);
+  }, [rows, pagosByEnc]);
 
   const catalog = useMemo<CatalogOption[]>(() => {
-    // Mapa de preço de venda (suggested_price) por nome, vindo da precificação
     const priceByName = new Map<string, number>();
     for (const q of quotesCatalog) {
       const key = q.piece_name.toLowerCase();
       const price = Number(q.suggested_price || 0);
-      // Mantém o preço mais recente (quotes já vem ordenado desc por created_at)
       if (!priceByName.has(key)) priceByName.set(key, price);
     }
     const invOpts: CatalogOption[] = inventory.map((i) => ({
@@ -152,7 +197,6 @@ export default function OrdersPage() {
       source: "inventory",
       id: i.id,
       name: i.name,
-      // Preço de VENDA (nunca custo). Prioriza sale_price do estoque; fallback na precificação.
       unitPrice: Number(i.sale_price || 0) > 0
         ? Number(i.sale_price)
         : (priceByName.get(i.name.toLowerCase()) ?? 0),
@@ -165,7 +209,6 @@ export default function OrdersPage() {
       name: q.piece_name,
       unitPrice: Number(q.suggested_price || 0),
     }));
-    // Dedup por nome (prefere inventory)
     const seen = new Set(invOpts.map((o) => o.name.toLowerCase()));
     const merged = [...invOpts, ...qOpts.filter((o) => !seen.has(o.name.toLowerCase()))];
     return merged.sort((a, b) => a.name.localeCompare(b.name));
@@ -201,7 +244,6 @@ export default function OrdersPage() {
     });
   };
 
-
   const openNew = () => {
     setEditing(null);
     setForm({ ...emptyForm });
@@ -228,7 +270,7 @@ export default function OrdersPage() {
   };
 
   const generateCodigo = async () => {
-    const { count } = await (supabase.from("encomendas" as any) as any)
+    const { count } = await supabase.from("encomendas")
       .select("id", { count: "exact", head: true }).eq("user_id", user!.id);
     const n = (count || 0) + 1;
     return `NX${String(n).padStart(3, "0")}`;
@@ -253,13 +295,12 @@ export default function OrdersPage() {
       inventory_item_id: form.inventory_item_id === "none" ? null : form.inventory_item_id,
     };
     if (editing) {
-      const { error } = await (supabase.from("encomendas" as any) as any)
-        .update(payload).eq("id", editing.id);
+      const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
       if (error) { toast.error(error.message); return; }
       toast.success("Encomenda atualizada");
     } else {
       const codigo = await generateCodigo();
-      const { error } = await (supabase.from("encomendas" as any) as any)
+      const { error } = await supabase.from("encomendas")
         .insert({ ...payload, codigo, user_id: user.id, status: "recebida" });
       if (error) { toast.error(error.message); return; }
       toast.success(`Encomenda ${codigo} criada`);
@@ -271,10 +312,9 @@ export default function OrdersPage() {
   const advance = async (r: Encomenda) => {
     const next = NEXT[r.status];
     if (!next) return;
-    const update: Record<string, unknown> = { status: next };
+    const update: { status: Status; data_entrega?: string; estoque_deduzido?: boolean } = { status: next };
     if (next === "entregue") {
       update.data_entrega = new Date().toISOString();
-      // Deduzir do estoque se vinculado
       if (r.inventory_item_id && !r.estoque_deduzido) {
         const item = inventory.find((i) => i.id === r.inventory_item_id);
         if (item) {
@@ -285,16 +325,14 @@ export default function OrdersPage() {
         }
       }
     }
-    const { error } = await (supabase.from("encomendas" as any) as any)
-      .update(update).eq("id", r.id);
+    const { error } = await supabase.from("encomendas").update(update).eq("id", r.id);
     if (error) { toast.error(error.message); return; }
     toast.success(`Status: ${STATUS_LABEL[next]}`);
     load();
   };
 
   const cancel = async (r: Encomenda) => {
-    const { error } = await (supabase.from("encomendas" as any) as any)
-      .update({ status: "cancelada" }).eq("id", r.id);
+    const { error } = await supabase.from("encomendas").update({ status: "cancelada" }).eq("id", r.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Pedido cancelado");
     load();
@@ -302,8 +340,8 @@ export default function OrdersPage() {
 
   const remove = async () => {
     if (!deleteTarget) return;
-    const { error } = await (supabase.from("encomendas" as any) as any)
-      .delete().eq("id", deleteTarget.id);
+    // Cascade FK removes pagamentos e cash_transactions vinculadas
+    const { error } = await supabase.from("encomendas").delete().eq("id", deleteTarget.id);
     if (error) { toast.error(error.message); return; }
     toast.success("Encomenda excluída");
     setDeleteTarget(null);
@@ -320,7 +358,6 @@ export default function OrdersPage() {
         <Button onClick={openNew} className="neon-glow"><Plus size={16} className="mr-2" /> Nova encomenda</Button>
       </div>
 
-      {/* Resumo financeiro */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <SummaryCard icon={<DollarSign size={16} />} label="Receita esperada" value={summary.receitaEsperada} color="text-primary" />
         <SummaryCard icon={<CheckCircle2 size={16} />} label="Já recebido" value={summary.recebido} color="text-emerald-400" />
@@ -328,7 +365,6 @@ export default function OrdersPage() {
         <SummaryCard icon={<Package size={16} />} label="Entregue e pago" value={summary.entreguesPagos} color="text-blue-400" />
       </div>
 
-      {/* Filtros */}
       <div className="flex gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[220px]">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -347,7 +383,6 @@ export default function OrdersPage() {
         </Select>
       </div>
 
-      {/* Lista */}
       {loading ? (
         <div className="text-center text-muted-foreground py-12">Carregando...</div>
       ) : filtered.length === 0 ? (
@@ -357,8 +392,10 @@ export default function OrdersPage() {
       ) : (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((r) => {
-            const falta = Number(r.valor_total) - (r.sinal_recebido ? Number(r.sinal_valor) : 0);
-            const pendente = falta > 0 && r.status !== "cancelada";
+            const total = Number(r.valor_total);
+            const pago = pagosByEnc.get(r.id) || 0;
+            const saldo = Math.max(0, total - pago);
+            const fin = computeFinStatus(total, pago);
             return (
               <Card key={r.id} className="glass">
                 <CardHeader className="pb-3">
@@ -367,7 +404,12 @@ export default function OrdersPage() {
                       <CardTitle className="text-base truncate">{r.cliente_nome}</CardTitle>
                       <p className="text-xs text-muted-foreground font-mono">{r.codigo}</p>
                     </div>
-                    <Badge variant="outline" className={STATUS_COLOR[r.status]}>{STATUS_LABEL[r.status]}</Badge>
+                    <div className="flex flex-col gap-1 items-end">
+                      <Badge variant="outline" className={STATUS_COLOR[r.status]}>{STATUS_LABEL[r.status]}</Badge>
+                      {r.status !== "cancelada" && (
+                        <Badge variant="outline" className={FIN_COLOR[fin]}>{FIN_LABEL[fin]}</Badge>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -378,18 +420,18 @@ export default function OrdersPage() {
                   <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground">Total</p>
-                      <p className="font-mono font-semibold">R$ {Number(r.valor_total).toFixed(2)}</p>
+                      <p className="font-mono font-semibold">R$ {total.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Sinal</p>
-                      <p className="font-mono">R$ {r.sinal_recebido ? Number(r.sinal_valor).toFixed(2) : "0,00"}</p>
+                      <p className="text-muted-foreground">Pago</p>
+                      <p className="font-mono text-emerald-400">R$ {pago.toFixed(2)}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Falta</p>
-                      <p className={`font-mono font-semibold ${pendente ? "text-amber-400" : "text-emerald-400"}`}>R$ {falta.toFixed(2)}</p>
+                      <p className="text-muted-foreground">Saldo</p>
+                      <p className={`font-mono font-semibold ${saldo > 0 ? "text-amber-400" : "text-emerald-400"}`}>R$ {saldo.toFixed(2)}</p>
                     </div>
                   </div>
-                  {pendente && (
+                  {saldo > 0 && r.status !== "cancelada" && (
                     <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded">
                       <AlertTriangle size={12} /> Valor pendente
                     </div>
@@ -397,6 +439,9 @@ export default function OrdersPage() {
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
                   <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
+                    <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="flex-1">
+                      <Wallet size={14} className="mr-1" /> Pagamentos
+                    </Button>
                     {NEXT[r.status] && (
                       <Button size="sm" onClick={() => advance(r)} className="flex-1">
                         <ArrowRight size={14} className="mr-1" /> {STATUS_LABEL[NEXT[r.status]!]}
@@ -419,7 +464,6 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Modal */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -446,8 +490,8 @@ export default function OrdersPage() {
                       {catalog.map((opt) => (
                         <SelectItem key={opt.key} value={opt.key}>
                           {opt.name}
-                          {opt.source === "inventory" && typeof opt.stock === "number" ? ` — estoque: ${opt.stock}` : ""}
-                          {opt.unitPrice > 0 ? ` — R$ ${opt.unitPrice.toFixed(2)}` : ""}
+                          {opt.source === "inventory" && typeof opt.stock === "number" ? `, estoque: ${opt.stock}` : ""}
+                          {opt.unitPrice > 0 ? `, R$ ${opt.unitPrice.toFixed(2)}` : ""}
                         </SelectItem>
                       ))}
                       <div className="h-px bg-border my-1" />
@@ -457,7 +501,7 @@ export default function OrdersPage() {
                 </SelectContent>
               </Select>
               {form.catalog_key !== "custom" && form.inventory_item_id !== "none" && (
-                <p className="text-xs text-muted-foreground mt-1">Vinculado ao estoque — a quantidade será deduzida ao marcar "Entregue".</p>
+                <p className="text-xs text-muted-foreground mt-1">Vinculado ao estoque, a quantidade será deduzida ao marcar "Entregue".</p>
               )}
             </div>
             {form.catalog_key === "custom" && (
@@ -485,31 +529,11 @@ export default function OrdersPage() {
               <Label>Descrição / personalização</Label>
               <Textarea rows={2} value={form.descricao} onChange={(e) => setForm({ ...form, descricao: e.target.value })} />
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <Label>Valor total (R$)</Label>
-                <Input type="number" step="0.01" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: Number(e.target.value) })} />
-              </div>
-              <div>
-                <Label>Recebeu sinal?</Label>
-                <Select value={form.sinal_recebido ? "sim" : "nao"} onValueChange={(v) => setForm({ ...form, sinal_recebido: v === "sim" })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="nao">Não</SelectItem>
-                    <SelectItem value="sim">Sim</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Valor do sinal (R$)</Label>
-                <Input type="number" step="0.01" disabled={!form.sinal_recebido} value={form.sinal_valor} onChange={(e) => setForm({ ...form, sinal_valor: Number(e.target.value) })} />
-              </div>
+            <div>
+              <Label>Valor total (R$)</Label>
+              <Input type="number" step="0.01" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: Number(e.target.value) })} />
             </div>
-            {form.sinal_recebido && form.valor_total > 0 && (
-              <div className="text-sm bg-muted/50 rounded px-3 py-2">
-                Falta receber: <span className="font-mono font-semibold text-amber-400">R$ {(Number(form.valor_total) - Number(form.sinal_valor)).toFixed(2)}</span>
-              </div>
-            )}
+            <p className="text-xs text-muted-foreground">Para registrar pagamentos parciais, use o botão "Pagamentos" na encomenda depois de salvar.</p>
             <div>
               <Label>Observações internas</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
@@ -522,12 +546,20 @@ export default function OrdersPage() {
         </DialogContent>
       </Dialog>
 
+      {paymentsTarget && (
+        <PaymentsDialog
+          encomenda={paymentsTarget}
+          onClose={() => setPaymentsTarget(null)}
+          onChanged={load}
+        />
+      )}
+
       <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir encomenda?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Encomenda {deleteTarget?.codigo} - {deleteTarget?.cliente_nome}.
+              Esta ação não pode ser desfeita. Encomenda {deleteTarget?.codigo}, {deleteTarget?.cliente_nome}. Todos os pagamentos e lançamentos de caixa vinculados serão removidos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -548,5 +580,206 @@ function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; lab
         <p className={`text-xl font-mono font-bold ${color}`}>R$ {value.toFixed(2)}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function PaymentsDialog({ encomenda, onClose, onChanged }: { encomenda: Encomenda; onClose: () => void; onChanged: () => void; }) {
+  const { user } = useAuth();
+  const [list, setList] = useState<Pagamento[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [valor, setValor] = useState<number>(0);
+  const [data, setData] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [forma, setForma] = useState<string>("pix");
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const reload = async () => {
+    setLoading(true);
+    const { data: pags } = await supabase.from("encomenda_pagamentos")
+      .select("*").eq("encomenda_id", encomenda.id).order("data_pagamento", { ascending: true });
+    setList((pags || []) as Pagamento[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { reload(); /* eslint-disable-next-line */ }, [encomenda.id]);
+
+  const total = Number(encomenda.valor_total);
+  const pago = list.reduce((s, p) => s + Number(p.valor || 0), 0);
+  const saldo = Math.max(0, total - pago);
+  const fin = computeFinStatus(total, pago);
+
+  const resetForm = () => {
+    setValor(0);
+    setData(new Date().toISOString().slice(0, 10));
+    setForma("pix");
+    setEditingId(null);
+  };
+
+  const cashDescription = () =>
+    `Encomenda ${encomenda.codigo}, ${encomenda.cliente_nome}`;
+
+  const savePayment = async () => {
+    if (!user) return;
+    if (!valor || valor <= 0) { toast.error("Informe um valor válido"); return; }
+
+    if (editingId) {
+      const current = list.find((p) => p.id === editingId);
+      const { error } = await supabase.from("encomenda_pagamentos")
+        .update({ valor, data_pagamento: data, forma_pagamento: forma })
+        .eq("id", editingId);
+      if (error) { toast.error(error.message); return; }
+
+      if (current?.cash_transaction_id) {
+        await supabase.from("cash_transactions").update({
+          amount: valor,
+          transaction_date: data,
+          payment_method: forma,
+          description: cashDescription(),
+        }).eq("id", current.cash_transaction_id);
+      }
+      toast.success("Pagamento atualizado");
+    } else {
+      const { data: inserted, error } = await supabase.from("encomenda_pagamentos")
+        .insert({
+          user_id: user.id,
+          encomenda_id: encomenda.id,
+          valor,
+          data_pagamento: data,
+          forma_pagamento: forma,
+        })
+        .select("id")
+        .single();
+      if (error || !inserted) { toast.error(error?.message || "Erro"); return; }
+
+      const { data: cash, error: cashErr } = await supabase.from("cash_transactions").insert({
+        user_id: user.id,
+        type: "inflow",
+        amount: valor,
+        description: cashDescription(),
+        category: "encomenda",
+        payment_method: forma,
+        transaction_date: data,
+        encomenda_id: encomenda.id,
+        encomenda_pagamento_id: inserted.id,
+      }).select("id").single();
+
+      if (!cashErr && cash) {
+        await supabase.from("encomenda_pagamentos")
+          .update({ cash_transaction_id: cash.id })
+          .eq("id", inserted.id);
+      }
+      toast.success("Pagamento registrado");
+    }
+    resetForm();
+    await reload();
+    onChanged();
+  };
+
+  const startEdit = (p: Pagamento) => {
+    setEditingId(p.id);
+    setValor(Number(p.valor));
+    setData(p.data_pagamento);
+    setForma(p.forma_pagamento);
+  };
+
+  const remove = async (p: Pagamento) => {
+    // cash_transactions cascadeia via FK
+    const { error } = await supabase.from("encomenda_pagamentos").delete().eq("id", p.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Pagamento excluído");
+    if (editingId === p.id) resetForm();
+    await reload();
+    onChanged();
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Pagamentos, {encomenda.codigo} <span className="text-muted-foreground font-normal">, {encomenda.cliente_nome}</span></DialogTitle>
+        </DialogHeader>
+
+        <div className="grid grid-cols-3 gap-2 text-sm">
+          <div className="bg-muted/40 rounded p-3">
+            <p className="text-xs text-muted-foreground">Total</p>
+            <p className="font-mono font-bold">R$ {total.toFixed(2)}</p>
+          </div>
+          <div className="bg-muted/40 rounded p-3">
+            <p className="text-xs text-muted-foreground">Pago</p>
+            <p className="font-mono font-bold text-emerald-400">R$ {pago.toFixed(2)}</p>
+          </div>
+          <div className="bg-muted/40 rounded p-3">
+            <p className="text-xs text-muted-foreground">Saldo</p>
+            <p className={`font-mono font-bold ${saldo > 0 ? "text-amber-400" : "text-emerald-400"}`}>R$ {saldo.toFixed(2)}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Status financeiro:</span>
+          <Badge variant="outline" className={FIN_COLOR[fin]}>{FIN_LABEL[fin]}</Badge>
+        </div>
+
+        <div className="border border-border rounded-lg p-3 space-y-3">
+          <p className="text-sm font-semibold">{editingId ? "Editar pagamento" : "Registrar pagamento"}</p>
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <Label>Valor (R$)</Label>
+              <Input type="number" step="0.01" value={valor} onChange={(e) => setValor(Number(e.target.value))} />
+            </div>
+            <div>
+              <Label>Data</Label>
+              <Input type="date" value={data} onChange={(e) => setData(e.target.value)} />
+            </div>
+            <div>
+              <Label>Forma</Label>
+              <Select value={forma} onValueChange={setForma}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {FORMAS.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={savePayment} className="flex-1">
+              {editingId ? "Salvar alterações" : "Registrar pagamento"}
+            </Button>
+            {editingId && (
+              <Button variant="outline" onClick={resetForm}>Cancelar</Button>
+            )}
+            {!editingId && saldo > 0 && (
+              <Button variant="outline" onClick={() => setValor(Number(saldo.toFixed(2)))}>Usar saldo</Button>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-semibold">Histórico</p>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Carregando...</p>
+          ) : list.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center border border-dashed border-border rounded">Nenhum pagamento registrado.</p>
+          ) : (
+            <div className="space-y-2">
+              {list.map((p) => (
+                <div key={p.id} className="flex items-center justify-between gap-2 bg-muted/30 rounded p-2 text-sm">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono font-semibold text-emerald-400">R$ {Number(p.valor).toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(p.data_pagamento + "T00:00:00").toLocaleDateString("pt-BR")} · {FORMAS.find((f) => f.value === p.forma_pagamento)?.label || p.forma_pagamento}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => startEdit(p)}><Pencil size={12} /></Button>
+                  <Button size="sm" variant="outline" onClick={() => remove(p)} className="text-red-400 hover:text-red-500"><Trash2 size={12} /></Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Fechar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
