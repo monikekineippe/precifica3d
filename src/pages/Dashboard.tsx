@@ -198,6 +198,13 @@ export default function Dashboard() {
         .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
         .slice(0, 10);
 
+      // Faturamento do mês: soma valor_total das encomendas quitadas cujo _quitadoEm está no mês corrente
+      const firstDayIso = firstDay.toISOString();
+      const monthlyRevenueEncomendas = quitadas.reduce((sum: number, e: any) => {
+        const dt = e._quitadoEm ? new Date(e._quitadoEm).toISOString() : "";
+        return dt >= firstDayIso ? sum + Number(e.valor_total || 0) : sum;
+      }, 0);
+
       const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
       quitadas.forEach((e: any) => {
         const nome = (e.produto || "Sem nome").trim();
@@ -256,7 +263,7 @@ export default function Dashboard() {
       }
 
       setStats({
-        monthlyRevenue: revenue,
+        monthlyRevenue: monthlyRevenueEncomendas,
         monthlyGrossProfit: profit,
         monthlyGoal: userSettings?.monthly_revenue_goal || 0,
         monthlySalesCount: count,
