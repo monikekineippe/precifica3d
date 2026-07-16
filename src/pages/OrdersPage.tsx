@@ -583,6 +583,29 @@ export default function OrdersPage() {
               <Label>Observações internas</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
             </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Origem da encomenda</Label>
+                <Select
+                  value={form.origem || "__none"}
+                  onValueChange={(v) => setForm({ ...form, origem: v === "__none" ? "" : v, origem_outro: v === "outros" ? form.origem_outro : "" })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Não informado</SelectItem>
+                    {ORIGEM_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {form.origem === "outros" && (
+                <div>
+                  <Label>Especifique a origem</Label>
+                  <Input value={form.origem_outro} onChange={(e) => setForm({ ...form, origem_outro: e.target.value })} placeholder="Ex.: WhatsApp, Marketplace" />
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
