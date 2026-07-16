@@ -126,6 +126,7 @@ export default function OrdersPage() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
+  const [orcamentosCatalog, setOrcamentosCatalog] = useState<OrcamentoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
