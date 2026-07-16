@@ -130,6 +130,8 @@ const emptyForm = {
   inventory_item_id: "none",
   catalog_key: "custom" as string,
   unit_price: 0,
+  origem: "",
+  origem_outro: "",
 };
 
 function computeFinStatus(total: number, pago: number): FinStatus {
