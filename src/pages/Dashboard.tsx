@@ -273,6 +273,7 @@ export default function Dashboard() {
         aReceber,
       });
       setRecentSales(recent || []);
+      setTopItems(topList);
       setChartData(chartDataFormatted);
 
       if (isManual) {
