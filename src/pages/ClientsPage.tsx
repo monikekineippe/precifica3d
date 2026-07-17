@@ -51,6 +51,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [viewingStatsClient, setViewingStatsClient] = useState<Client | null>(null);
   const [clientSales, setClientSales] = useState<any[]>([]);
+  const [clientEncomendas, setClientEncomendas] = useState<any[]>([]);
   
   const [form, setForm] = useState({
     name: "",
