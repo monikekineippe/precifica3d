@@ -180,6 +180,10 @@ export default function NewPricing() {
   const [pkgCost, setPkgCost] = useState(0);
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
+  const [failureRate, setFailureRate] = useState(5);
+  const [finishHours, setFinishHours] = useState(0);
+  const [finishMinutes, setFinishMinutes] = useState(0);
+  const [finishRate, setFinishRate] = useState<number | "">("");
 
   // AI margin suggestion
   const [marginSuggestion, setMarginSuggestion] = useState<MarginSuggestion | null>(null);
@@ -319,11 +323,25 @@ export default function NewPricing() {
   const autoLaborCost = productionBase * (laborAutoPct / 100);
   const laborCost = laborMode === "manual" ? manualLaborCost : autoLaborCost;
 
-  const totalCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + totalPkgCost + totalAccessoriesCost;
+  // Pós-processamento (independente da mão de obra principal)
+  const finishTimeH = finishHours + finishMinutes / 60;
+  const effectiveFinishRate = finishRate === "" ? (laborMode === "manual" ? laborRate : 45) : Number(finishRate);
+  const postProcessCost = finishTimeH * effectiveFinishRate;
+
+  // Custo de produção (antes da taxa de falha e da margem)
+  const productionCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + totalPkgCost + totalAccessoriesCost + postProcessCost;
+
+  // Taxa de falha: dilui desperdício nas peças boas
+  const failureDivisor = Math.max(0.01, 1 - (failureRate || 0) / 100);
+  const adjustedCost = productionCost / failureDivisor;
+  const failureCost = adjustedCost - productionCost;
+
+  const totalCost = adjustedCost;
   const taxAmount = totalCost * (taxRate / 100);
   const minimumPrice = totalCost + taxAmount;
   const suggestedPrice = minimumPrice * (1 + margin / 100);
   const profit = suggestedPrice - minimumPrice;
+  const realMargin = suggestedPrice > 0 ? (profit / suggestedPrice) * 100 : 0;
 
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
@@ -332,10 +350,12 @@ export default function NewPricing() {
     { name: "Filamento", value: +totalFilamentCost.toFixed(2) },
     { name: "Energia", value: +energyCost.toFixed(2) },
     { name: "Mão de obra", value: +laborCost.toFixed(2) },
+    { name: "Pós-processamento", value: +postProcessCost.toFixed(2) },
     { name: "Manutenção", value: +maintenanceCost.toFixed(2) },
     { name: "Depreciação", value: +depreciationCost.toFixed(2) },
     { name: "Embalagem", value: +totalPkgCost.toFixed(2) },
     { name: "Acessórios", value: +totalAccessoriesCost.toFixed(2) },
+    { name: "Custo de falha", value: +failureCost.toFixed(2) },
     { name: "Margem", value: +profit.toFixed(2) },
     { name: "Impostos", value: +taxAmount.toFixed(2) },
   ].filter(d => d.value > 0);
@@ -799,8 +819,43 @@ export default function NewPricing() {
               <p className="text-xs text-muted-foreground/60 italic">Baseado na média de R$ 45/hora para trabalho técnico de impressão 3D no Brasil</p>
             </div>
           )}
+
+          {/* Pós-processamento (independente da impressão) */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <div>
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                ✨ Pós-processamento, acabamento
+                <Tip text="Tempo de trabalho manual após a impressão: limpeza, lixamento, pintura, montagem. É separado das horas de impressão." />
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1">Trabalho manual após a impressão. Somado ao custo de produção, antes da taxa de falha e da margem.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs text-foreground">Horas</Label>
+                <Input type="number" min={0} value={finishHours || ''} onChange={e => setFinishHours(+e.target.value)} className="bg-muted border-border h-8 text-xs" />
+              </div>
+              <div>
+                <Label className="text-xs text-foreground">Minutos</Label>
+                <Input type="number" min={0} max={59} value={finishMinutes || ''} onChange={e => setFinishMinutes(+e.target.value)} className="bg-muted border-border h-8 text-xs" />
+              </div>
+              <div>
+                <Label className="text-xs text-foreground">Valor/hora (R$)</Label>
+                <Input
+                  type="number"
+                  value={finishRate === "" ? (laborMode === "manual" ? (laborRate || '') : 45) : finishRate}
+                  onChange={e => setFinishRate(e.target.value === "" ? "" : +e.target.value)}
+                  className="bg-muted border-border h-8 text-xs"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Custo de pós-processamento: <span className="font-mono text-primary font-bold">R$ {postProcessCost.toFixed(2)}</span>
+              <span className="text-muted-foreground/60"> ({finishTimeH.toFixed(2)}h x R$ {effectiveFinishRate.toFixed(2)}/h)</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
 
       {/* SECTION E */}
       <Card className="border-border bg-card">
@@ -1062,15 +1117,39 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 2 Margin & Tax Controls */}
+          {/* BLOCK 2 Markup & Tax Controls */}
           <div>
-            <div className="flex justify-between mb-2"><Label className="text-foreground">Margem de lucro</Label><span className="font-mono text-primary text-sm">{margin}%</span></div>
+            <div className="flex justify-between mb-2">
+              <Label className="text-foreground">
+                Markup (%)
+                <Tip text="Markup é o multiplicador aplicado sobre o custo. Diferente de margem real, que é o lucro sobre o preço de venda." />
+              </Label>
+              <span className="font-mono text-primary text-sm">{margin}%</span>
+            </div>
             <Slider value={[margin]} onValueChange={([v]) => setMargin(v)} min={0} max={300} step={1} className="[&>span:first-child]:bg-muted [&_[role=slider]]:bg-primary" />
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Margem real sobre o preço de venda: <span className="font-mono text-primary font-bold">{realMargin.toFixed(1)}%</span>
+            </p>
           </div>
-          <div>
-            <Label className="text-foreground">Impostos/Taxas (%)<Tip text="Inclua MEI, Simples Nacional ou outras taxas aplicáveis" /></Label>
-            <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-foreground">Impostos/Taxas (%)<Tip text="Inclua MEI, Simples Nacional ou outras taxas aplicáveis" /></Label>
+              <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div>
+              <Label className="text-foreground">
+                Taxa de falha (%)
+                <Tip text="Percentual de peças que falham na impressão. O desperdício é diluído nas peças boas: custo_ajustado = custo / (1 - taxa/100)." />
+              </Label>
+              <Input type="number" min={0} max={95} value={failureRate} onChange={e => setFailureRate(+e.target.value)} className="bg-muted border-border" />
+            </div>
           </div>
+          {failureCost > 0 && (
+            <p className="text-[11px] text-muted-foreground -mt-2">
+              Custo de falha embutido: <span className="font-mono text-primary font-bold">R$ {failureCost.toFixed(2)}</span>
+              <span className="text-muted-foreground/60"> (produção R$ {productionCost.toFixed(2)}, ajustado R$ {adjustedCost.toFixed(2)})</span>
+            </p>
+          )}
 
           {/* BLOCK 3 Result Panel */}
           <div className="grid grid-cols-2 gap-3">
@@ -1088,9 +1167,13 @@ export default function NewPricing() {
             </div>
             <div className="p-3 rounded-lg bg-muted/50 border border-border text-center col-span-2">
               <p className="text-[10px] text-muted-foreground mb-1">💰 Lucro Líquido por Peça</p>
-              <p className="text-lg font-bold font-mono text-primary">R$ {profit.toFixed(2)} <span className="text-xs text-muted-foreground">({margin}%)</span></p>
+              <p className="text-lg font-bold font-mono text-primary">
+                R$ {profit.toFixed(2)}
+                <span className="text-xs text-muted-foreground"> (markup {margin}%, margem real {realMargin.toFixed(1)}%)</span>
+              </p>
             </div>
           </div>
+
 
           {/* BLOCK 3.5 Payment Methods */}
           {suggestedPrice > 0 && (
