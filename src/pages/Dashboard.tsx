@@ -22,13 +22,19 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { format, startOfMonth, endOfMonth, subDays, eachDayOfInterval, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, subDays, eachDayOfInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from "sonner";
 
 const formatBRL = (v: number) =>
   `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+const toDateKey = (value?: string | null) => {
+  if (!value) return "";
+  const key = String(value).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : "";
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -90,14 +96,6 @@ export default function Dashboard() {
       // Se não, ela já está na lista de customizadas.
       const isActivePrinterPreset = activePrinter?.is_precadastrada;
       const printersCount = userCustomPrinters.length + (isActivePrinterPreset ? 1 : 0);
-
-      // 1. Get Monthly Sales
-      const { data: sales } = await supabase
-        .from("sales")
-        .select("*")
-        .eq("user_id", user.id)
-        .gte("created_at", firstDay.toISOString())
-        .lte("created_at", lastDay.toISOString());
 
       // 2. Get Revenue Goal
       const { data: userSettings } = await supabase
@@ -187,23 +185,25 @@ export default function Dashboard() {
         costByInv[i.id] = Number(i.cost_per_unit || 0);
       });
 
-      const pagosMap: Record<string, { total: number; last: string }> = {};
+      const pagosMap: Record<string, { total: number; lastDateKey: string }> = {};
       (pagRows || []).forEach((p: any) => {
         const key = p.encomenda_id as string;
-        const cur = pagosMap[key] || { total: 0, last: "" };
+        const cur = pagosMap[key] || { total: 0, lastDateKey: "" };
         cur.total += Number(p.valor || 0);
-        const dateStr = (p.data_pagamento || p.created_at || "") as string;
-        if (!cur.last || dateStr > cur.last) cur.last = dateStr;
+        const paymentDateKey = toDateKey(p.data_pagamento || p.created_at);
+        if (paymentDateKey && (!cur.lastDateKey || paymentDateKey > cur.lastDateKey)) {
+          cur.lastDateKey = paymentDateKey;
+        }
         pagosMap[key] = cur;
       });
 
       const quitadas = (encRows || [])
         .map((e: any) => {
           const total = Number(e.valor_total || 0);
-          const info = pagosMap[e.id] || { total: 0, last: "" };
+          const info = pagosMap[e.id] || { total: 0, lastDateKey: "" };
           const pago = info.total;
-          const isQuitado = total > 0 && pago + 0.001 >= total;
-          return { ...e, _pago: pago, _quitadoEm: info.last || e.created_at, _isQuitado: isQuitado };
+          const isQuitado = total > 0 && pago + 0.001 >= total && Boolean(info.lastDateKey);
+          return { ...e, _pago: pago, _quitadoEm: info.lastDateKey, _isQuitado: isQuitado };
         })
         .filter((e: any) => e._isQuitado);
 
@@ -214,7 +214,7 @@ export default function Dashboard() {
       // Encomendas quitadas no mês atual (data de quitação dentro do mês)
       const quitadasMes = quitadas.filter((e: any) => {
         if (!e._quitadoEm) return false;
-        const d = new Date(e._quitadoEm);
+        const d = new Date(`${e._quitadoEm}T00:00:00`);
         return d >= firstDay && d <= lastDay;
       });
       const monthlyRevenueEncomendas = quitadasMes.reduce(
@@ -248,26 +248,22 @@ export default function Dashboard() {
         start: subDays(now, 29),
         end: now
       });
-      const startOf30 = subDays(now, 29);
-      const quitadas30 = quitadas.filter((e: any) => {
-        if (!e._quitadoEm) return false;
-        const d = new Date(e._quitadoEm);
-        return d >= startOf30 && d <= now;
-      });
+      const startKey = format(subDays(now, 29), "yyyy-MM-dd");
+      const endKey = format(now, "yyyy-MM-dd");
+      const chartTotalsByDate = quitadas.reduce<Record<string, number>>((acc, e: any) => {
+        const dateKey = e._quitadoEm;
+        if (dateKey && dateKey >= startKey && dateKey <= endKey) {
+          acc[dateKey] = (acc[dateKey] || 0) + Number(e.valor_total || 0);
+        }
+        return acc;
+      }, {});
       const chartDataFormatted = last30Days.map(day => {
-        const dayEnc = quitadas30.filter((e: any) => isSameDay(new Date(e._quitadoEm), day));
-        const total = dayEnc.reduce((sum: number, e: any) => sum + Number(e.valor_total || 0), 0);
+        const dateKey = format(day, "yyyy-MM-dd");
         return {
           date: format(day, "dd/MM"),
-          valor: total
+          valor: chartTotalsByDate[dateKey] || 0
         };
       });
-
-      // Processing Sales Stats
-      const revenue = sales ? sales.reduce((sum, s) => sum + Number(s.gross_value || 0), 0) : 0;
-      const profit = sales ? sales.reduce((sum, s) => sum + Number(s.profit_amount || 0), 0) : 0;
-      const count = sales ? sales.length : 0;
-      const ticket = count > 0 ? revenue / count : 0;
 
       // Processing Expenses
       let operational = 0;
