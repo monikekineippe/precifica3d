@@ -175,6 +175,7 @@ export default function NewPricing() {
   const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
+  const [laborMinutes, setLaborMinutes] = useState(0);
   const [laborAutoPct, setLaborAutoPct] = useState(15);
   const [pkgType, setPkgType] = useState("none");
   const [pkgCost, setPkgCost] = useState(0);
@@ -313,7 +314,7 @@ export default function NewPricing() {
   const totalAccessoriesCost = accessories.reduce((s, a) => s + (Number(a.unitCost || 0) * Number(a.quantity || 1)), 0);
   const totalPkgCost = pkgCost * pkgQty;
   const energyCost = printer ? (printer.consumo_watts / 1000) * printTimeH * tariff : 0;
-  const manualLaborCost = laborRate * laborHours;
+  const manualLaborCost = laborRate * (laborHours + laborMinutes / 60);
   const maintPerHour = printer && printer.horas_uso_mensal > 0 ? printer.custo_manutencao_mensal / printer.horas_uso_mensal : 0;
   const depPerHour = printer && printer.vida_util_horas > 0 ? printer.custo_aquisicao / printer.vida_util_horas : 0;
   const maintenanceCost = maintPerHour * printTimeH;
@@ -798,9 +799,10 @@ export default function NewPricing() {
 
           {laborMode === "manual" ? (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
-                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" min={0} step={1} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Minutos</Label><Input type="number" min={0} max={59} step={1} value={laborMinutes || ''} onChange={e => setLaborMinutes(+e.target.value)} className="bg-muted border-border" /></div>
               </div>
               <div className="text-xs text-muted-foreground">Custo de Mão de Obra: <span className="font-mono text-primary">R$ {laborCost.toFixed(2)}</span></div>
             </div>

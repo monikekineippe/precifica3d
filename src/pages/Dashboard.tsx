@@ -243,21 +243,20 @@ export default function Dashboard() {
         .slice(0, 5);
 
 
-      // 6. Last 30 days evolution
+      // 6. Evolução (últimos 30 dias): encomendas quitadas por data de quitação
       const last30Days = eachDayOfInterval({
         start: subDays(now, 29),
         end: now
       });
-
-      const { data: last30Sales } = await supabase
-        .from("sales")
-        .select("created_at, net_value")
-        .eq("user_id", user.id)
-        .gte("created_at", subDays(now, 29).toISOString());
-
+      const startOf30 = subDays(now, 29);
+      const quitadas30 = quitadas.filter((e: any) => {
+        if (!e._quitadoEm) return false;
+        const d = new Date(e._quitadoEm);
+        return d >= startOf30 && d <= now;
+      });
       const chartDataFormatted = last30Days.map(day => {
-        const daySales = last30Sales ? last30Sales.filter(s => isSameDay(new Date(s.created_at), day)) : [];
-        const total = daySales.reduce((sum, s) => sum + Number(s.net_value || 0), 0);
+        const dayEnc = quitadas30.filter((e: any) => isSameDay(new Date(e._quitadoEm), day));
+        const total = dayEnc.reduce((sum: number, e: any) => sum + Number(e.valor_total || 0), 0);
         return {
           date: format(day, "dd/MM"),
           valor: total
