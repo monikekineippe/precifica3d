@@ -36,7 +36,70 @@ interface Encomenda {
   estoque_deduzido: boolean;
   origem: string | null;
   origem_outro: string | null;
+  client_id: string | null;
 }
+
+const digitsOnly = (s: string | null | undefined) => (s || "").replace(/\D/g, "");
+
+async function upsertClientForEncomenda(
+  userId: string,
+  nome: string,
+  whatsapp: string | null,
+  existingClientId: string | null,
+): Promise<string | null> {
+  const nomeTrim = nome.trim();
+  if (!nomeTrim) return existingClientId;
+  const waDigits = digitsOnly(whatsapp);
+
+  // Se a encomenda já tem client_id, mantém como fonte de verdade e atualiza o cadastro
+  if (existingClientId) {
+    await supabase
+      .from("clients")
+      .update({ name: nomeTrim, whatsapp: whatsapp?.trim() || null })
+      .eq("id", existingClientId)
+      .eq("user_id", userId);
+    return existingClientId;
+  }
+
+  // Deduplicação: busca por telefone (dígitos) ou nome
+  const { data: candidates } = await supabase
+    .from("clients")
+    .select("id, name, whatsapp")
+    .eq("user_id", userId);
+
+  let match = null as null | { id: string };
+  if (waDigits) {
+    match = (candidates || []).find(c => digitsOnly(c.whatsapp) && digitsOnly(c.whatsapp) === waDigits) || null;
+  }
+  if (!match) {
+    const nomeLower = nomeTrim.toLowerCase();
+    match = (candidates || []).find(c => (c.name || "").trim().toLowerCase() === nomeLower) || null;
+  }
+
+  if (match) {
+    // Atualiza dados do cliente existente com o que veio da encomenda
+    await supabase
+      .from("clients")
+      .update({ name: nomeTrim, whatsapp: whatsapp?.trim() || null })
+      .eq("id", match.id)
+      .eq("user_id", userId);
+    return match.id;
+  }
+
+  const { data: created, error } = await supabase
+    .from("clients")
+    .insert({
+      user_id: userId,
+      name: nomeTrim,
+      whatsapp: whatsapp?.trim() || null,
+      preferred_channel: "whatsapp",
+    })
+    .select("id")
+    .single();
+  if (error || !created) return null;
+  return created.id;
+}
+
 
 const ORIGEM_OPTIONS = [
   { value: "indicacao", label: "Indicação" },
