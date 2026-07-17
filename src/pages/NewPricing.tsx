@@ -799,9 +799,10 @@ export default function NewPricing() {
 
           {laborMode === "manual" ? (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div><Label className="text-foreground">Valor/hora (R$)</Label><Input type="number" value={laborRate || ''} onChange={e => setLaborRate(+e.target.value)} className="bg-muted border-border" /></div>
-                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" step={0.5} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Horas de trabalho manual</Label><Input type="number" min={0} step={1} value={laborHours || ''} onChange={e => setLaborHours(+e.target.value)} className="bg-muted border-border" /></div>
+                <div><Label className="text-foreground">Minutos</Label><Input type="number" min={0} max={59} step={1} value={laborMinutes || ''} onChange={e => setLaborMinutes(+e.target.value)} className="bg-muted border-border" /></div>
               </div>
               <div className="text-xs text-muted-foreground">Custo de Mão de Obra: <span className="font-mono text-primary">R$ {laborCost.toFixed(2)}</span></div>
             </div>
