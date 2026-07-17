@@ -414,6 +414,40 @@ export default function ClientsPage() {
                   </div>
                 )}
               </div>
+
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                  <History size={16} className="text-primary" /> Histórico de Encomendas
+                </h3>
+
+                {clientEncomendas.length === 0 ? (
+                  <p className="text-center py-6 text-muted-foreground text-sm border border-dashed rounded-lg">
+                    Nenhuma encomenda vinculada a este cliente.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {clientEncomendas.map((enc: any) => (
+                      <div key={enc.id} className="p-4 rounded-lg bg-muted/30 border border-border flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-foreground truncate">
+                            {enc.codigo}: {enc.produto}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {format(new Date(enc.data_encomenda || enc.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <p className="text-sm font-bold font-mono text-primary">R$ {Number(enc.valor_total || 0).toFixed(2)}</p>
+                          <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary mt-1">
+                            {enc.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               
               {viewingStatsClient.notes && (
                 <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/10">
