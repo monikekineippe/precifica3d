@@ -175,6 +175,7 @@ export default function NewPricing() {
   const [laborMode, setLaborMode] = useState<"auto" | "manual">("auto");
   const [laborRate, setLaborRate] = useState(0);
   const [laborHours, setLaborHours] = useState(0);
+  const [laborMinutes, setLaborMinutes] = useState(0);
   const [laborAutoPct, setLaborAutoPct] = useState(15);
   const [pkgType, setPkgType] = useState("none");
   const [pkgCost, setPkgCost] = useState(0);
