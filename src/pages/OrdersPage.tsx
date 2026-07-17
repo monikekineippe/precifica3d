@@ -388,9 +388,20 @@ export default function OrdersPage() {
       toast.error("Preencha cliente e produto");
       return;
     }
+    const clienteNome = form.cliente_nome.trim();
+    const whatsappVal = form.whatsapp.trim() || null;
+
+    // Upsert cliente no painel de Clientes (dedup por whatsapp ou nome)
+    const clientId = await upsertClientForEncomenda(
+      user.id,
+      clienteNome,
+      whatsappVal,
+      editing?.client_id ?? null,
+    );
+
     const payload = {
-      cliente_nome: form.cliente_nome.trim(),
-      whatsapp: form.whatsapp.trim() || null,
+      cliente_nome: clienteNome,
+      whatsapp: whatsappVal,
       produto: form.produto.trim(),
       quantidade: Number(form.quantidade) || 1,
       descricao: form.descricao.trim() || null,
@@ -401,6 +412,7 @@ export default function OrdersPage() {
       inventory_item_id: form.inventory_item_id === "none" ? null : form.inventory_item_id,
       origem: form.origem || null,
       origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
+      client_id: clientId,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
@@ -413,6 +425,7 @@ export default function OrdersPage() {
       if (error) { toast.error(error.message); return; }
       toast.success(`Encomenda ${codigo} criada`);
     }
+
     setOpen(false);
     load();
   };
