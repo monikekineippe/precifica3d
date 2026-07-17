@@ -323,11 +323,25 @@ export default function NewPricing() {
   const autoLaborCost = productionBase * (laborAutoPct / 100);
   const laborCost = laborMode === "manual" ? manualLaborCost : autoLaborCost;
 
-  const totalCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + totalPkgCost + totalAccessoriesCost;
+  // Pós-processamento (independente da mão de obra principal)
+  const finishTimeH = finishHours + finishMinutes / 60;
+  const effectiveFinishRate = finishRate === "" ? (laborMode === "manual" ? laborRate : 45) : Number(finishRate);
+  const postProcessCost = finishTimeH * effectiveFinishRate;
+
+  // Custo de produção (antes da taxa de falha e da margem)
+  const productionCost = totalFilamentCost + energyCost + laborCost + maintenanceCost + depreciationCost + totalPkgCost + totalAccessoriesCost + postProcessCost;
+
+  // Taxa de falha: dilui desperdício nas peças boas
+  const failureDivisor = Math.max(0.01, 1 - (failureRate || 0) / 100);
+  const adjustedCost = productionCost / failureDivisor;
+  const failureCost = adjustedCost - productionCost;
+
+  const totalCost = adjustedCost;
   const taxAmount = totalCost * (taxRate / 100);
   const minimumPrice = totalCost + taxAmount;
   const suggestedPrice = minimumPrice * (1 + margin / 100);
   const profit = suggestedPrice - minimumPrice;
+  const realMargin = suggestedPrice > 0 ? (profit / suggestedPrice) * 100 : 0;
 
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
