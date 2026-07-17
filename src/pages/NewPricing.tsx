@@ -819,8 +819,43 @@ export default function NewPricing() {
               <p className="text-xs text-muted-foreground/60 italic">Baseado na média de R$ 45/hora para trabalho técnico de impressão 3D no Brasil</p>
             </div>
           )}
+
+          {/* Pós-processamento (independente da impressão) */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <div>
+              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                ✨ Pós-processamento, acabamento
+                <Tip text="Tempo de trabalho manual após a impressão: limpeza, lixamento, pintura, montagem. É separado das horas de impressão." />
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-1">Trabalho manual após a impressão. Somado ao custo de produção, antes da taxa de falha e da margem.</p>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs text-foreground">Horas</Label>
+                <Input type="number" min={0} value={finishHours || ''} onChange={e => setFinishHours(+e.target.value)} className="bg-muted border-border h-8 text-xs" />
+              </div>
+              <div>
+                <Label className="text-xs text-foreground">Minutos</Label>
+                <Input type="number" min={0} max={59} value={finishMinutes || ''} onChange={e => setFinishMinutes(+e.target.value)} className="bg-muted border-border h-8 text-xs" />
+              </div>
+              <div>
+                <Label className="text-xs text-foreground">Valor/hora (R$)</Label>
+                <Input
+                  type="number"
+                  value={finishRate === "" ? (laborMode === "manual" ? (laborRate || '') : 45) : finishRate}
+                  onChange={e => setFinishRate(e.target.value === "" ? "" : +e.target.value)}
+                  className="bg-muted border-border h-8 text-xs"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Custo de pós-processamento: <span className="font-mono text-primary font-bold">R$ {postProcessCost.toFixed(2)}</span>
+              <span className="text-muted-foreground/60"> ({finishTimeH.toFixed(2)}h x R$ {effectiveFinishRate.toFixed(2)}/h)</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
+
 
       {/* SECTION E */}
       <Card className="border-border bg-card">
