@@ -51,6 +51,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [viewingStatsClient, setViewingStatsClient] = useState<Client | null>(null);
   const [clientSales, setClientSales] = useState<any[]>([]);
+  const [clientEncomendas, setClientEncomendas] = useState<any[]>([]);
   
   const [form, setForm] = useState({
     name: "",
@@ -74,21 +75,31 @@ export default function ClientsPage() {
       .select("customer_id, total_amount, gross_value, profit_amount, created_at")
       .eq("user_id", user.id);
 
+    const { data: encData } = await supabase
+      .from("encomendas")
+      .select("client_id, valor_total, status, data_encomenda, created_at")
+      .eq("user_id", user.id);
+
     if (clientsData) {
       setClients(clientsData);
-      
+
       const newStats: Record<string, ClientStats> = {};
       clientsData.forEach(c => {
-        const clientSales = (salesData || []).filter(s => s.customer_id === c.id);
-        const total = clientSales.reduce((sum, s) => sum + Number(s.gross_value || 0), 0);
-        const lastSale = clientSales.length > 0 
-          ? clientSales.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at 
+        const salesForClient = (salesData || []).filter(s => s.customer_id === c.id);
+        const encsForClient = (encData || []).filter((e: any) => e.client_id === c.id && e.status !== "cancelada");
+        const salesTotal = salesForClient.reduce((sum, s) => sum + Number(s.gross_value || 0), 0);
+        const encTotal = encsForClient.reduce((sum: number, e: any) => sum + Number(e.valor_total || 0), 0);
+        const salesDates = salesForClient.map(s => s.created_at);
+        const encDates = encsForClient.map((e: any) => e.data_encomenda || e.created_at);
+        const allDates = [...salesDates, ...encDates].filter(Boolean);
+        const lastDate = allDates.length > 0
+          ? allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
           : null;
-          
+
         newStats[c.id] = {
-          totalSpent: total,
-          salesCount: clientSales.length,
-          lastPurchaseDate: lastSale
+          totalSpent: salesTotal + encTotal,
+          salesCount: salesForClient.length + encsForClient.length,
+          lastPurchaseDate: lastDate,
         };
       });
       setStats(newStats);
@@ -176,15 +187,15 @@ export default function ClientsPage() {
   };
 
   const loadClientHistory = async (client: Client) => {
-    const { data } = await supabase
-      .from("sales")
-      .select("*")
-      .eq("customer_id", client.id)
-      .order("created_at", { ascending: false });
-    
-    setClientSales(data || []);
+    const [{ data: salesRows }, { data: encRows }] = await Promise.all([
+      supabase.from("sales").select("*").eq("customer_id", client.id).order("created_at", { ascending: false }),
+      supabase.from("encomendas").select("*").eq("client_id", client.id).order("data_encomenda", { ascending: false }),
+    ]);
+    setClientSales(salesRows || []);
+    setClientEncomendas(encRows || []);
     setViewingStatsClient(client);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("Remover este cliente? As vendas vinculadas permanecerão, mas sem vínculo.")) return;
@@ -403,6 +414,40 @@ export default function ClientsPage() {
                   </div>
                 )}
               </div>
+
+              <div className="mt-6">
+                <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                  <History size={16} className="text-primary" /> Histórico de Encomendas
+                </h3>
+
+                {clientEncomendas.length === 0 ? (
+                  <p className="text-center py-6 text-muted-foreground text-sm border border-dashed rounded-lg">
+                    Nenhuma encomenda vinculada a este cliente.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {clientEncomendas.map((enc: any) => (
+                      <div key={enc.id} className="p-4 rounded-lg bg-muted/30 border border-border flex items-center justify-between">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-foreground truncate">
+                            {enc.codigo}: {enc.produto}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {format(new Date(enc.data_encomenda || enc.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0 ml-3">
+                          <p className="text-sm font-bold font-mono text-primary">R$ {Number(enc.valor_total || 0).toFixed(2)}</p>
+                          <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary mt-1">
+                            {enc.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               
               {viewingStatsClient.notes && (
                 <div className="mt-6 p-4 rounded-lg bg-primary/5 border border-primary/10">

@@ -36,7 +36,70 @@ interface Encomenda {
   estoque_deduzido: boolean;
   origem: string | null;
   origem_outro: string | null;
+  client_id: string | null;
 }
+
+const digitsOnly = (s: string | null | undefined) => (s || "").replace(/\D/g, "");
+
+async function upsertClientForEncomenda(
+  userId: string,
+  nome: string,
+  whatsapp: string | null,
+  existingClientId: string | null,
+): Promise<string | null> {
+  const nomeTrim = nome.trim();
+  if (!nomeTrim) return existingClientId;
+  const waDigits = digitsOnly(whatsapp);
+
+  // Se a encomenda já tem client_id, mantém como fonte de verdade e atualiza o cadastro
+  if (existingClientId) {
+    await supabase
+      .from("clients")
+      .update({ name: nomeTrim, whatsapp: whatsapp?.trim() || null })
+      .eq("id", existingClientId)
+      .eq("user_id", userId);
+    return existingClientId;
+  }
+
+  // Deduplicação: busca por telefone (dígitos) ou nome
+  const { data: candidates } = await supabase
+    .from("clients")
+    .select("id, name, whatsapp")
+    .eq("user_id", userId);
+
+  let match = null as null | { id: string };
+  if (waDigits) {
+    match = (candidates || []).find(c => digitsOnly(c.whatsapp) && digitsOnly(c.whatsapp) === waDigits) || null;
+  }
+  if (!match) {
+    const nomeLower = nomeTrim.toLowerCase();
+    match = (candidates || []).find(c => (c.name || "").trim().toLowerCase() === nomeLower) || null;
+  }
+
+  if (match) {
+    // Atualiza dados do cliente existente com o que veio da encomenda
+    await supabase
+      .from("clients")
+      .update({ name: nomeTrim, whatsapp: whatsapp?.trim() || null })
+      .eq("id", match.id)
+      .eq("user_id", userId);
+    return match.id;
+  }
+
+  const { data: created, error } = await supabase
+    .from("clients")
+    .insert({
+      user_id: userId,
+      name: nomeTrim,
+      whatsapp: whatsapp?.trim() || null,
+      preferred_channel: "whatsapp",
+    })
+    .select("id")
+    .single();
+  if (error || !created) return null;
+  return created.id;
+}
+
 
 const ORIGEM_OPTIONS = [
   { value: "indicacao", label: "Indicação" },
@@ -325,9 +388,20 @@ export default function OrdersPage() {
       toast.error("Preencha cliente e produto");
       return;
     }
+    const clienteNome = form.cliente_nome.trim();
+    const whatsappVal = form.whatsapp.trim() || null;
+
+    // Upsert cliente no painel de Clientes (dedup por whatsapp ou nome)
+    const clientId = await upsertClientForEncomenda(
+      user.id,
+      clienteNome,
+      whatsappVal,
+      editing?.client_id ?? null,
+    );
+
     const payload = {
-      cliente_nome: form.cliente_nome.trim(),
-      whatsapp: form.whatsapp.trim() || null,
+      cliente_nome: clienteNome,
+      whatsapp: whatsappVal,
       produto: form.produto.trim(),
       quantidade: Number(form.quantidade) || 1,
       descricao: form.descricao.trim() || null,
@@ -338,6 +412,7 @@ export default function OrdersPage() {
       inventory_item_id: form.inventory_item_id === "none" ? null : form.inventory_item_id,
       origem: form.origem || null,
       origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
+      client_id: clientId,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
@@ -350,6 +425,7 @@ export default function OrdersPage() {
       if (error) { toast.error(error.message); return; }
       toast.success(`Encomenda ${codigo} criada`);
     }
+
     setOpen(false);
     load();
   };
