@@ -1117,15 +1117,39 @@ export default function NewPricing() {
             </div>
           )}
 
-          {/* BLOCK 2 Margin & Tax Controls */}
+          {/* BLOCK 2 Markup & Tax Controls */}
           <div>
-            <div className="flex justify-between mb-2"><Label className="text-foreground">Margem de lucro</Label><span className="font-mono text-primary text-sm">{margin}%</span></div>
+            <div className="flex justify-between mb-2">
+              <Label className="text-foreground">
+                Markup (%)
+                <Tip text="Markup é o multiplicador aplicado sobre o custo. Diferente de margem real, que é o lucro sobre o preço de venda." />
+              </Label>
+              <span className="font-mono text-primary text-sm">{margin}%</span>
+            </div>
             <Slider value={[margin]} onValueChange={([v]) => setMargin(v)} min={0} max={300} step={1} className="[&>span:first-child]:bg-muted [&_[role=slider]]:bg-primary" />
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Margem real sobre o preço de venda: <span className="font-mono text-primary font-bold">{realMargin.toFixed(1)}%</span>
+            </p>
           </div>
-          <div>
-            <Label className="text-foreground">Impostos/Taxas (%)<Tip text="Inclua MEI, Simples Nacional ou outras taxas aplicáveis" /></Label>
-            <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-foreground">Impostos/Taxas (%)<Tip text="Inclua MEI, Simples Nacional ou outras taxas aplicáveis" /></Label>
+              <Input type="number" value={taxRate || ''} onChange={e => setTaxRate(+e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div>
+              <Label className="text-foreground">
+                Taxa de falha (%)
+                <Tip text="Percentual de peças que falham na impressão. O desperdício é diluído nas peças boas: custo_ajustado = custo / (1 - taxa/100)." />
+              </Label>
+              <Input type="number" min={0} max={95} value={failureRate} onChange={e => setFailureRate(+e.target.value)} className="bg-muted border-border" />
+            </div>
           </div>
+          {failureCost > 0 && (
+            <p className="text-[11px] text-muted-foreground -mt-2">
+              Custo de falha embutido: <span className="font-mono text-primary font-bold">R$ {failureCost.toFixed(2)}</span>
+              <span className="text-muted-foreground/60"> (produção R$ {productionCost.toFixed(2)}, ajustado R$ {adjustedCost.toFixed(2)})</span>
+            </p>
+          )}
 
           {/* BLOCK 3 Result Panel */}
           <div className="grid grid-cols-2 gap-3">
@@ -1143,9 +1167,13 @@ export default function NewPricing() {
             </div>
             <div className="p-3 rounded-lg bg-muted/50 border border-border text-center col-span-2">
               <p className="text-[10px] text-muted-foreground mb-1">💰 Lucro Líquido por Peça</p>
-              <p className="text-lg font-bold font-mono text-primary">R$ {profit.toFixed(2)} <span className="text-xs text-muted-foreground">({margin}%)</span></p>
+              <p className="text-lg font-bold font-mono text-primary">
+                R$ {profit.toFixed(2)}
+                <span className="text-xs text-muted-foreground"> (markup {margin}%, margem real {realMargin.toFixed(1)}%)</span>
+              </p>
             </div>
           </div>
+
 
           {/* BLOCK 3.5 Payment Methods */}
           {suggestedPrice > 0 && (
