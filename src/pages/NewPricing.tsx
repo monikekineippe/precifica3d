@@ -180,6 +180,10 @@ export default function NewPricing() {
   const [pkgCost, setPkgCost] = useState(0);
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
+  const [failureRate, setFailureRate] = useState(5);
+  const [finishHours, setFinishHours] = useState(0);
+  const [finishMinutes, setFinishMinutes] = useState(0);
+  const [finishRate, setFinishRate] = useState<number | "">("");
 
   // AI margin suggestion
   const [marginSuggestion, setMarginSuggestion] = useState<MarginSuggestion | null>(null);
