@@ -314,7 +314,7 @@ export default function NewPricing() {
   const totalAccessoriesCost = accessories.reduce((s, a) => s + (Number(a.unitCost || 0) * Number(a.quantity || 1)), 0);
   const totalPkgCost = pkgCost * pkgQty;
   const energyCost = printer ? (printer.consumo_watts / 1000) * printTimeH * tariff : 0;
-  const manualLaborCost = laborRate * laborHours;
+  const manualLaborCost = laborRate * (laborHours + laborMinutes / 60);
   const maintPerHour = printer && printer.horas_uso_mensal > 0 ? printer.custo_manutencao_mensal / printer.horas_uso_mensal : 0;
   const depPerHour = printer && printer.vida_util_horas > 0 ? printer.custo_aquisicao / printer.vida_util_horas : 0;
   const maintenanceCost = maintPerHour * printTimeH;
