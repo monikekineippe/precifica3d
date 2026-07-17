@@ -75,21 +75,31 @@ export default function ClientsPage() {
       .select("customer_id, total_amount, gross_value, profit_amount, created_at")
       .eq("user_id", user.id);
 
+    const { data: encData } = await supabase
+      .from("encomendas")
+      .select("client_id, valor_total, status, data_encomenda, created_at")
+      .eq("user_id", user.id);
+
     if (clientsData) {
       setClients(clientsData);
-      
+
       const newStats: Record<string, ClientStats> = {};
       clientsData.forEach(c => {
-        const clientSales = (salesData || []).filter(s => s.customer_id === c.id);
-        const total = clientSales.reduce((sum, s) => sum + Number(s.gross_value || 0), 0);
-        const lastSale = clientSales.length > 0 
-          ? clientSales.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0].created_at 
+        const salesForClient = (salesData || []).filter(s => s.customer_id === c.id);
+        const encsForClient = (encData || []).filter((e: any) => e.client_id === c.id && e.status !== "cancelada");
+        const salesTotal = salesForClient.reduce((sum, s) => sum + Number(s.gross_value || 0), 0);
+        const encTotal = encsForClient.reduce((sum: number, e: any) => sum + Number(e.valor_total || 0), 0);
+        const salesDates = salesForClient.map(s => s.created_at);
+        const encDates = encsForClient.map((e: any) => e.data_encomenda || e.created_at);
+        const allDates = [...salesDates, ...encDates].filter(Boolean);
+        const lastDate = allDates.length > 0
+          ? allDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
           : null;
-          
+
         newStats[c.id] = {
-          totalSpent: total,
-          salesCount: clientSales.length,
-          lastPurchaseDate: lastSale
+          totalSpent: salesTotal + encTotal,
+          salesCount: salesForClient.length + encsForClient.length,
+          lastPurchaseDate: lastDate,
         };
       });
       setStats(newStats);
