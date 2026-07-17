@@ -169,6 +169,7 @@ export type Database = {
       }
       encomendas: {
         Row: {
+          client_id: string | null
           cliente_nome: string
           codigo: string
           created_at: string
@@ -192,6 +193,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          client_id?: string | null
           cliente_nome: string
           codigo: string
           created_at?: string
@@ -215,6 +217,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          client_id?: string | null
           cliente_nome?: string
           codigo?: string
           created_at?: string
@@ -237,7 +240,15 @@ export type Database = {
           valor_total?: number
           whatsapp?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "encomendas_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       eventos_uso: {
         Row: {
