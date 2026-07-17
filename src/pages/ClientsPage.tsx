@@ -187,15 +187,15 @@ export default function ClientsPage() {
   };
 
   const loadClientHistory = async (client: Client) => {
-    const { data } = await supabase
-      .from("sales")
-      .select("*")
-      .eq("customer_id", client.id)
-      .order("created_at", { ascending: false });
-    
-    setClientSales(data || []);
+    const [{ data: salesRows }, { data: encRows }] = await Promise.all([
+      supabase.from("sales").select("*").eq("customer_id", client.id).order("created_at", { ascending: false }),
+      supabase.from("encomendas").select("*").eq("client_id", client.id).order("data_encomenda", { ascending: false }),
+    ]);
+    setClientSales(salesRows || []);
+    setClientEncomendas(encRows || []);
     setViewingStatsClient(client);
   };
+
 
   const handleDelete = async (id: string) => {
     if (!confirm("Remover este cliente? As vendas vinculadas permanecerão, mas sem vínculo.")) return;
