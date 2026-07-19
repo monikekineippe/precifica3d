@@ -473,7 +473,20 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary Stats (Line 2) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Link to="/inventory">
+          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6 h-full">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Previsão de Faturamento (estoque pronto)</p>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold font-mono text-primary tracking-tight">{formatBRL(stats.stockForecast)}</div>
+                <Package size={24} className="text-primary/30" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Soma de preço de venda x quantidade</p>
+            </div>
+          </Card>
+        </Link>
+
         <Link to="/printers">
           <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
             <div className="space-y-2">
