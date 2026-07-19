@@ -244,24 +244,26 @@ export default function Dashboard() {
 
 
       // 6. Evolução (últimos 30 dias): encomendas quitadas por data de quitação
-      const last30Days = eachDayOfInterval({
-        start: subDays(now, 29),
-        end: now
+      // Normalização: chave "yyyy-MM-dd" no fuso local, tanto para cada
+      // coluna do eixo X quanto para _quitadoEm. Evita deslocamento por fuso
+      // e agrupamento em índice errado.
+      const dayKey = (d: Date) => format(d, "yyyy-MM-dd");
+      const last30Days: Date[] = [];
+      for (let i = 29; i >= 0; i--) {
+        last30Days.push(subDays(now, i));
+      }
+      const chartTotalsByDate: Record<string, number> = {};
+      quitadas.forEach((e: any) => {
+        const key = e._quitadoEm;
+        if (!key) return;
+        chartTotalsByDate[key] = (chartTotalsByDate[key] || 0) + Number(e.valor_total || 0);
       });
-      const startKey = format(subDays(now, 29), "yyyy-MM-dd");
-      const endKey = format(now, "yyyy-MM-dd");
-      const chartTotalsByDate = quitadas.reduce<Record<string, number>>((acc, e: any) => {
-        const dateKey = e._quitadoEm;
-        if (dateKey && dateKey >= startKey && dateKey <= endKey) {
-          acc[dateKey] = (acc[dateKey] || 0) + Number(e.valor_total || 0);
-        }
-        return acc;
-      }, {});
-      const chartDataFormatted = last30Days.map(day => {
-        const dateKey = format(day, "yyyy-MM-dd");
+      const chartDataFormatted = last30Days.map((day) => {
+        const key = dayKey(day);
         return {
           date: format(day, "dd/MM"),
-          valor: chartTotalsByDate[dateKey] || 0
+          dateKey: key,
+          valor: chartTotalsByDate[key] || 0,
         };
       });
 
@@ -576,12 +578,20 @@ export default function Dashboard() {
                   itemStyle={{ color: '#00D4FF' }}
                 />
                 <Line 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="valor" 
                   stroke="#00D4FF" 
                   strokeWidth={2} 
-                  dot={false}
-                  activeDot={{ r: 4, fill: '#00D4FF' }}
+                  dot={(props: any) => {
+                    const { cx, cy, payload, index } = props;
+                    if (!payload || Number(payload.valor || 0) <= 0) {
+                      return <g key={`empty-${index}`} />;
+                    }
+                    return (
+                      <circle key={`dot-${index}`} cx={cx} cy={cy} r={3.5} fill="#00D4FF" stroke="#00D4FF" />
+                    );
+                  }}
+                  activeDot={{ r: 5, fill: '#00D4FF' }}
                 />
               </LineChart>
             </ResponsiveContainer>
