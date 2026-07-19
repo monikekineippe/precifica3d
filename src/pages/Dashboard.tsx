@@ -578,12 +578,20 @@ export default function Dashboard() {
                   itemStyle={{ color: '#00D4FF' }}
                 />
                 <Line 
-                  type="monotone" 
+                  type="linear" 
                   dataKey="valor" 
                   stroke="#00D4FF" 
                   strokeWidth={2} 
-                  dot={false}
-                  activeDot={{ r: 4, fill: '#00D4FF' }}
+                  dot={(props: any) => {
+                    const { cx, cy, payload, index } = props;
+                    if (!payload || Number(payload.valor || 0) <= 0) {
+                      return <g key={`empty-${index}`} />;
+                    }
+                    return (
+                      <circle key={`dot-${index}`} cx={cx} cy={cy} r={3.5} fill="#00D4FF" stroke="#00D4FF" />
+                    );
+                  }}
+                  activeDot={{ r: 5, fill: '#00D4FF' }}
                 />
               </LineChart>
             </ResponsiveContainer>
