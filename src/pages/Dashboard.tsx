@@ -54,6 +54,7 @@ export default function Dashboard() {
     cashInflowsMonth: 0,
     cashOutflowsMonth: 0,
     aReceber: 0,
+    stockForecast: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [topItems, setTopItems] = useState<{ produto: string; quantidade: number; valor: number }[]>([]);
