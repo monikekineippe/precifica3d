@@ -113,6 +113,12 @@ export default function Dashboard() {
       
       const criticalCount = inventory ? inventory.filter((i: any) => i.category === 'raw_material' && Number(i.min_stock) > 0 && Number(i.quantity) <= Number(i.min_stock)).length : 0;
 
+      const stockForecast = inventory
+        ? inventory
+            .filter((i: any) => i.category === 'finished_product' && Number(i.quantity) > 0)
+            .reduce((sum: number, i: any) => sum + Number(i.sale_price || 0) * Number(i.quantity || 0), 0)
+        : 0;
+
       // 4. Get Monthly Expenses (Other Movements)
       const { data: expenses } = await supabase
         .from("cash_transactions")
