@@ -444,27 +444,70 @@ export default function NewPricing() {
       }
 
 
-      if (withInventory) {
-        const invData = {
-          user_id: user.id,
-          name: inventoryForm.name,
-          type: "product",
-          category: "finished_product",
-          quantity: inventoryForm.quantity,
-          unit: "unidade",
-          cost_per_unit: inventoryForm.costPerUnit,
-        };
-        
-        console.log("Adding to inventory:", invData);
-        const { error: invError } = await supabase.from("inventory").insert([invData as any]);
-        
-        if (invError) {
-          console.error("Error adding to inventory:", invError);
-          toast.error("Orçamento salvo, mas houve erro ao adicionar ao estoque.");
+      // Sincronizar preço de venda com o estoque (produto finalizado).
+      // Sempre grava o Preço Sugerido de Venda calculado no registro correspondente,
+      // criando o item se ainda não existir. Vinculo pelo nome da peça (case-insensitive).
+      try {
+        const targetName = (withInventory ? inventoryForm.name : pieceName).trim();
+        const targetCost = withInventory
+          ? Number(inventoryForm.costPerUnit)
+          : Number(totalCost.toFixed(2));
+        const targetSalePrice = Number(Number(suggestedPrice).toFixed(2));
+
+        const { data: existing } = await supabase
+          .from("inventory")
+          .select("id, quantity")
+          .eq("user_id", user.id)
+          .eq("category", "finished_product")
+          .ilike("name", targetName)
+          .limit(1);
+
+        const existingItem = existing && existing[0];
+
+        if (existingItem) {
+          const addedQty = withInventory ? Number(inventoryForm.quantity) : 0;
+          const updatePayload: any = {
+            sale_price: targetSalePrice,
+            cost_per_unit: targetCost,
+          };
+          if (addedQty > 0) {
+            updatePayload.quantity = Number(existingItem.quantity || 0) + addedQty;
+          }
+          const { error: updErr } = await supabase
+            .from("inventory")
+            .update(updatePayload)
+            .eq("id", existingItem.id);
+          if (updErr) {
+            console.error("Error updating inventory sale price:", updErr);
+            toast.error("Orçamento salvo, mas houve erro ao atualizar o preço no estoque.");
+          } else if (withInventory) {
+            toast.success("Orçamento salvo, estoque e preço de venda atualizados!");
+          } else {
+            toast.success("Orçamento salvo e preço de venda sincronizado no estoque!");
+          }
         } else {
-          toast.success("Orçamento salvo e peça adicionada ao estoque!");
+          const invData: any = {
+            user_id: user.id,
+            name: targetName,
+            type: "product",
+            category: "finished_product",
+            quantity: withInventory ? Number(inventoryForm.quantity) : 0,
+            unit: "unidade",
+            cost_per_unit: targetCost,
+            sale_price: targetSalePrice,
+          };
+          const { error: invError } = await supabase.from("inventory").insert([invData]);
+          if (invError) {
+            console.error("Error creating inventory item:", invError);
+            toast.error("Orçamento salvo, mas houve erro ao registrar no estoque.");
+          } else if (withInventory) {
+            toast.success("Orçamento salvo e peça adicionada ao estoque!");
+          } else {
+            toast.success("Orçamento salvo e preço de venda sincronizado no estoque!");
+          }
         }
-      } else {
+      } catch (e) {
+        console.error("Inventory sync error:", e);
         toast.success("Orçamento salvo com sucesso!");
       }
 
