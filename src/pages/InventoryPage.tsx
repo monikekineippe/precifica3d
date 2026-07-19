@@ -198,6 +198,20 @@ export default function InventoryPage() {
   const rawMaterials = sortByCritical(items.filter(i => i.category === 'raw_material'));
   const finishedProducts = items.filter(i => i.category === 'finished_product');
 
+  const finishedActive = finishedProducts.filter(i => Number(i.quantity) > 0);
+  const finishedCostTotal = finishedActive.reduce(
+    (sum, i) => sum + Number(i.cost_per_unit || 0) * Number(i.quantity || 0),
+    0
+  );
+  const finishedForecast = finishedActive.reduce(
+    (sum, i) => sum + Number(i.sale_price || 0) * Number(i.quantity || 0),
+    0
+  );
+  const finishedMargin = finishedForecast - finishedCostTotal;
+  const missingPriceCount = finishedActive.filter(i => Number(i.sale_price || 0) <= 0).length;
+  const formatBRL = (v: number) =>
+    `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
       {itemsList.map(item => (
