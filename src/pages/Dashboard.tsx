@@ -307,6 +307,7 @@ export default function Dashboard() {
         cashInflowsMonth,
         cashOutflowsMonth,
         aReceber,
+        stockForecast,
       });
       setRecentSales(recent || []);
       setTopItems(topList);
