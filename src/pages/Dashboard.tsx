@@ -54,6 +54,7 @@ export default function Dashboard() {
     cashInflowsMonth: 0,
     cashOutflowsMonth: 0,
     aReceber: 0,
+    stockForecast: 0,
   });
   const [recentSales, setRecentSales] = useState<any[]>([]);
   const [topItems, setTopItems] = useState<{ produto: string; quantidade: number; valor: number }[]>([]);
@@ -111,6 +112,12 @@ export default function Dashboard() {
         .eq("user_id", user.id);
       
       const criticalCount = inventory ? inventory.filter((i: any) => i.category === 'raw_material' && Number(i.min_stock) > 0 && Number(i.quantity) <= Number(i.min_stock)).length : 0;
+
+      const stockForecast = inventory
+        ? inventory
+            .filter((i: any) => i.category === 'finished_product' && Number(i.quantity) > 0)
+            .reduce((sum: number, i: any) => sum + Number(i.sale_price || 0) * Number(i.quantity || 0), 0)
+        : 0;
 
       // 4. Get Monthly Expenses (Other Movements)
       const { data: expenses } = await supabase
@@ -300,6 +307,7 @@ export default function Dashboard() {
         cashInflowsMonth,
         cashOutflowsMonth,
         aReceber,
+        stockForecast,
       });
       setRecentSales(recent || []);
       setTopItems(topList);
@@ -465,7 +473,20 @@ export default function Dashboard() {
       </div>
 
       {/* Secondary Stats (Line 2) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <Link to="/inventory">
+          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6 h-full">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Previsão de Faturamento (estoque pronto)</p>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold font-mono text-primary tracking-tight">{formatBRL(stats.stockForecast)}</div>
+                <Package size={24} className="text-primary/30" />
+              </div>
+              <p className="text-[10px] text-muted-foreground">Soma de preço de venda x quantidade</p>
+            </div>
+          </Card>
+        </Link>
+
         <Link to="/printers">
           <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
             <div className="space-y-2">

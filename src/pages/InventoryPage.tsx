@@ -198,6 +198,20 @@ export default function InventoryPage() {
   const rawMaterials = sortByCritical(items.filter(i => i.category === 'raw_material'));
   const finishedProducts = items.filter(i => i.category === 'finished_product');
 
+  const finishedActive = finishedProducts.filter(i => Number(i.quantity) > 0);
+  const finishedCostTotal = finishedActive.reduce(
+    (sum, i) => sum + Number(i.cost_per_unit || 0) * Number(i.quantity || 0),
+    0
+  );
+  const finishedForecast = finishedActive.reduce(
+    (sum, i) => sum + Number(i.sale_price || 0) * Number(i.quantity || 0),
+    0
+  );
+  const finishedMargin = finishedForecast - finishedCostTotal;
+  const missingPriceCount = finishedActive.filter(i => Number(i.sale_price || 0) <= 0).length;
+  const formatBRL = (v: number) =>
+    `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
       {itemsList.map(item => (
@@ -316,6 +330,29 @@ export default function InventoryPage() {
         </TabsContent>
 
         <TabsContent value="finished_product">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            <Card className="border-border bg-card p-4">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Custo total dos prontos</p>
+              <p className="text-2xl font-bold font-mono text-foreground mt-1">{formatBRL(finishedCostTotal)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Custo de produção x quantidade</p>
+            </Card>
+            <Card className="border-border bg-card p-4">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Previsão de faturamento</p>
+              <p className="text-2xl font-bold font-mono text-primary mt-1">{formatBRL(finishedForecast)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Preço de venda x quantidade</p>
+            </Card>
+            <Card className="border-border bg-card p-4">
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Margem potencial</p>
+              <p className={`text-2xl font-bold font-mono mt-1 ${finishedMargin >= 0 ? 'text-profit' : 'text-alert'}`}>{formatBRL(finishedMargin)}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Previsão menos custo total</p>
+            </Card>
+          </div>
+          {missingPriceCount > 0 && (
+            <div className="mt-3 flex items-center gap-2 text-xs text-alert bg-alert/10 border border-alert/30 rounded-md px-3 py-2">
+              <AlertTriangle size={14} />
+              <span>{missingPriceCount} produto{missingPriceCount > 1 ? 's' : ''} sem preço de venda. A previsão está incompleta até o preço ser preenchido.</span>
+            </div>
+          )}
           <InventoryGrid itemsList={finishedProducts} />
         </TabsContent>
       </Tabs>
