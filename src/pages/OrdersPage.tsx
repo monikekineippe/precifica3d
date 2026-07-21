@@ -376,6 +376,7 @@ export default function OrdersPage() {
       unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
       origem: r.origem || "",
       origem_outro: r.origem_outro || "",
+      client_id: r.client_id || "",
     });
     setOpen(true);
   };
