@@ -406,7 +406,7 @@ export default function OrdersPage() {
       user.id,
       clienteNome,
       whatsappVal,
-      editing?.client_id ?? null,
+      form.client_id || editing?.client_id || null,
     );
 
     const payload = {
