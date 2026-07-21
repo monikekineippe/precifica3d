@@ -197,7 +197,10 @@ const emptyForm = {
   unit_price: 0,
   origem: "",
   origem_outro: "",
+  client_id: "" as string,
 };
+
+interface ClientRow { id: string; name: string; whatsapp: string | null; preferred_channel: string | null; notes: string | null; }
 
 function computeFinStatus(total: number, pago: number): FinStatus {
   if (pago <= 0) return "aberto";
