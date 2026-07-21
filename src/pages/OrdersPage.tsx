@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet, ChevronsUpDown, Check, UserPlus } from "lucide-react";
 
 type Status = "recebida" | "producao" | "pronto" | "entregue" | "cancelada";
 type FinStatus = "aberto" | "parcial" | "quitado";
