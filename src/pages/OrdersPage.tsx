@@ -215,6 +215,8 @@ export default function OrdersPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
   const [orcamentosCatalog, setOrcamentosCatalog] = useState<OrcamentoItem[]>([]);
+  const [clientsList, setClientsList] = useState<ClientRow[]>([]);
+  const [clientPickerOpen, setClientPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -227,18 +229,20 @@ export default function OrdersPage() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [{ data: enc }, { data: pags }, { data: inv }, { data: qts }, { data: orcs }] = await Promise.all([
+    const [{ data: enc }, { data: pags }, { data: inv }, { data: qts }, { data: orcs }, { data: cli }] = await Promise.all([
       supabase.from("encomendas").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("encomenda_pagamentos").select("*").eq("user_id", user.id).order("data_pagamento", { ascending: true }),
       supabase.from("inventory").select("id, name, quantity, cost_per_unit, sale_price, category").eq("user_id", user.id).eq("category", "finished_product"),
       supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("orcamentos").select("id, nome_peca, preco_sugerido").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("clients").select("id, name, whatsapp, preferred_channel, notes").eq("user_id", user.id).order("name"),
     ]);
     setRows((enc || []) as Encomenda[]);
     setPagamentos((pags || []) as Pagamento[]);
     setInventory((inv || []) as InventoryItem[]);
     setQuotesCatalog((qts || []) as QuoteItem[]);
     setOrcamentosCatalog((orcs || []) as OrcamentoItem[]);
+    setClientsList((cli || []) as ClientRow[]);
     setLoading(false);
   };
 
