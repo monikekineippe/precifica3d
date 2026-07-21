@@ -602,10 +602,84 @@ export default function OrdersPage() {
             <DialogTitle>{editing ? "Editar encomenda" : "Nova encomenda"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Selecionar cliente existente</Label>
+                {form.client_id && (
+                  <button
+                    type="button"
+                    className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1"
+                    onClick={() => setForm({ ...form, client_id: "", cliente_nome: "", whatsapp: "" })}
+                  >
+                    <UserPlus size={12} /> Cadastrar novo cliente
+                  </button>
+                )}
+              </div>
+              <Popover open={clientPickerOpen} onOpenChange={setClientPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    {form.client_id
+                      ? (clientsList.find(c => c.id === form.client_id)?.name || "Cliente selecionado")
+                      : "Buscar por nome ou WhatsApp..."}
+                    <ChevronsUpDown size={14} className="opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command
+                    filter={(value, search) => {
+                      const c = clientsList.find(x => x.id === value);
+                      if (!c) return 0;
+                      const q = search.toLowerCase();
+                      const hay = `${c.name} ${c.whatsapp || ""}`.toLowerCase();
+                      return hay.includes(q) ? 1 : 0;
+                    }}
+                  >
+                    <CommandInput placeholder="Nome ou WhatsApp..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum cliente encontrado. Preencha os campos abaixo para cadastrar.</CommandEmpty>
+                      <CommandGroup>
+                        {clientsList.map(c => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.id}
+                            onSelect={() => {
+                              setForm(f => ({
+                                ...f,
+                                client_id: c.id,
+                                cliente_nome: c.name,
+                                whatsapp: c.whatsapp || "",
+                                observacoes: f.observacoes || c.notes || "",
+                              }));
+                              setClientPickerOpen(false);
+                            }}
+                          >
+                            <Check size={14} className={`mr-2 ${form.client_id === c.id ? "opacity-100" : "opacity-0"}`} />
+                            <div className="flex flex-col">
+                              <span className="text-sm">{c.name}</span>
+                              {c.whatsapp && <span className="text-[11px] text-muted-foreground">{c.whatsapp}</span>}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-[11px] text-muted-foreground">
+                {form.client_id
+                  ? "Cliente vinculado. Você ainda pode ajustar os campos abaixo."
+                  : "Não encontrou? Preencha os campos abaixo e o cliente será cadastrado automaticamente."}
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Cliente *</Label>
-                <Input value={form.cliente_nome} onChange={(e) => setForm({ ...form, cliente_nome: e.target.value })} />
+                <Input value={form.cliente_nome} onChange={(e) => setForm({ ...form, cliente_nome: e.target.value, client_id: form.client_id })} />
               </div>
               <div>
                 <Label>WhatsApp / contato</Label>
