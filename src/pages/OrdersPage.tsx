@@ -10,8 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet, ChevronsUpDown, Check, UserPlus } from "lucide-react";
 
 type Status = "recebida" | "producao" | "pronto" | "entregue" | "cancelada";
 type FinStatus = "aberto" | "parcial" | "quitado";
@@ -195,7 +197,10 @@ const emptyForm = {
   unit_price: 0,
   origem: "",
   origem_outro: "",
+  client_id: "" as string,
 };
+
+interface ClientRow { id: string; name: string; whatsapp: string | null; preferred_channel: string | null; notes: string | null; }
 
 function computeFinStatus(total: number, pago: number): FinStatus {
   if (pago <= 0) return "aberto";
@@ -210,6 +215,8 @@ export default function OrdersPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [quotesCatalog, setQuotesCatalog] = useState<QuoteItem[]>([]);
   const [orcamentosCatalog, setOrcamentosCatalog] = useState<OrcamentoItem[]>([]);
+  const [clientsList, setClientsList] = useState<ClientRow[]>([]);
+  const [clientPickerOpen, setClientPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("todos");
@@ -222,18 +229,20 @@ export default function OrdersPage() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
-    const [{ data: enc }, { data: pags }, { data: inv }, { data: qts }, { data: orcs }] = await Promise.all([
+    const [{ data: enc }, { data: pags }, { data: inv }, { data: qts }, { data: orcs }, { data: cli }] = await Promise.all([
       supabase.from("encomendas").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("encomenda_pagamentos").select("*").eq("user_id", user.id).order("data_pagamento", { ascending: true }),
       supabase.from("inventory").select("id, name, quantity, cost_per_unit, sale_price, category").eq("user_id", user.id).eq("category", "finished_product"),
       supabase.from("quotes").select("id, piece_name, suggested_price").eq("user_id", user.id).order("created_at", { ascending: false }),
       supabase.from("orcamentos").select("id, nome_peca, preco_sugerido").eq("user_id", user.id).order("created_at", { ascending: false }),
+      supabase.from("clients").select("id, name, whatsapp, preferred_channel, notes").eq("user_id", user.id).order("name"),
     ]);
     setRows((enc || []) as Encomenda[]);
     setPagamentos((pags || []) as Pagamento[]);
     setInventory((inv || []) as InventoryItem[]);
     setQuotesCatalog((qts || []) as QuoteItem[]);
     setOrcamentosCatalog((orcs || []) as OrcamentoItem[]);
+    setClientsList((cli || []) as ClientRow[]);
     setLoading(false);
   };
 
@@ -371,6 +380,7 @@ export default function OrdersPage() {
       unit_price: r.quantidade > 0 ? Number(r.valor_total) / r.quantidade : 0,
       origem: r.origem || "",
       origem_outro: r.origem_outro || "",
+      client_id: r.client_id || "",
     });
     setOpen(true);
   };
@@ -396,7 +406,7 @@ export default function OrdersPage() {
       user.id,
       clienteNome,
       whatsappVal,
-      editing?.client_id ?? null,
+      form.client_id || editing?.client_id || null,
     );
 
     const payload = {
@@ -592,10 +602,84 @@ export default function OrdersPage() {
             <DialogTitle>{editing ? "Editar encomenda" : "Nova encomenda"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+            <div className="rounded-lg border border-border bg-muted/20 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Selecionar cliente existente</Label>
+                {form.client_id && (
+                  <button
+                    type="button"
+                    className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1"
+                    onClick={() => setForm({ ...form, client_id: "", cliente_nome: "", whatsapp: "" })}
+                  >
+                    <UserPlus size={12} /> Cadastrar novo cliente
+                  </button>
+                )}
+              </div>
+              <Popover open={clientPickerOpen} onOpenChange={setClientPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between font-normal"
+                  >
+                    {form.client_id
+                      ? (clientsList.find(c => c.id === form.client_id)?.name || "Cliente selecionado")
+                      : "Buscar por nome ou WhatsApp..."}
+                    <ChevronsUpDown size={14} className="opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command
+                    filter={(value, search) => {
+                      const c = clientsList.find(x => x.id === value);
+                      if (!c) return 0;
+                      const q = search.toLowerCase();
+                      const hay = `${c.name} ${c.whatsapp || ""}`.toLowerCase();
+                      return hay.includes(q) ? 1 : 0;
+                    }}
+                  >
+                    <CommandInput placeholder="Nome ou WhatsApp..." />
+                    <CommandList>
+                      <CommandEmpty>Nenhum cliente encontrado. Preencha os campos abaixo para cadastrar.</CommandEmpty>
+                      <CommandGroup>
+                        {clientsList.map(c => (
+                          <CommandItem
+                            key={c.id}
+                            value={c.id}
+                            onSelect={() => {
+                              setForm(f => ({
+                                ...f,
+                                client_id: c.id,
+                                cliente_nome: c.name,
+                                whatsapp: c.whatsapp || "",
+                                observacoes: f.observacoes || c.notes || "",
+                              }));
+                              setClientPickerOpen(false);
+                            }}
+                          >
+                            <Check size={14} className={`mr-2 ${form.client_id === c.id ? "opacity-100" : "opacity-0"}`} />
+                            <div className="flex flex-col">
+                              <span className="text-sm">{c.name}</span>
+                              {c.whatsapp && <span className="text-[11px] text-muted-foreground">{c.whatsapp}</span>}
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-[11px] text-muted-foreground">
+                {form.client_id
+                  ? "Cliente vinculado. Você ainda pode ajustar os campos abaixo."
+                  : "Não encontrou? Preencha os campos abaixo e o cliente será cadastrado automaticamente."}
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Cliente *</Label>
-                <Input value={form.cliente_nome} onChange={(e) => setForm({ ...form, cliente_nome: e.target.value })} />
+                <Input value={form.cliente_nome} onChange={(e) => setForm({ ...form, cliente_nome: e.target.value, client_id: form.client_id })} />
               </div>
               <div>
                 <Label>WhatsApp / contato</Label>
