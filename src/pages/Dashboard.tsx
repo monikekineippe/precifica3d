@@ -221,7 +221,7 @@ export default function Dashboard() {
           const total = Number(e.valor_total || 0);
           const info = pagosMap[e.id] || { total: 0, lastDateKey: "" };
           const pago = info.total;
-          const isQuitado = total > 0 && pago + 0.001 >= total && Boolean(info.lastDateKey);
+          const isQuitado = total > 0 && pago + 0.05 >= total && Boolean(info.lastDateKey);
           
           const qty = Number(e.quantidade || 0);
           const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
