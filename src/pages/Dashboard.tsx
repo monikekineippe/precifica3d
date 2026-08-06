@@ -184,12 +184,13 @@ export default function Dashboard() {
         .eq("user_id", user.id);
 
       // Vendas Diretas (Gestão de Caixa) que representam faturamento
+      // Mantendo exatamente a mesma fonte de dados que a Gestão de Caixa usa para faturamento
       const { data: directSales } = await supabase
         .from("cash_transactions")
         .select("*")
         .eq("user_id", user.id)
         .eq("type", "inflow")
-        .or("category.eq.venda_estoque,category.eq.venda_direta");
+        .or("category.eq.venda_estoque,category.eq.venda_direta,category.eq.venda");
 
       // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
       const { data: invRows } = await supabase
