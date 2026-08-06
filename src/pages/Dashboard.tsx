@@ -541,24 +541,7 @@ export default function Dashboard() {
       {/* Operação Section */}
       <section className="space-y-4">
         <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-semibold px-1">Operação</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/printers">
-            <Card className="border-border bg-card hover:border-primary/40 transition-colors cursor-pointer p-6 h-full shadow-sm">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Impressoras</p>
-                  <Printer size={18} className="text-primary/40" />
-                </div>
-                <div className="text-3xl font-bold font-mono text-foreground">{stats.printersCount}</div>
-                {stats.activePrinter ? (
-                  <p className="text-[10px] text-primary truncate">Ativa: {stats.activePrinter.nome}</p>
-                ) : (
-                  <p className="text-[10px] text-muted-foreground truncate">Nenhuma ativa</p>
-                )}
-              </div>
-            </Card>
-          </Link>
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="border-border bg-card p-6 shadow-sm h-full">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -583,19 +566,6 @@ export default function Dashboard() {
                   {stats.criticalStock}
                 </div>
                 <p className="text-[10px] text-muted-foreground">Insumos abaixo do mínimo</p>
-              </div>
-            </Card>
-          </Link>
-
-          <Link to="/inventory">
-            <Card className="border-border bg-card hover:border-primary/40 transition-colors cursor-pointer p-6 h-full shadow-sm">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Previsão: Pronto</p>
-                  <Package size={18} className="text-primary/40" />
-                </div>
-                <div className="text-2xl font-bold font-mono text-primary tracking-tight">{formatBRL(stats.stockForecast)}</div>
-                <p className="text-[10px] text-muted-foreground">Valor total em estoque pronto</p>
               </div>
             </Card>
           </Link>
