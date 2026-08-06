@@ -644,24 +644,42 @@ export default function OrdersPage() {
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
                   <p className="text-xs text-muted-foreground">Origem: {formatOrigem(r)}</p>
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
-                  <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
-                    <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="flex-1">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                    <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="w-full">
                       <Wallet size={14} className="mr-1" /> Pagamentos
                     </Button>
-                    {NEXT[r.status] && (
-                      <Button size="sm" onClick={() => advance(r)} className="flex-1">
+                    {NEXT[r.status] ? (
+                      <Button size="sm" onClick={() => advance(r)} className="w-full">
                         <ArrowRight size={14} className="mr-1" /> {STATUS_LABEL[NEXT[r.status]!]}
                       </Button>
+                    ) : (
+                      <div className="w-full" />
                     )}
-                    <Button size="sm" variant="outline" onClick={() => openEdit(r)}><Pencil size={14} /></Button>
-                    {r.status !== "cancelada" && r.status !== "entregue" && (
-                      <Button size="sm" variant="outline" onClick={() => cancel(r)} className="text-red-400 hover:text-red-500">
-                        <XCircle size={14} />
-                      </Button>
-                    )}
-                    <Button size="sm" variant="outline" onClick={() => setDeleteTarget(r)} className="text-red-400 hover:text-red-500">
-                      <Trash2 size={14} />
+                    
+                    <Button size="sm" variant="outline" onClick={() => openEdit(r)} className="w-full">
+                      <Pencil size={14} className="mr-1" /> Editar
                     </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className="w-full">Opções</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        {!r.is_refunded && r.status !== "cancelada" && (
+                          <DropdownMenuItem onClick={() => refundOrder(r)} className="text-red-400">
+                            <RefreshCcw size={14} className="mr-2" /> Reembolsar
+                          </DropdownMenuItem>
+                        )}
+                        {r.status !== "cancelada" && r.status !== "entregue" && (
+                          <DropdownMenuItem onClick={() => cancel(r)}>
+                            <XCircle size={14} className="mr-2" /> Cancelar Pedido
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => setDeleteTarget(r)} className="text-red-400">
+                          <Trash2 size={14} className="mr-2" /> Excluir Registro
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
