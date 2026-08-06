@@ -1,25 +1,29 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { 
-  Users, 
   Plus, 
   Search, 
   Trash2, 
   Edit2, 
-  Phone, 
   ShoppingCart, 
   History, 
-  TrendingUp, 
-  DollarSign,
-  ChevronRight,
-  ExternalLink
+  ArrowUpDown,
+  MessageSquare
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,6 +57,8 @@ export default function ClientsPage() {
   const [clientSales, setClientSales] = useState<any[]>([]);
   const [clientEncomendas, setClientEncomendas] = useState<any[]>([]);
   
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
   const [form, setForm] = useState({
     name: "",
     whatsapp: "",
@@ -204,10 +210,67 @@ export default function ClientsPage() {
     loadData();
   };
 
-  const filteredClients = clients.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.whatsapp?.includes(searchTerm)
-  );
+  const sortedClients = useMemo(() => {
+    let filtered = clients.filter(c => 
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      c.whatsapp?.includes(searchTerm)
+    );
+
+    if (sortConfig !== null) {
+      filtered.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        const aStats = stats[a.id] || { totalSpent: 0, salesCount: 0, lastPurchaseDate: null };
+        const bStats = stats[b.id] || { totalSpent: 0, salesCount: 0, lastPurchaseDate: null };
+
+        switch (sortConfig.key) {
+          case 'name':
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+            break;
+          case 'totalSpent':
+            aValue = aStats.totalSpent;
+            bValue = bStats.totalSpent;
+            break;
+          case 'salesCount':
+            aValue = aStats.salesCount;
+            bValue = bStats.salesCount;
+            break;
+          case 'lastPurchase':
+            aValue = aStats.lastPurchaseDate ? new Date(aStats.lastPurchaseDate).getTime() : 0;
+            bValue = bStats.lastPurchaseDate ? new Date(bStats.lastPurchaseDate).getTime() : 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return filtered;
+  }, [clients, searchTerm, stats, sortConfig]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key: string) => {
+    if (sortConfig?.key !== key) return <ArrowUpDown size={12} className="ml-1 opacity-30" />;
+    return <ArrowUpDown size={12} className={cn("ml-1", sortConfig.direction === 'desc' ? "rotate-180" : "")} />;
+  };
+
+  const cn = (...classes: string[]) => classes.filter(Boolean).join(' ');
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -235,72 +298,115 @@ export default function ClientsPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredClients.map(client => {
-          const clientStat = stats[client.id] || { totalSpent: 0, salesCount: 0, lastPurchaseDate: null };
-          return (
-            <Card key={client.id} className="border-border bg-card hover:border-primary/30 transition-colors group">
-              <CardHeader className="p-3 pb-2 flex flex-row items-start justify-between">
-                <div className="min-w-0">
-                  <CardTitle className="text-sm font-bold truncate group-hover:text-primary transition-colors">
-                    {client.name}
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary">
-                      {client.preferred_channel || 'whatsapp'}
-                    </Badge>
-                    {client.whatsapp && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                        <Phone size={10} /> {client.whatsapp}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex gap-1">
-                  <button onClick={() => {
-                    setEditingClient(client);
-                    setForm({
-                      name: client.name,
-                      whatsapp: client.whatsapp || "",
-                      preferred_channel: client.preferred_channel || "whatsapp",
-                      notes: client.notes || ""
-                    });
-                    setDialogOpen(true);
-                  }} className="p-1 text-muted-foreground hover:text-primary transition-colors">
-                    <Edit2 size={14} />
-                  </button>
-                  <button onClick={() => handleDelete(client.id)} className="p-1 text-muted-foreground hover:text-destructive transition-colors">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-3 pt-0 space-y-2.5">
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="p-2 rounded bg-muted/30">
-                    <p className="text-muted-foreground uppercase text-[9px] font-bold">Compras</p>
-                    <p className="text-foreground font-mono font-bold">{clientStat.salesCount}</p>
-                  </div>
-                  <div className="p-2 rounded bg-muted/30">
-                    <p className="text-muted-foreground uppercase text-[9px] font-bold">Total Gasto</p>
-                    <p className="text-primary font-mono font-bold">R$ {clientStat.totalSpent.toFixed(2)}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-muted-foreground">Última compra:</span>
-                  <span className="text-foreground font-medium">
-                    {clientStat.lastPurchaseDate ? format(new Date(clientStat.lastPurchaseDate), "dd/MM/yy") : 'Nunca'}
-                  </span>
-                </div>
-
-                <Button variant="outline" size="sm" className="w-full text-xs h-8 border-border hover:bg-muted" onClick={() => loadClientHistory(client)}>
-                  <History size={12} className="mr-2" /> Ver Histórico
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <Card className="border-border bg-card overflow-hidden">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/50">
+                <TableRow className="border-border hover:bg-transparent">
+                  <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => requestSort('name')}>
+                    <div className="flex items-center">Nome {getSortIcon('name')}</div>
+                  </TableHead>
+                  <TableHead className="text-xs font-bold uppercase py-4">Canal / Whats</TableHead>
+                  <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-center hover:text-primary transition-colors" onClick={() => requestSort('salesCount')}>
+                    <div className="flex items-center justify-center">Compras {getSortIcon('salesCount')}</div>
+                  </TableHead>
+                  <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-right hover:text-primary transition-colors" onClick={() => requestSort('totalSpent')}>
+                    <div className="flex items-center justify-end">Total Gasto {getSortIcon('totalSpent')}</div>
+                  </TableHead>
+                  <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-right hover:text-primary transition-colors" onClick={() => requestSort('lastPurchase')}>
+                    <div className="flex items-center justify-end">Última Compra {getSortIcon('lastPurchase')}</div>
+                  </TableHead>
+                  <TableHead className="text-xs font-bold uppercase py-4 text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">Carregando...</TableCell>
+                  </TableRow>
+                ) : sortedClients.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">Nenhum cliente encontrado.</TableCell>
+                  </TableRow>
+                ) : sortedClients.map(client => {
+                  const clientStat = stats[client.id] || { totalSpent: 0, salesCount: 0, lastPurchaseDate: null };
+                  return (
+                    <TableRow key={client.id} className="border-border hover:bg-muted/30 transition-colors group">
+                      <TableCell className="py-4">
+                        <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{client.name}</span>
+                      </TableCell>
+                      <TableCell className="py-4">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary">
+                            {client.preferred_channel || 'whatsapp'}
+                          </Badge>
+                          {client.whatsapp && (
+                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                              {client.whatsapp}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 text-center">
+                        <span className="text-sm font-mono font-bold">{clientStat.salesCount}</span>
+                      </TableCell>
+                      <TableCell className="py-4 text-right">
+                        <span className="text-sm font-mono font-bold text-primary">R$ {clientStat.totalSpent.toFixed(2)}</span>
+                      </TableCell>
+                      <TableCell className="py-4 text-right">
+                        <span className="text-xs text-muted-foreground">
+                          {clientStat.lastPurchaseDate ? format(new Date(clientStat.lastPurchaseDate), "dd/MM/yy") : 'Nunca'}
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-4 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => loadClientHistory(client)}
+                            title="Ver histórico"
+                          >
+                            <History size={14} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-primary"
+                            onClick={() => {
+                              setEditingClient(client);
+                              setForm({
+                                name: client.name,
+                                whatsapp: client.whatsapp || "",
+                                preferred_channel: client.preferred_channel || "whatsapp",
+                                notes: client.notes || ""
+                              });
+                              setDialogOpen(true);
+                            }}
+                            title="Editar"
+                          >
+                            <Edit2 size={14} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={() => handleDelete(client.id)}
+                            title="Excluir"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Form Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
