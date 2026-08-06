@@ -269,7 +269,8 @@ export default function Dashboard() {
       const salesMes = allSales.filter((s: any) => {
         if (!s._dateKey) return false;
         const [year, month] = s._dateKey.split("-");
-        return Number(year) === now.getFullYear() && (Number(month) - 1) === now.getMonth();
+        // now.getMonth() é 0-indexado, então somamos 1 para comparar com a string MM do banco
+        return Number(year) === now.getFullYear() && Number(month) === (now.getMonth() + 1);
       });
 
       const monthlyRevenue = salesMes.reduce((sum: number, s: any) => sum + s.valor_total, 0);
