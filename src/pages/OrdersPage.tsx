@@ -164,13 +164,17 @@ const STATUS_COLOR: Record<Status, string> = {
 const FIN_LABEL: Record<FinStatus, string> = {
   aberto: "Em aberto",
   parcial: "Parcial",
+  parcelado: "Parcelado",
   quitado: "Quitado",
+  reembolsado: "Reembolsado",
 };
 
 const FIN_COLOR: Record<FinStatus, string> = {
   aberto: "bg-red-500/15 text-red-400 border-red-500/30",
   parcial: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  parcelado: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   quitado: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  reembolsado: "bg-gray-500/15 text-gray-400 border-gray-500/30",
 };
 
 const FORMAS = [
