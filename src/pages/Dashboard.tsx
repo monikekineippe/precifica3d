@@ -687,7 +687,7 @@ export default function Dashboard() {
                     <div className="text-right shrink-0 ml-3">
                       <p className="font-bold font-mono text-primary text-sm">{formatBRL(Number(sale.valor_total || 0))}</p>
                       <p className="text-[9px] text-muted-foreground mt-0.5">
-                        {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yy") : ""}
+                        {sale._dateKey ? format(new Date(sale._dateKey + 'T12:00:00'), "dd/MM/yy") : ""}
                       </p>
                     </div>
                   </div>
