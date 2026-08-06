@@ -568,7 +568,7 @@ export default function Dashboard() {
                 <ShoppingCart size={18} className="text-primary/40" />
               </div>
               <div className="text-3xl font-bold font-mono text-foreground">{stats.monthlySalesCount}</div>
-              <p className="text-[10px] text-muted-foreground">Itens quitados no mês</p>
+              <p className="text-[10px] text-muted-foreground">Vendas e encomendas no mês</p>
             </div>
           </Card>
 
