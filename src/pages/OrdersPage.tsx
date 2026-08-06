@@ -869,7 +869,7 @@ function PaymentsDialog({ encomenda, onClose, onChanged }: { encomenda: Encomend
   const total = Number(encomenda.valor_total);
   const pago = list.reduce((s, p) => s + Number(p.valor || 0), 0);
   const saldo = Math.max(0, total - pago);
-  const fin = computeFinStatus(total, pago);
+  const fin = computeFinStatus(encomenda, pago);
 
   const resetForm = () => {
     setValor(0);
