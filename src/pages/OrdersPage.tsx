@@ -599,6 +599,11 @@ export default function OrdersPage() {
                       <AlertTriangle size={12} /> Valor pendente
                     </div>
                   )}
+                  {r.tracking_code && (
+                    <div className="flex items-center gap-2 text-xs text-primary bg-primary/10 px-2 py-1 rounded">
+                      <Truck size={12} /> Rastreio: <span className="font-mono font-medium">{r.tracking_code}</span>
+                    </div>
+                  )}
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
                   <p className="text-xs text-muted-foreground">Origem: {formatOrigem(r)}</p>
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
