@@ -15,12 +15,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 interface Encomenda {
   id: string;
+  codigo: string;
   cliente_nome: string;
   produto: string;
   valor_total: number;
   status: string;
   created_at: string;
   data_entrega: string | null;
+  is_refunded: boolean;
 }
 
 interface Pagamento {
