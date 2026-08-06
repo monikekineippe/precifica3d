@@ -206,14 +206,19 @@ const emptyForm = {
   origem: "",
   origem_outro: "",
   client_id: "" as string,
+  shipping_method: "" as string,
+  tracking_code: "" as string,
+  installments: 1,
 };
 
 interface ClientRow { id: string; name: string; whatsapp: string | null; preferred_channel: string | null; notes: string | null; }
 
-function computeFinStatus(total: number, pago: number): FinStatus {
+function computeFinStatus(row: Encomenda, pago: number): FinStatus {
+  if (row.is_refunded) return "reembolsado";
+  if (pago + 0.001 >= row.valor_total && row.valor_total > 0) return "quitado";
+  if (row.installments > 1) return "parcelado";
   if (pago <= 0) return "aberto";
-  if (pago + 0.001 < total) return "parcial";
-  return "quitado";
+  return "parcial";
 }
 
 export default function OrdersPage() {
