@@ -221,8 +221,8 @@ export default function Dashboard() {
       // Encomendas quitadas no mês atual (data de quitação dentro do mês)
       const quitadasMes = quitadas.filter((e: any) => {
         if (!e._quitadoEm) return false;
-        const d = new Date(`${e._quitadoEm}T00:00:00`);
-        return d >= firstDay && d <= lastDay;
+        const [year, month] = e._quitadoEm.split("-");
+        return Number(year) === now.getFullYear() && Number(month) === (now.getMonth() + 1);
       });
       const monthlyRevenueEncomendas = quitadasMes.reduce(
         (sum: number, e: any) => sum + Number(e.valor_total || 0),
