@@ -128,18 +128,17 @@ export default function FinancePage() {
   const netFlow = totalInflows - totalOutflows;
   const margemContribuicao = totalInflows > 0 ? (netFlow / totalInflows) * 100 : 0;
 
-  // Recebimentos Pendentes (Baseado em TODAS as encomendas que ainda têm saldo, mas respeitando o filtro de data da encomenda se aplicado?)
-  // A instrução diz: "respeitar o período selecionado". Para recebimentos pendentes, faz sentido mostrar encomendas criadas no período que ainda estão pendentes.
+  // Recebimentos Pendentes (Baseado em TODAS as encomendas com saldo, independente do filtro de data)
   const pendingOrders = useMemo(() => {
     return encomendas
-      .filter(e => e.status !== "cancelada" && !e.is_refunded && filterByDate(e.created_at))
+      .filter(e => e.status !== "cancelada" && !e.is_refunded)
       .map(e => {
         const total = Number(e.valor_total);
         const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
         return { ...e, pago, saldo: total - pago };
       })
       .filter(e => e.saldo > 0.01);
-  }, [encomendas, pagamentos, dateInterval]);
+  }, [encomendas, pagamentos]);
 
   const totalAReceber = useMemo(() => pendingOrders.reduce((s, e) => s + e.saldo, 0), [pendingOrders]);
 
@@ -275,7 +274,7 @@ export default function FinancePage() {
             </CardHeader>
             <CardContent>
               {pendingOrders.length === 0 ? (
-                <p className="text-center py-8 text-muted-foreground">Nenhum recebimento pendente no período.</p>
+                <p className="text-center py-8 text-muted-foreground">Nenhum recebimento pendente.</p>
               ) : (
                 <div className="overflow-x-auto">
                   <Table>
