@@ -427,6 +427,16 @@ export default function InventoryPage() {
         </Button>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+        <Input 
+          placeholder="Buscar no estoque..." 
+          className="pl-10 bg-card border-border h-11" 
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <Tabs defaultValue="raw_material" onValueChange={(v) => setActiveTab(v as any)} className="w-full">
         <TabsList className="bg-muted border-border">
           <TabsTrigger value="raw_material" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -438,7 +448,7 @@ export default function InventoryPage() {
         </TabsList>
 
         <TabsContent value="raw_material">
-          <InventoryGrid itemsList={rawMaterials} />
+          <InventoryTable itemsList={rawMaterials} />
         </TabsContent>
 
         <TabsContent value="finished_product">
@@ -465,7 +475,7 @@ export default function InventoryPage() {
               <span>{missingPriceCount} produto{missingPriceCount > 1 ? 's' : ''} sem preço de venda. A previsão está incompleta até o preço ser preenchido.</span>
             </div>
           )}
-          <InventoryGrid itemsList={finishedProducts} />
+          <InventoryTable itemsList={finishedProducts} />
         </TabsContent>
       </Tabs>
 
