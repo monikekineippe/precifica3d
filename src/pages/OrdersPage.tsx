@@ -830,11 +830,14 @@ export default function OrdersPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
+function SummaryCard({ icon, label, value, count, color }: { icon: React.ReactNode; label: string; value: number; count: number; color: string }) {
   return (
     <Card className="glass">
       <CardContent className="pt-4">
-        <div className={`flex items-center gap-2 text-xs text-muted-foreground mb-1`}>{icon} {label}</div>
+        <div className={`flex items-center justify-between text-xs text-muted-foreground mb-1`}>
+          <div className="flex items-center gap-2">{icon} {label}</div>
+          <Badge variant="outline" className="text-[10px] h-4 px-1">{count}</Badge>
+        </div>
         <p className={`text-xl font-mono font-bold ${color}`}>R$ {value.toFixed(2)}</p>
       </CardContent>
     </Card>
