@@ -187,7 +187,6 @@ export default function Dashboard() {
         .from("cash_transactions")
         .select("*")
         .eq("user_id", user.id)
-        .eq("status", "COMPLETED")
         .not("description", "is", null);
 
       // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
