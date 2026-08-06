@@ -32,7 +32,8 @@ const formatBRL = (v: number) =>
 
 const toDateKey = (value?: string | null) => {
   if (!value) return "";
-  const key = String(value).slice(0, 10);
+  // Se for ISO string com T ou espaço, pega a parte da data
+  const key = String(value).split(/[T ]/)[0];
   return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : "";
 };
 
@@ -184,12 +185,13 @@ export default function Dashboard() {
         .eq("user_id", user.id);
 
       // Vendas Diretas (Gestão de Caixa) que representam faturamento
+      // Mantendo exatamente a mesma fonte de dados que a Gestão de Caixa usa para faturamento
       const { data: directSales } = await supabase
         .from("cash_transactions")
         .select("*")
         .eq("user_id", user.id)
         .eq("type", "inflow")
-        .or("category.eq.venda_estoque,category.eq.venda_direta");
+        .or("category.eq.venda_estoque,category.eq.venda_direta,category.eq.venda");
 
       // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
       const { data: invRows } = await supabase
@@ -219,7 +221,7 @@ export default function Dashboard() {
           const total = Number(e.valor_total || 0);
           const info = pagosMap[e.id] || { total: 0, lastDateKey: "" };
           const pago = info.total;
-          const isQuitado = total > 0 && pago + 0.001 >= total && Boolean(info.lastDateKey);
+          const isQuitado = total > 0 && pago + 0.05 >= total && Boolean(info.lastDateKey);
           
           const qty = Number(e.quantidade || 0);
           const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
@@ -267,8 +269,8 @@ export default function Dashboard() {
       // Filtragem para o mês atual
       const salesMes = allSales.filter((s: any) => {
         if (!s._dateKey) return false;
-        const [year, month] = s._dateKey.split("-");
-        return Number(year) === now.getFullYear() && (Number(month) - 1) === now.getMonth();
+        const saleDate = new Date(s._dateKey + 'T12:00:00');
+        return saleDate.getMonth() === now.getMonth() && saleDate.getFullYear() === now.getFullYear();
       });
 
       const monthlyRevenue = salesMes.reduce((sum: number, s: any) => sum + s.valor_total, 0);
