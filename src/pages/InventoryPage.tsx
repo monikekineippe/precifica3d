@@ -210,6 +210,9 @@ export default function InventoryPage() {
 
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
+  const isCritical = (item: InventoryItem) =>
+    item.category === 'raw_material' && Number(item.min_stock) > 0 && Number(item.quantity) <= Number(item.min_stock);
+
   const requestSort = (key: string) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
