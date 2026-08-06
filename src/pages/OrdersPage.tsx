@@ -555,7 +555,7 @@ export default function OrdersPage() {
             const total = Number(r.valor_total);
             const pago = pagosByEnc.get(r.id) || 0;
             const saldo = Math.max(0, total - pago);
-            const fin = computeFinStatus(total, pago);
+            const fin = computeFinStatus(r, pago);
             return (
               <Card key={r.id} className="glass">
                 <CardHeader className="pb-3">
