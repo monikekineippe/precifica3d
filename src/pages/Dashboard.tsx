@@ -336,258 +336,256 @@ export default function Dashboard() {
     ? Math.min(Math.round((stats.monthlyRevenue / stats.monthlyGoal) * 100), 100) 
     : 0;
 
+  const currentMonthName = format(new Date(), "MMMM", { locale: ptBR });
+  const currentMonthCapitalized = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
+
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 max-w-5xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground text-sm mt-1">Gestão real do seu negócio 3D</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="border-border"
+            className="border-border h-9"
             onClick={() => fetchData(true)}
             disabled={isRefreshing}
           >
             <RefreshCcw size={14} className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Atualizar
           </Button>
-          <Button asChild size="sm" variant="outline" className="border-border hidden sm:flex">
+          <Button asChild size="sm" variant="outline" className="border-border h-9 hidden sm:flex">
             <Link to="/settings"><Target size={14} className="mr-2" /> Ajustar Meta</Link>
+          </Button>
+          <Button asChild className="bg-primary text-[#0B1020] font-bold hover:bg-primary/90 neon-glow h-9">
+            <Link to="/new"><PlusCircle size={16} className="mr-2" />Nova Precificação</Link>
           </Button>
         </div>
       </div>
 
-      {/* Cash & Receivables Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Link to="/caixa">
-          <Card className="bg-card border-border border-t-4 border-primary p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-                Saldo do Caixa
-                <Wallet size={14} className="text-primary/60" />
-              </p>
-              <div className={`text-3xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
-                {formatBRL(stats.cashBalance)}
+      {/* Financeiro Section */}
+      <section className="space-y-4">
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-semibold px-1">Financeiro</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link to="/caixa" className="lg:col-span-2">
+            <Card className="bg-card border-border border-t-4 border-primary p-6 hover:border-primary/60 transition-all cursor-pointer h-full shadow-lg shadow-primary/5">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saldo do Caixa</p>
+                  <Wallet size={16} className="text-primary" />
+                </div>
+                <div className={`text-4xl font-bold font-mono tracking-tight ${stats.cashBalance < 0 ? 'text-alert' : 'text-foreground'}`}>
+                  {formatBRL(stats.cashBalance)}
+                </div>
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${stats.cashBalance < 0 ? 'bg-alert' : 'bg-primary'}`} />
+                  Saldo atual acumulado
+                </p>
               </div>
-              <p className="text-[10px] text-muted-foreground">Saldo atual acumulado</p>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
 
-        <Card className="bg-card border-border border-t-4 border-profit p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Entradas (Mês)
-              <ArrowUpRight size={14} className="text-profit/60" />
-            </p>
-            <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              {formatBRL(stats.cashInflowsMonth)}
-            </div>
-            <p className="text-[10px] text-muted-foreground">Total recebido no mês</p>
-          </div>
-        </Card>
-
-        <Card className="bg-card border-border border-t-4 border-alert p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Saídas (Mês)
-              <ArrowDownRight size={14} className="text-alert/60" />
-            </p>
-            <div className="text-3xl font-bold font-mono text-alert tracking-tight">
-              {formatBRL(stats.cashOutflowsMonth)}
-            </div>
-            <p className="text-[10px] text-muted-foreground">Total pago no mês</p>
-          </div>
-        </Card>
-
-        <Link to="/orders">
-          <Card className="bg-card border-border border-t-4 border-primary/40 p-6 hover:border-primary/60 transition-colors cursor-pointer h-full">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-                A Receber
-                <Clock size={14} className="text-primary/60" />
-              </p>
-              <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                {formatBRL(stats.aReceber)}
-              </div>
-              <p className="text-[10px] text-muted-foreground">Saldo pendente de encomendas</p>
-            </div>
-          </Card>
-        </Link>
-      </div>
-
-      {/* Main Stats (Line 1) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card border-border border-t-4 border-white/40 p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Faturamento (Mês)
-              <DollarSign size={14} className="text-primary/40" />
-            </p>
-            <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              {formatBRL(stats.monthlyRevenue)}
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-card border-border border-t-4 border-profit p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Lucro Bruto (Mês)
-              <TrendingUp size={14} className="text-profit/40" />
-            </p>
-            <div className="text-3xl font-bold font-mono text-profit tracking-tight">
-              {formatBRL(stats.monthlyGrossProfit)}
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-card border-border border-t-4 border-primary p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Meta Mensal
-              <span className="text-[10px] text-primary">{goalCompletion}%</span>
-            </p>
+          <Card className="bg-card border-border border-t-4 border-white/60 p-6 shadow-md">
             <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex flex-wrap gap-1">
+                  Faturamento <span className="text-primary/70">· {currentMonthCapitalized}</span>
+                </p>
+                <DollarSign size={16} className="text-primary/60" />
+              </div>
               <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-                {formatBRL(stats.monthlyGoal)}
+                {formatBRL(stats.monthlyRevenue)}
               </div>
-              <Progress value={goalCompletion} className="h-1.5" />
-            </div>
-          </div>
-        </Card>
-
-        <Card className="bg-card border-border border-t-4 border-primary/40 p-6">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex items-center justify-between">
-              Ticket Médio
-              <ArrowUpRight size={14} className="text-primary/40" />
-            </p>
-            <div className="text-3xl font-bold font-mono text-foreground tracking-tight">
-              {formatBRL(stats.ticketMedio)}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Secondary Stats (Line 2) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Link to="/inventory">
-          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6 h-full">
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Previsão de Faturamento (estoque pronto)</p>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold font-mono text-primary tracking-tight">{formatBRL(stats.stockForecast)}</div>
-                <Package size={24} className="text-primary/30" />
-              </div>
-              <p className="text-[10px] text-muted-foreground">Soma de preço de venda x quantidade</p>
             </div>
           </Card>
-        </Link>
 
-        <Link to="/printers">
-          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Impressoras</p>
+          <Card className="bg-card border-border border-t-4 border-profit p-6 shadow-md">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex flex-wrap gap-1">
+                  Lucro Bruto <span className="text-profit/70">· {currentMonthCapitalized}</span>
+                </p>
+                <TrendingUp size={16} className="text-profit/60" />
+              </div>
+              <div className="text-3xl font-bold font-mono text-profit tracking-tight">
+                {formatBRL(stats.monthlyGrossProfit)}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-card border-border p-6 shadow-sm">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Entradas: {currentMonthCapitalized}</p>
+                <ArrowUpRight size={14} className="text-profit/60" />
+              </div>
+              <div className="text-2xl font-bold font-mono text-profit tracking-tight">
+                {formatBRL(stats.cashInflowsMonth)}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-card border-border p-6 shadow-sm">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Saídas: {currentMonthCapitalized}</p>
+                <ArrowDownRight size={14} className="text-alert/60" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-muted-foreground">Operacional:</span>
+                  <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses)}</span>
+                </div>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-muted-foreground">Insumos:</span>
+                  <span className="font-mono text-alert">{formatBRL(stats.materialExpenses)}</span>
+                </div>
+                <div className="flex justify-between text-[10px]">
+                  <span className="text-muted-foreground">Investimento:</span>
+                  <span className="font-mono text-alert">{formatBRL(stats.investmentExpenses)}</span>
+                </div>
+                <div className="pt-1.5 border-t border-border mt-1.5 flex justify-between text-[11px] font-bold">
+                  <span className="text-foreground">Total:</span>
+                  <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses)}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Link to="/orders">
+            <Card className="bg-card border-border p-6 hover:border-primary/40 transition-colors cursor-pointer h-full shadow-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">A Receber</p>
+                  <Clock size={16} className="text-primary/60" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-foreground tracking-tight">
+                  {formatBRL(stats.aReceber)}
+                </div>
+                <p className="text-[10px] text-muted-foreground">Saldo de encomendas</p>
+              </div>
+            </Card>
+          </Link>
+
+          <Card className="bg-card border-border p-6 shadow-sm">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex flex-wrap gap-1">
+                  Ticket Médio <span className="text-primary/70">· {currentMonthCapitalized}</span>
+                </p>
+                <ShoppingCart size={14} className="text-primary/60" />
+              </div>
+              <div className="text-2xl font-bold font-mono text-foreground tracking-tight">
+                {formatBRL(stats.ticketMedio)}
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-card border-border p-6 shadow-sm lg:col-span-1">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex flex-wrap gap-1">
+                  Meta <span className="text-primary/70">· {currentMonthCapitalized}</span>
+                </p>
+                <span className="text-[10px] font-bold text-primary">{goalCompletion}%</span>
+              </div>
+              <div className="space-y-3">
+                <div className="text-2xl font-bold font-mono text-foreground tracking-tight">
+                  {formatBRL(stats.monthlyGoal)}
+                </div>
+                <Progress value={goalCompletion} className="h-1.5" />
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Operação Section */}
+      <section className="space-y-4">
+        <h2 className="text-xs uppercase tracking-widest text-muted-foreground font-semibold px-1">Operação</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link to="/printers">
+            <Card className="border-border bg-card hover:border-primary/40 transition-colors cursor-pointer p-6 h-full shadow-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Impressoras</p>
+                  <Printer size={18} className="text-primary/40" />
+                </div>
                 <div className="text-3xl font-bold font-mono text-foreground">{stats.printersCount}</div>
-                <Printer size={24} className="text-muted-foreground opacity-20" />
+                {stats.activePrinter ? (
+                  <p className="text-[10px] text-primary truncate">Ativa: {stats.activePrinter.nome}</p>
+                ) : (
+                  <p className="text-[10px] text-muted-foreground truncate">Nenhuma ativa</p>
+                )}
               </div>
-              {stats.activePrinter ? (
-                <p className="text-[10px] text-primary truncate mt-1">Ativa: {stats.activePrinter.nome}</p>
-              ) : (
-                <p className="text-[10px] text-muted-foreground truncate mt-1">Nenhuma selecionada</p>
-              )}
+            </Card>
+          </Link>
+
+          <Card className="border-border bg-card p-6 shadow-sm h-full">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex flex-wrap gap-1">
+                  Vendas <span className="text-primary/70">· {currentMonthCapitalized}</span>
+                </p>
+                <ShoppingCart size={18} className="text-primary/40" />
+              </div>
+              <div className="text-3xl font-bold font-mono text-foreground">{stats.monthlySalesCount}</div>
+              <p className="text-[10px] text-muted-foreground">Itens quitados no mês</p>
             </div>
           </Card>
-        </Link>
 
-        <Card className="border-border bg-card p-6">
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Vendas no Mês</p>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold font-mono text-foreground">{stats.monthlySalesCount}</div>
-              <ShoppingCart size={24} className="text-muted-foreground opacity-20" />
-            </div>
-          </div>
-        </Card>
-
-        <Link to="/inventory">
-          <Card className="border-border bg-card hover:border-primary/30 transition-colors cursor-pointer p-6">
-            <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Crítico</p>
-              <div className="flex items-center justify-between">
+          <Link to="/inventory">
+            <Card className="border-border bg-card hover:border-primary/40 transition-colors cursor-pointer p-6 h-full shadow-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estoque Crítico</p>
+                  <AlertTriangle size={18} className={stats.criticalStock > 0 ? 'text-alert' : 'text-primary/40'} />
+                </div>
                 <div className={`text-3xl font-bold font-mono ${stats.criticalStock > 0 ? 'text-alert' : 'text-foreground'}`}>
                   {stats.criticalStock}
                 </div>
-                <AlertTriangle size={24} className={stats.criticalStock > 0 ? 'text-alert' : 'text-muted-foreground opacity-20'} />
+                <p className="text-[10px] text-muted-foreground">Insumos abaixo do mínimo</p>
               </div>
-            </div>
-          </Card>
-        </Link>
+            </Card>
+          </Link>
 
-        <Card className="border-border bg-card p-6">
-          <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Saídas do Mês</p>
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Operacional:</span>
-                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses)}</span>
+          <Link to="/inventory">
+            <Card className="border-border bg-card hover:border-primary/40 transition-colors cursor-pointer p-6 h-full shadow-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Previsão: Pronto</p>
+                  <Package size={18} className="text-primary/40" />
+                </div>
+                <div className="text-2xl font-bold font-mono text-primary tracking-tight">{formatBRL(stats.stockForecast)}</div>
+                <p className="text-[10px] text-muted-foreground">Valor total em estoque pronto</p>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Material/Estoque:</span>
-                <span className="font-mono text-alert">{formatBRL(stats.materialExpenses)}</span>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Investimento:</span>
-                <span className="font-mono text-alert">{formatBRL(stats.investmentExpenses)}</span>
-              </div>
-              <div className="pt-2 border-t border-border mt-1.5 flex justify-between text-xs font-bold">
-                <span className="text-foreground">Total:</span>
-                <span className="font-mono text-alert">{formatBRL(stats.operationalExpenses + stats.materialExpenses + stats.investmentExpenses)}</span>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>
+            </Card>
+          </Link>
+        </div>
+      </section>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <Button asChild className="bg-primary text-[#0B1020] font-bold hover:bg-primary/90 neon-glow">
-          <Link to="/new"><PlusCircle size={16} className="mr-2" />Nova Precificação</Link>
-        </Button>
-        <Button asChild variant="secondary">
-          <Link to="/sales"><ShoppingCart size={16} className="mr-2" />Nova Venda</Link>
-        </Button>
-        <Button asChild variant="outline" className="border-border">
-          <Link to="/inventory"><Package size={16} className="mr-2" />Estoque</Link>
-        </Button>
-        <Button asChild variant="outline" className="border-border">
-          <Link to="/caixa"><Wallet size={16} className="mr-2" />Caixa</Link>
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Visual Charts and Lists Section */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
         {/* Sales Chart */}
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <TrendingUp size={16} className="text-primary" /> Evolução (Últimos 30 dias)
+        <Card className="border-border bg-card shadow-md flex flex-col">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-2">
+              <TrendingUp size={14} className="text-primary" /> Evolução (Últimos 30 dias)
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-[250px] pt-4">
+          <CardContent className="h-[280px] pt-4 flex-grow">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} opacity={0.3} />
                 <XAxis 
                   dataKey="date" 
                   axisLine={false} 
                   tickLine={false} 
                   tick={{fill: '#666', fontSize: 10}}
-                  minTickGap={20}
+                  minTickGap={25}
                 />
                 <YAxis 
                   axisLine={false} 
@@ -598,65 +596,63 @@ export default function Dashboard() {
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '8px' }}
                   itemStyle={{ color: '#00D4FF' }}
+                  formatter={(val: number) => [formatBRL(val), 'Valor']}
                 />
                 <Line 
-                  type="linear" 
+                  type="monotone" 
                   dataKey="valor" 
                   stroke="#00D4FF" 
-                  strokeWidth={2} 
+                  strokeWidth={2.5} 
                   dot={(props: any) => {
                     const { cx, cy, payload, index } = props;
                     if (!payload || Number(payload.valor || 0) <= 0) {
                       return <g key={`empty-${index}`} />;
                     }
                     return (
-                      <circle key={`dot-${index}`} cx={cx} cy={cy} r={3.5} fill="#00D4FF" stroke="#00D4FF" />
+                      <circle key={`dot-${index}`} cx={cx} cy={cy} r={4} fill="#00D4FF" stroke="#0B1020" strokeWidth={1} />
                     );
                   }}
-                  activeDot={{ r: 5, fill: '#00D4FF' }}
+                  activeDot={{ r: 6, fill: '#00D4FF', stroke: '#0B1020', strokeWidth: 2 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Recent Sales List (Encomendas Quitadas) */}
-        <Card className="border-border bg-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-              <ShoppingCart size={16} className="text-primary" /> Vendas Recentes
+        {/* Recent Sales List */}
+        <Card className="border-border bg-card shadow-md flex flex-col">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-2">
+              <ShoppingCart size={14} className="text-primary" /> Vendas Recentes
             </CardTitle>
-            <Button asChild variant="ghost" size="sm" className="text-xs h-8 text-muted-foreground hover:text-primary">
-              <Link to="/orders">Ver encomendas <ChevronRight size={12} className="ml-1" /></Link>
+            <Button asChild variant="ghost" size="sm" className="text-[10px] h-7 px-2 text-muted-foreground hover:text-primary uppercase tracking-tighter">
+              <Link to="/orders">Ver todas <ChevronRight size={12} className="ml-0.5" /></Link>
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-grow">
             {recentSales.length === 0 ? (
               <div className="py-12 text-center">
-                <p className="text-muted-foreground text-sm">Nenhuma encomenda quitada ainda.</p>
+                <p className="text-muted-foreground text-sm">Nenhuma venda realizada.</p>
                 <Button asChild variant="link" className="text-primary text-xs mt-2">
-                  <Link to="/orders">Ir para Encomendas</Link>
+                  <Link to="/orders">Gerenciar encomendas</Link>
                 </Button>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentSales.map((sale: any) => (
-                  <div key={sale.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50 group hover:border-primary/30 transition-colors">
+                  <div key={sale.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40 hover:border-primary/30 transition-all group">
                     <div className="min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate">{sale.cliente_nome}</p>
-                      <div className="flex items-center gap-2 mt-0.5 min-w-0">
-                        <Badge variant="outline" className="text-[9px] py-0 px-1 border-profit/30 text-profit uppercase shrink-0">
-                          Quitado
-                        </Badge>
-                        <span className="text-[10px] text-muted-foreground truncate">
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[9px] text-muted-foreground truncate uppercase tracking-tighter bg-muted/40 px-1.5 py-0.5 rounded">
                           {sale.produto}
                         </span>
                       </div>
                     </div>
                     <div className="text-right shrink-0 ml-3">
                       <p className="font-bold font-mono text-primary text-sm">{formatBRL(Number(sale.valor_total || 0))}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yyyy") : ""}
+                      <p className="text-[9px] text-muted-foreground mt-0.5">
+                        {sale._quitadoEm ? format(new Date(sale._quitadoEm), "dd/MM/yy") : ""}
                       </p>
                     </div>
                   </div>
@@ -665,32 +661,32 @@ export default function Dashboard() {
             )}
           </CardContent>
         </Card>
-      </div>
+      </section>
 
       {/* Itens mais vendidos */}
-      <Card className="border-border bg-card">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Package size={16} className="text-primary" /> Itens mais vendidos
+      <Card className="border-border bg-card shadow-md">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
+          <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-2">
+            <Package size={14} className="text-primary" /> Itens mais vendidos
           </CardTitle>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Somente encomendas quitadas</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Dados Reais</span>
         </CardHeader>
         <CardContent>
           {topItems.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground text-sm">Nenhum item vendido ainda.</p>
+              <p className="text-muted-foreground text-sm">Sem dados de venda.</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {topItems.map((item, idx) => (
-                <div key={item.produto} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
+                <div key={item.produto} className="flex items-center justify-between p-3 rounded-lg bg-muted/10 border border-border/30">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-mono text-primary/70 w-5">#{idx + 1}</span>
+                    <span className="text-[10px] font-mono text-primary/40">0{idx + 1}</span>
                     <p className="font-medium text-sm text-foreground truncate">{item.produto}</p>
                   </div>
                   <div className="text-right shrink-0 ml-3">
                     <p className="font-bold font-mono text-foreground text-sm">{item.quantidade} un.</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 font-mono">{formatBRL(item.valor)}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{formatBRL(item.valor)}</p>
                   </div>
                 </div>
               ))}
@@ -698,6 +694,17 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Quick Access Footer */}
+      <div className="flex flex-wrap items-center justify-center gap-4 text-muted-foreground py-4 border-t border-border/30">
+        <Link to="/sales" className="text-[11px] uppercase tracking-widest hover:text-primary transition-colors">Nova Venda</Link>
+        <span className="text-border/40">•</span>
+        <Link to="/inventory" className="text-[11px] uppercase tracking-widest hover:text-primary transition-colors">Estoque</Link>
+        <span className="text-border/40">•</span>
+        <Link to="/caixa" className="text-[11px] uppercase tracking-widest hover:text-primary transition-colors">Caixa</Link>
+        <span className="text-border/40">•</span>
+        <Link to="/reports" className="text-[11px] uppercase tracking-widest hover:text-primary transition-colors">Relatórios</Link>
+      </div>
     </div>
   );
 }
