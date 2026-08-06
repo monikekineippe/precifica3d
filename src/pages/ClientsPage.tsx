@@ -57,6 +57,8 @@ export default function ClientsPage() {
   const [clientSales, setClientSales] = useState<any[]>([]);
   const [clientEncomendas, setClientEncomendas] = useState<any[]>([]);
   
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
+
   const [form, setForm] = useState({
     name: "",
     whatsapp: "",
