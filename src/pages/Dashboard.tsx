@@ -702,7 +702,7 @@ export default function Dashboard() {
           <CardTitle className="text-xs uppercase tracking-widest text-muted-foreground font-semibold flex items-center gap-2">
             <Package size={14} className="text-primary" /> Itens mais vendidos
           </CardTitle>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Dados Reais</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-widest opacity-50">Dados Reais unificados</span>
         </CardHeader>
         <CardContent>
           {topItems.length === 0 ? (
