@@ -210,16 +210,73 @@ export default function InventoryPage() {
 
   const setField = (k: string, v: any) => setForm(f => ({ ...f, [k]: v }));
 
-  const isCritical = (item: InventoryItem) =>
-    item.category === 'raw_material' && Number(item.min_stock) > 0 && Number(item.quantity) <= Number(item.min_stock);
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
-  const sortByCritical = (list: InventoryItem[]) =>
-    [...list].sort((a, b) => Number(isCritical(b)) - Number(isCritical(a)));
+  const getSortIcon = (key: string) => {
+    if (sortConfig?.key !== key) return <ArrowUpDown size={12} className="ml-1 opacity-30" />;
+    return <ArrowUpDown size={12} className={cn("ml-1", sortConfig.direction === 'desc' ? "rotate-180" : "")} />;
+  };
 
-  const rawMaterials = sortByCritical(items.filter(i => i.category === 'raw_material'));
-  const finishedProducts = items.filter(i => i.category === 'finished_product');
+  const getFilteredAndSortedItems = (category: 'raw_material' | 'finished_product') => {
+    let filtered = items.filter(i => 
+      i.category === category && 
+      (i.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+       i.brand?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       i.color?.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
 
-  const finishedActive = finishedProducts.filter(i => Number(i.quantity) > 0);
+    if (sortConfig !== null) {
+      filtered.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+
+        switch (sortConfig.key) {
+          case 'name':
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+            break;
+          case 'quantity':
+            aValue = Number(a.quantity);
+            bValue = Number(b.quantity);
+            break;
+          case 'cost':
+            aValue = Number(a.cost_per_unit);
+            bValue = Number(b.cost_per_unit);
+            break;
+          case 'sale_price':
+            aValue = Number(a.sale_price || 0);
+            bValue = Number(b.sale_price || 0);
+            break;
+          case 'last_purchase':
+            aValue = a.last_purchase_date ? new Date(a.last_purchase_date).getTime() : 0;
+            bValue = b.last_purchase_date ? new Date(b.last_purchase_date).getTime() : 0;
+            break;
+          default:
+            return 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    } else if (category === 'raw_material') {
+      // Default critical sort
+      filtered.sort((a, b) => Number(isCritical(b)) - Number(isCritical(a)));
+    }
+
+    return filtered;
+  };
+
+  const rawMaterials = getFilteredAndSortedItems('raw_material');
+  const finishedProducts = getFilteredAndSortedItems('finished_product');
+
+  const finishedActive = items.filter(i => i.category === 'finished_product' && Number(i.quantity) > 0);
   const finishedCostTotal = finishedActive.reduce(
     (sum, i) => sum + Number(i.cost_per_unit || 0) * Number(i.quantity || 0),
     0
@@ -233,94 +290,125 @@ export default function InventoryPage() {
   const formatBRL = (v: number) =>
     `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
-      {itemsList.map(item => (
-        <Card key={item.id} className={`bg-card transition-colors ${isCritical(item) ? 'border-destructive ring-1 ring-destructive/40' : 'border-border hover:border-primary/30'}`}>
-          <CardHeader className="p-3 pb-1.5">
-            <div className="flex items-start justify-between">
-              <CardTitle className="text-sm font-semibold text-foreground leading-tight truncate max-w-[150px]">
-                {item.name}
-              </CardTitle>
-              <div className="flex gap-1">
-                {item.category === 'raw_material' && (
-                  <button onClick={() => openPurchase(item)} title="Registrar Entrada" className="p-1 text-muted-foreground hover:text-green-500"><Plus size={14} /></button>
-                )}
-                <button onClick={() => openEdit(item)} className="p-1 text-muted-foreground hover:text-primary"><Edit2 size={14} /></button>
-                <button onClick={() => handleDelete(item.id)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              {isCritical(item) && (
-                <Badge className="text-[10px] bg-destructive text-destructive-foreground border-transparent">
-                  <AlertTriangle size={10} className="mr-1" /> Estoque crítico
-                </Badge>
+  const InventoryTable = ({ itemsList }: { itemsList: InventoryItem[] }) => (
+    <div className="mt-4 border border-border rounded-lg overflow-hidden bg-card">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader className="bg-muted/50">
+            <TableRow className="border-border hover:bg-transparent">
+              <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer hover:text-primary transition-colors" onClick={() => requestSort('name')}>
+                <div className="flex items-center">Item {getSortIcon('name')}</div>
+              </TableHead>
+              <TableHead className="text-xs font-bold uppercase py-4">Detalhes</TableHead>
+              <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-center hover:text-primary transition-colors" onClick={() => requestSort('quantity')}>
+                <div className="flex items-center justify-center">Estoque {getSortIcon('quantity')}</div>
+              </TableHead>
+              <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-right hover:text-primary transition-colors" onClick={() => requestSort('cost')}>
+                <div className="flex items-center justify-end">Custo {getSortIcon('cost')}</div>
+              </TableHead>
+              {activeTab === 'finished_product' ? (
+                <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-right hover:text-primary transition-colors" onClick={() => requestSort('sale_price')}>
+                  <div className="flex items-center justify-end">Venda {getSortIcon('sale_price')}</div>
+                </TableHead>
+              ) : (
+                <TableHead className="text-xs font-bold uppercase py-4 cursor-pointer text-right hover:text-primary transition-colors" onClick={() => requestSort('last_purchase')}>
+                  <div className="flex items-center justify-end">Última Compra {getSortIcon('last_purchase')}</div>
+                </TableHead>
               )}
-              <Badge variant="outline" className="text-[10px] border-primary/30 text-primary capitalize">
-                {item.type === 'filament' ? 'Filamento' : 
-                 item.type === 'packaging' ? 'Embalagem' : 
-                 item.type === 'accessory' ? 'Acessório' : 
-                 item.type === 'product' ? 'Produto' : 'Outro'}
-              </Badge>
-              {item.color && <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{item.color}</Badge>}
-            </div>
-          </CardHeader>
-          <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground space-y-1">
-            <div className="flex justify-between items-center">
-              <span>{item.category === 'raw_material' ? 'Quantidade' : 'Disponível'}</span>
-              <span className={`font-mono font-bold ${item.category === 'raw_material' && item.quantity <= item.min_stock ? 'text-destructive' : 'text-foreground'}`}>
-                {item.quantity} {item.unit}
-              </span>
-            </div>
-            
-            {item.category === 'raw_material' && item.quantity <= item.min_stock && (
-              <div className="flex items-center gap-1 text-destructive font-medium text-[10px]">
-                <AlertTriangle size={10} /> Estoque baixo! (Mín: {item.min_stock}{item.unit})
-              </div>
-            )}
-
-            <div className="flex justify-between">
-              <span>{item.category === 'finished_product' ? 'Custo de produção' : 'Custo/Unidade'}</span>
-              <span className="font-mono text-foreground">R$ {Number(item.cost_per_unit).toFixed(2)}/{item.unit}</span>
-            </div>
-
-            {item.category === 'finished_product' && (
-              <div className="flex justify-between">
-                <span>Preço de venda</span>
-                <span className="font-mono font-semibold text-primary">R$ {Number(item.sale_price || 0).toFixed(2)}</span>
-              </div>
-            )}
-
-            {item.category === 'raw_material' ? (
-              <>
-                <div className="flex justify-between">
-                  <span>Marca</span>
-                  <span className="text-foreground">{item.brand || '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Última Compra</span>
-                  <span className="text-foreground">
-                    {item.last_purchase_date ? format(new Date(item.last_purchase_date), "dd/MM/yyyy", { locale: ptBR }) : '-'}
-                  </span>
-                </div>
-              </>
+              <TableHead className="text-xs font-bold uppercase py-4 text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {itemsList.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">Nenhum item encontrado.</TableCell>
+              </TableRow>
             ) : (
-              <div className="flex justify-between">
-                <span>Data Entrada</span>
-                <span className="text-foreground">
-                  {format(new Date(item.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                </span>
-              </div>
+              itemsList.map(item => {
+                const critical = isCritical(item);
+                return (
+                  <TableRow key={item.id} className={cn("border-border hover:bg-muted/30 transition-colors group", critical && "bg-destructive/5")}>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col">
+                        <span className={cn("font-bold text-sm text-foreground group-hover:text-primary transition-colors", critical && "text-destructive")}>
+                          {item.name}
+                        </span>
+                        {critical && (
+                          <span className="text-[9px] text-destructive flex items-center gap-1 font-bold uppercase mt-0.5">
+                            <AlertTriangle size={10} /> Estoque Crítico
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant="outline" className="text-[9px] uppercase border-primary/20 text-primary px-1 h-4">
+                          {item.type === 'filament' ? 'Filamento' : item.type === 'packaging' ? 'Emb.' : item.type === 'accessory' ? 'Aces.' : 'Prod.'}
+                        </Badge>
+                        {item.color && <Badge variant="outline" className="text-[9px] border-accent/20 text-accent px-1 h-4">{item.color}</Badge>}
+                        {item.brand && <span className="text-[10px] text-muted-foreground">{item.brand}</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className={cn("text-sm font-mono font-bold", critical ? "text-destructive" : "text-foreground")}>
+                          {item.quantity} {item.unit}
+                        </span>
+                        {critical && <span className="text-[9px] text-muted-foreground">Mín: {item.min_stock}</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      <span className="text-sm font-mono font-bold text-foreground">R$ {Number(item.cost_per_unit).toFixed(2)}</span>
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      {item.category === 'finished_product' ? (
+                        <span className="text-sm font-mono font-bold text-primary">R$ {Number(item.sale_price || 0).toFixed(2)}</span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">
+                          {item.last_purchase_date ? format(new Date(item.last_purchase_date), "dd/MM/yy") : '-'}
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="py-4 text-right">
+                      <div className="flex justify-end gap-1">
+                        {item.category === 'raw_material' && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-green-500"
+                            onClick={() => openPurchase(item)}
+                            title="Registrar entrada"
+                          >
+                            <Plus size={14} />
+                          </Button>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-primary"
+                          onClick={() => openEdit(item)}
+                          title="Editar"
+                        >
+                          <Edit2 size={14} />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleDelete(item.id)}
+                          title="Excluir"
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
-          </CardContent>
-        </Card>
-      ))}
-      {itemsList.length === 0 && (
-        <div className="col-span-full py-12 text-center bg-muted/20 rounded-xl border border-dashed border-border">
-          <Package size={40} className="mx-auto text-muted-foreground mb-3 opacity-20" />
-          <p className="text-muted-foreground">Nenhum item nesta categoria.</p>
-        </div>
-      )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 
