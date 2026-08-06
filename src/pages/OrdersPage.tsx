@@ -394,6 +394,9 @@ export default function OrdersPage() {
       origem: r.origem || "",
       origem_outro: r.origem_outro || "",
       client_id: r.client_id || "",
+      shipping_method: r.shipping_method || "",
+      tracking_code: r.tracking_code || "",
+      installments: r.installments || 1,
     });
     setOpen(true);
   };
