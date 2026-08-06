@@ -512,11 +512,12 @@ export default function OrdersPage() {
         <Button onClick={openNew} className="neon-glow"><Plus size={16} className="mr-2" /> Nova encomenda</Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryCard icon={<DollarSign size={16} />} label="Receita esperada" value={summary.receitaEsperada} color="text-primary" />
-        <SummaryCard icon={<CheckCircle2 size={16} />} label="Já recebido" value={summary.recebido} color="text-emerald-400" />
-        <SummaryCard icon={<Clock size={16} />} label="A receber" value={summary.aReceber} color="text-amber-400" />
-        <SummaryCard icon={<Package size={16} />} label="Entregue e pago" value={summary.entreguesPagos} color="text-blue-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <SummaryCard icon={<Clock size={16} />} label="Em aberto" value={summary.aberto.total} count={summary.aberto.count} color="text-red-400" />
+        <SummaryCard icon={<AlertTriangle size={16} />} label="Parcial" value={summary.parcial.total} count={summary.parcial.count} color="text-amber-400" />
+        <SummaryCard icon={<CreditCard size={16} />} label="Parcelado" value={summary.parcelado.total} count={summary.parcelado.count} color="text-blue-400" />
+        <SummaryCard icon={<CheckCircle2 size={16} />} label="Quitado" value={summary.quitado.total} count={summary.quitado.count} color="text-emerald-400" />
+        <SummaryCard icon={<RefreshCcw size={16} />} label="Reembolsado" value={summary.reembolsado.total} count={summary.reembolsado.count} color="text-gray-400" />
       </div>
 
       <div className="flex gap-2 flex-wrap">
