@@ -75,6 +75,8 @@ export default function InventoryPage() {
   const [purchaseForm, setPurchaseForm] = useState(PURCHASE_FORM);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'raw_material' | 'finished_product'>('raw_material');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null);
 
   const loadInventory = async () => {
     if (!user) return;
