@@ -1,5 +1,15 @@
-import { useState, useEffect } from "react";
-import { Package, Plus, Trash2, Edit2, Lock, AlertTriangle, TrendingUp, History, ShoppingCart } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { 
+  Package, 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  Lock, 
+  AlertTriangle, 
+  TrendingUp, 
+  ArrowUpDown,
+  Search
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +18,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from "@/components/ui/table";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import UpgradeModal from "@/components/UpgradeModal";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 interface InventoryItem {
   id: string;
