@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Loader2, TrendingUp, DollarSign, Wallet } from "lucide-react";
+import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfYear, endOfYear } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 interface Encomenda {
   id: string;
@@ -15,7 +14,6 @@ interface Encomenda {
   produto: string;
   valor_total: number;
   status: string;
-  data_encomenda: string;
   created_at: string;
 }
 
@@ -31,7 +29,7 @@ interface Transaction {
   type: 'inflow' | 'outflow';
   amount: number;
   description: string;
-  category: string;
+  category: string | null;
   created_at: string;
 }
 
@@ -44,7 +42,7 @@ export default function FinancePage() {
   const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState("month"); // total, month, year, custom
+  const [period, setPeriod] = useState("month");
 
   useEffect(() => {
     async function load() {
@@ -55,45 +53,44 @@ export default function FinancePage() {
         supabase.from("encomenda_pagamentos").select("*").eq("user_id", user.id),
         supabase.from("cash_transactions").select("*").eq("user_id", user.id),
       ]);
-      setEncomendas(enc.data || []);
-      setPagamentos(pag.data || []);
-      setTransactions(trans.data || []);
+      setEncomendas((enc.data || []) as Encomenda[]);
+      setPagamentos((pag.data || []) as Pagamento[]);
+      setTransactions((trans.data || []) as Transaction[]);
       setLoading(false);
     }
     load();
   }, [user]);
 
-  const filterData = (items: any[]) => {
+  const filterData = (items: any[], dateField: string) => {
     if (period === "total") return items;
     const now = new Date();
-    let start: Date;
-    let end: Date = now;
+    let start: Date, end: Date;
 
     if (period === "month") {
       start = startOfMonth(now);
       end = endOfMonth(now);
     } else if (period === "year") {
-      start = new Date(now.getFullYear(), 0, 1);
-      end = new Date(now.getFullYear(), 11, 31);
+      start = startOfYear(now);
+      end = endOfYear(now);
     } else {
       return items;
     }
-    return items.filter(i => isWithinInterval(parseISO(i.created_at || i.data_pagamento), { start, end }));
+    return items.filter(i => isWithinInterval(parseISO(i[dateField]), { start, end }));
   };
 
-  const filteredEncomendas = filterData(encomendas);
-  const filteredPagamentos = filterData(pagamentos);
-  const filteredTransactions = filterData(transactions);
+  const filteredEncomendas = filterData(encomendas, "created_at");
+  const filteredPagamentos = filterData(pagamentos, "data_pagamento");
+  const filteredTransactions = filterData(transactions, "created_at");
 
   const pendingOrders = filteredEncomendas.filter(e => {
     const total = Number(e.valor_total);
-    const pago = filteredPagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
+    const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
     return pago < total;
   });
 
   const totalAReceber = pendingOrders.reduce((s, e) => {
     const total = Number(e.valor_total);
-    const pago = filteredPagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
+    const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
     return s + (total - pago);
   }, 0);
 
@@ -104,7 +101,7 @@ export default function FinancePage() {
   if (loading) return <div className="flex justify-center p-12"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Gestão Financeira</h1>
         <Select value={period} onValueChange={setPeriod}>
@@ -118,7 +115,7 @@ export default function FinancePage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardHeader><CardTitle>Total a Receber</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{formatBRL(totalAReceber)}</div></CardContent></Card>
+        <Card><CardHeader><CardTitle>Recebimentos Pendentes</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{formatBRL(totalAReceber)}</div></CardContent></Card>
         <Card><CardHeader><CardTitle>Margem de Contribuição</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{margemContribuicao.toFixed(1)}%</div></CardContent></Card>
         <Card><CardHeader><CardTitle>Fluxo Líquido</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{formatBRL(totalInflows - totalOutflows)}</div></CardContent></Card>
       </div>
@@ -134,7 +131,7 @@ export default function FinancePage() {
             <TableBody>
               {pendingOrders.map(e => {
                 const total = Number(e.valor_total);
-                const pago = filteredPagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
+                const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
                 return (
                   <TableRow key={e.id} className="cursor-pointer hover:bg-muted" onClick={() => window.location.href = `/orders?id=${e.id}`}>
                     <TableCell>{e.cliente_nome}</TableCell>
@@ -147,7 +144,19 @@ export default function FinancePage() {
           </Table>
         </TabsContent>
         <TabsContent value="fluxo">
-          <p>Fluxo de caixa detalhado em construção.</p>
+          <Table>
+             <TableHeader><TableRow><TableHead>Data</TableHead><TableHead>Descrição</TableHead><TableHead>Categoria</TableHead><TableHead>Valor</TableHead></TableRow></TableHeader>
+             <TableBody>
+                {filteredTransactions.map(t => (
+                  <TableRow key={t.id}>
+                    <TableCell>{format(parseISO(t.created_at), "dd/MM/yyyy")}</TableCell>
+                    <TableCell>{t.description}</TableCell>
+                    <TableCell>{t.category}</TableCell>
+                    <TableCell className={t.type === 'inflow' ? 'text-emerald-500' : 'text-red-500'}>{t.type === 'inflow' ? '+' : '-'}{formatBRL(t.amount)}</TableCell>
+                  </TableRow>
+                ))}
+             </TableBody>
+          </Table>
         </TabsContent>
       </Tabs>
     </div>
