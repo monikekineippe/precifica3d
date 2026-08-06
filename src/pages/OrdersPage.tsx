@@ -771,7 +771,35 @@ export default function OrdersPage() {
               <Label>Valor total (R$)</Label>
               <Input type="number" step="0.01" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: Number(e.target.value) })} />
             </div>
-            <p className="text-xs text-muted-foreground">Para registrar pagamentos parciais, use o botão "Pagamentos" na encomenda depois de salvar.</p>
+            <div className="grid grid-cols-2 gap-3 border-t border-border pt-3 mt-1">
+              <div>
+                <Label>Forma de envio</Label>
+                <Select
+                  value={form.shipping_method || "__none"}
+                  onValueChange={(v) => setForm({ ...form, shipping_method: v === "__none" ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Não informado</SelectItem>
+                    <SelectItem value="correios">Correios</SelectItem>
+                    <SelectItem value="retirada">Retirada</SelectItem>
+                    <SelectItem value="entrega_local">Entrega Local</SelectItem>
+                    <SelectItem value="motoboy">Motoboy</SelectItem>
+                    <SelectItem value="transportadora">Transportadora</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Código de rastreio</Label>
+                <Input value={form.tracking_code} onChange={(e) => setForm({ ...form, tracking_code: e.target.value })} placeholder="Ex.: AA123456789BR" />
+              </div>
+            </div>
+
+            <div>
+              <Label>Número de parcelas (planejado)</Label>
+              <Input type="number" min={1} value={form.installments} onChange={(e) => setForm({ ...form, installments: Number(e.target.value) || 1 })} />
+            </div>
+
             <div>
               <Label>Observações internas</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
