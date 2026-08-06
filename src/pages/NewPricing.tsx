@@ -195,7 +195,7 @@ export default function NewPricing() {
   const [marginLoading, setMarginLoading] = useState(false);
   const marginFetchRef = useRef<string>("");
 
-  const activePrinters = useMemo(() => printers.filter(p => p.is_active || p.id === printerId), [printers, printerId]);
+  const activePrinters = useMemo(() => printers.filter(p => p.is_active), [printers]);
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 

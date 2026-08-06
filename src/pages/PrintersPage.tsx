@@ -115,10 +115,11 @@ export default function PrintersPage() {
   const handleToggleActive = async (printer: PrinterRow) => {
     if (!user) return;
     
-    // If we are deactivating the primary printer, we should probably warn or handle it
-    // But for now, let's just allow it and the user can pick another primary
     const newStatus = !printer.is_active;
     
+    // Optimistic update
+    setPrinters(prev => prev.map(p => p.id === printer.id ? { ...p, is_active: newStatus } : p));
+
     const { error } = await supabase
       .from("impressoras")
       .update({ is_active: newStatus } as any)
@@ -126,8 +127,11 @@ export default function PrintersPage() {
     
     if (error) {
       toast.error("Erro ao alterar status da impressora.");
+      // Rollback
+      setPrinters(prev => prev.map(p => p.id === printer.id ? { ...p, is_active: !newStatus } : p));
     } else {
       toast.success(newStatus ? "Impressora ativada!" : "Impressora desativada.");
+      // Re-load to be sure we have the latest server state
       loadPrinters();
     }
   };
