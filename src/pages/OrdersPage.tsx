@@ -39,6 +39,10 @@ interface Encomenda {
   origem: string | null;
   origem_outro: string | null;
   client_id: string | null;
+  shipping_method: string | null;
+  tracking_code: string | null;
+  installments: number;
+  is_refunded: boolean;
 }
 
 const digitsOnly = (s: string | null | undefined) => (s || "").replace(/\D/g, "");
