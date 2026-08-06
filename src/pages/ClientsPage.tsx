@@ -210,7 +210,7 @@ export default function ClientsPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-7xl">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Clientes</h1>
@@ -235,12 +235,12 @@ export default function ClientsPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredClients.map(client => {
           const clientStat = stats[client.id] || { totalSpent: 0, salesCount: 0, lastPurchaseDate: null };
           return (
             <Card key={client.id} className="border-border bg-card hover:border-primary/30 transition-colors group">
-              <CardHeader className="pb-3 flex flex-row items-start justify-between">
+              <CardHeader className="p-3 pb-2 flex flex-row items-start justify-between">
                 <div className="min-w-0">
                   <CardTitle className="text-sm font-bold truncate group-hover:text-primary transition-colors">
                     {client.name}
@@ -274,7 +274,7 @@ export default function ClientsPage() {
                   </button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="p-3 pt-0 space-y-2.5">
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2 rounded bg-muted/30">
                     <p className="text-muted-foreground uppercase text-[9px] font-bold">Compras</p>

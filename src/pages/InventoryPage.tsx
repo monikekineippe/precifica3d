@@ -71,7 +71,7 @@ export default function InventoryPage() {
 
   if (!isAnual) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6 max-w-7xl">
         <h1 className="text-2xl font-bold text-foreground">Estoque</h1>
         <div className="relative">
           <div className="filter blur-sm pointer-events-none opacity-50">
@@ -213,10 +213,10 @@ export default function InventoryPage() {
     `R$ ${Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const InventoryGrid = ({ itemsList }: { itemsList: InventoryItem[] }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
       {itemsList.map(item => (
         <Card key={item.id} className={`bg-card transition-colors ${isCritical(item) ? 'border-destructive ring-1 ring-destructive/40' : 'border-border hover:border-primary/30'}`}>
-          <CardHeader className="pb-2">
+          <CardHeader className="p-3 pb-1.5">
             <div className="flex items-start justify-between">
               <CardTitle className="text-sm font-semibold text-foreground leading-tight truncate max-w-[150px]">
                 {item.name}
@@ -244,7 +244,7 @@ export default function InventoryPage() {
               {item.color && <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{item.color}</Badge>}
             </div>
           </CardHeader>
-          <CardContent className="text-xs text-muted-foreground space-y-1.5">
+          <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground space-y-1">
             <div className="flex justify-between items-center">
               <span>{item.category === 'raw_material' ? 'Quantidade' : 'Disponível'}</span>
               <span className={`font-mono font-bold ${item.category === 'raw_material' && item.quantity <= item.min_stock ? 'text-destructive' : 'text-foreground'}`}>
@@ -304,7 +304,7 @@ export default function InventoryPage() {
   );
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6 max-w-7xl">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Estoque</h1>
