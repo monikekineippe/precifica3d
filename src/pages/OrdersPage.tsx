@@ -451,6 +451,9 @@ export default function OrdersPage() {
       origem: form.origem || null,
       origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
       client_id: clientId,
+      shipping_method: form.shipping_method || null,
+      tracking_code: form.tracking_code || null,
+      installments: Number(form.installments) || 1,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
