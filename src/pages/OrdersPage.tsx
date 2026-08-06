@@ -287,7 +287,7 @@ export default function OrdersPage() {
   }, [rows, search, statusFilter]);
 
   const summary = useMemo(() => {
-    const ativos = rows.filter((r) => r.status !== "cancelada");
+    const target = rows; // Inclui todos para o resumo financeiro, exceto talvez excluídos logicamente se houvesse
     
     const stats: Record<FinStatus, { count: number; total: number }> = {
       aberto: { count: 0, total: 0 },
@@ -297,7 +297,8 @@ export default function OrdersPage() {
       reembolsado: { count: 0, total: 0 },
     };
 
-    ativos.forEach(r => {
+    target.forEach(r => {
+      if (r.status === "cancelada" && !r.is_refunded) return; // Ignora cancelados comuns no resumo financeiro de "vendas"
       const pago = pagosByEnc.get(r.id) || 0;
       const fin = computeFinStatus(r, pago);
       stats[fin].count += 1;
