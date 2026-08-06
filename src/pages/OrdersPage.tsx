@@ -282,16 +282,23 @@ export default function OrdersPage() {
 
   const summary = useMemo(() => {
     const ativos = rows.filter((r) => r.status !== "cancelada");
-    const receitaEsperada = ativos.reduce((s, r) => s + Number(r.valor_total || 0), 0);
-    const recebido = ativos.reduce((s, r) => s + (pagosByEnc.get(r.id) || 0), 0);
-    const entregues = rows.filter((r) => r.status === "entregue");
-    const entreguesPagos = entregues.reduce((s, r) => s + Number(r.valor_total || 0), 0);
-    return {
-      receitaEsperada,
-      recebido,
-      aReceber: Math.max(0, receitaEsperada - recebido),
-      entreguesPagos,
+    
+    const stats: Record<FinStatus, { count: number; total: number }> = {
+      aberto: { count: 0, total: 0 },
+      parcial: { count: 0, total: 0 },
+      parcelado: { count: 0, total: 0 },
+      quitado: { count: 0, total: 0 },
+      reembolsado: { count: 0, total: 0 },
     };
+
+    ativos.forEach(r => {
+      const pago = pagosByEnc.get(r.id) || 0;
+      const fin = computeFinStatus(r, pago);
+      stats[fin].count += 1;
+      stats[fin].total += Number(r.valor_total || 0);
+    });
+
+    return stats;
   }, [rows, pagosByEnc]);
 
   const catalog = useMemo<CatalogOption[]>(() => {
