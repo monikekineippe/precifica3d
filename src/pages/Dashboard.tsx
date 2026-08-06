@@ -183,11 +183,13 @@ export default function Dashboard() {
         .select("encomenda_id, valor, data_pagamento, created_at")
         .eq("user_id", user.id);
 
+      // Vendas Diretas (Gestão de Caixa) que representam faturamento
       const { data: directSales } = await supabase
         .from("cash_transactions")
         .select("*")
         .eq("user_id", user.id)
-        .not("description", "is", null);
+        .eq("type", "inflow")
+        .or("category.eq.venda_estoque,category.eq.venda_direta");
 
       // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
       const { data: invRows } = await supabase
@@ -232,14 +234,14 @@ export default function Dashboard() {
             lucro: profit,
             _dateKey: info.lastDateKey, 
             _isQuitado: isQuitado,
-            _source: 'encomenda'
+            _source: 'encomenda',
+            is_refunded: e.is_refunded
           };
         })
         .filter((e: any) => e._isQuitado && !e.is_refunded);
 
-      // Vendas Diretas (Gestão de Caixa) que representam faturamento (category usually 'venda_estoque')
+      // Vendas Diretas (Gestão de Caixa)
       const vendasDiretas = (directSales || [])
-        .filter((t: any) => t.type === 'inflow' && (t.category === 'venda_estoque' || t.category === 'venda_direta'))
         .map((t: any) => {
           const dateKey = toDateKey(t.transaction_date || t.created_at);
           return {
@@ -248,7 +250,7 @@ export default function Dashboard() {
             produto: t.description || "Produto",
             quantidade: t.quantity || 1,
             valor_total: Number(t.amount || 0),
-            lucro: Number(t.net_profit || t.amount || 0), // Reaproveita lucro líquido se disponível
+            lucro: Number(t.net_profit || t.amount || 0),
             _dateKey: dateKey,
             _isQuitado: true,
             _source: 'caixa'
