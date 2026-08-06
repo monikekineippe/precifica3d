@@ -500,6 +500,43 @@ export default function OrdersPage() {
     load();
   };
 
+  const refundOrder = async (r: Encomenda) => {
+    if (!user || !confirm("Deseja realmente reembolsar esta encomenda? O valor total já pago será lançado como saída no caixa.")) return;
+    const pago = pagosByEnc.get(r.id) || 0;
+    
+    const { error: updateErr } = await supabase
+      .from("encomendas")
+      .update({ is_refunded: true, status: "cancelada" })
+      .eq("id", r.id);
+
+    if (updateErr) {
+      toast.error(updateErr.message);
+      return;
+    }
+
+    if (pago > 0) {
+      const { error: cashErr } = await supabase.from("cash_transactions").insert({
+        user_id: user.id,
+        type: "outflow",
+        amount: pago,
+        description: `Reembolso: Encomenda ${r.codigo}, ${r.cliente_nome}`,
+        category: "outros",
+        encomenda_id: r.id,
+        transaction_date: new Date().toISOString().slice(0, 10),
+        payment_method: "pix",
+      });
+
+      if (cashErr) {
+        toast.error("Marcado como reembolsado, mas erro ao lançar saída no caixa.");
+      } else {
+        toast.success("Reembolso e saída de caixa registrados.");
+      }
+    } else {
+      toast.success("Marcado como reembolsado.");
+    }
+    load();
+  };
+
   const remove = async () => {
     if (!deleteTarget) return;
     // Cascade FK removes pagamentos e cash_transactions vinculadas
