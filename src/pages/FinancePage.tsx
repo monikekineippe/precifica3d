@@ -15,12 +15,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 interface Encomenda {
   id: string;
+  codigo: string;
   cliente_nome: string;
   produto: string;
   valor_total: number;
   status: string;
   created_at: string;
   data_entrega: string | null;
+  is_refunded: boolean;
 }
 
 interface Pagamento {
@@ -130,7 +132,7 @@ export default function FinancePage() {
   // A instrução diz: "respeitar o período selecionado". Para recebimentos pendentes, faz sentido mostrar encomendas criadas no período que ainda estão pendentes.
   const pendingOrders = useMemo(() => {
     return encomendas
-      .filter(e => e.status !== "cancelada" && filterByDate(e.created_at))
+      .filter(e => e.status !== "cancelada" && !e.is_refunded && filterByDate(e.created_at))
       .map(e => {
         const total = Number(e.valor_total);
         const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);

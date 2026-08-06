@@ -9,14 +9,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { toast } from "sonner";
-import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet, ChevronsUpDown, Check, UserPlus } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, ArrowRight, XCircle, AlertTriangle, Package, DollarSign, Clock, CheckCircle2, Wallet, ChevronsUpDown, Check, UserPlus, Truck, RefreshCcw, CreditCard } from "lucide-react";
 
 type Status = "recebida" | "producao" | "pronto" | "entregue" | "cancelada";
-type FinStatus = "aberto" | "parcial" | "quitado";
+type FinStatus = "aberto" | "parcial" | "parcelado" | "quitado" | "reembolsado";
 
 interface Encomenda {
   id: string;
@@ -39,6 +40,10 @@ interface Encomenda {
   origem: string | null;
   origem_outro: string | null;
   client_id: string | null;
+  shipping_method: string | null;
+  tracking_code: string | null;
+  installments: number;
+  is_refunded: boolean;
 }
 
 const digitsOnly = (s: string | null | undefined) => (s || "").replace(/\D/g, "");
@@ -160,13 +165,17 @@ const STATUS_COLOR: Record<Status, string> = {
 const FIN_LABEL: Record<FinStatus, string> = {
   aberto: "Em aberto",
   parcial: "Parcial",
+  parcelado: "Parcelado",
   quitado: "Quitado",
+  reembolsado: "Reembolsado",
 };
 
 const FIN_COLOR: Record<FinStatus, string> = {
   aberto: "bg-red-500/15 text-red-400 border-red-500/30",
   parcial: "bg-amber-500/15 text-amber-400 border-amber-500/30",
+  parcelado: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   quitado: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+  reembolsado: "bg-gray-500/15 text-gray-400 border-gray-500/30",
 };
 
 const FORMAS = [
@@ -198,14 +207,19 @@ const emptyForm = {
   origem: "",
   origem_outro: "",
   client_id: "" as string,
+  shipping_method: "" as string,
+  tracking_code: "" as string,
+  installments: 1,
 };
 
 interface ClientRow { id: string; name: string; whatsapp: string | null; preferred_channel: string | null; notes: string | null; }
 
-function computeFinStatus(total: number, pago: number): FinStatus {
+function computeFinStatus(row: Encomenda, pago: number): FinStatus {
+  if (row.is_refunded) return "reembolsado";
+  if (pago + 0.001 >= row.valor_total && row.valor_total > 0) return "quitado";
+  if (row.installments > 1) return "parcelado";
   if (pago <= 0) return "aberto";
-  if (pago + 0.001 < total) return "parcial";
-  return "quitado";
+  return "parcial";
 }
 
 export default function OrdersPage() {
@@ -261,24 +275,37 @@ export default function OrdersPage() {
       if (statusFilter !== "todos" && r.status !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
-        if (!r.cliente_nome.toLowerCase().includes(s) && !r.produto.toLowerCase().includes(s) && !r.codigo.toLowerCase().includes(s)) return false;
+        if (
+          !r.cliente_nome.toLowerCase().includes(s) && 
+          !r.produto.toLowerCase().includes(s) && 
+          !r.codigo.toLowerCase().includes(s) &&
+          !(r.tracking_code || "").toLowerCase().includes(s)
+        ) return false;
       }
       return true;
     });
   }, [rows, search, statusFilter]);
 
   const summary = useMemo(() => {
-    const ativos = rows.filter((r) => r.status !== "cancelada");
-    const receitaEsperada = ativos.reduce((s, r) => s + Number(r.valor_total || 0), 0);
-    const recebido = ativos.reduce((s, r) => s + (pagosByEnc.get(r.id) || 0), 0);
-    const entregues = rows.filter((r) => r.status === "entregue");
-    const entreguesPagos = entregues.reduce((s, r) => s + Number(r.valor_total || 0), 0);
-    return {
-      receitaEsperada,
-      recebido,
-      aReceber: Math.max(0, receitaEsperada - recebido),
-      entreguesPagos,
+    const target = rows; // Inclui todos para o resumo financeiro, exceto talvez excluídos logicamente se houvesse
+    
+    const stats: Record<FinStatus, { count: number; total: number }> = {
+      aberto: { count: 0, total: 0 },
+      parcial: { count: 0, total: 0 },
+      parcelado: { count: 0, total: 0 },
+      quitado: { count: 0, total: 0 },
+      reembolsado: { count: 0, total: 0 },
     };
+
+    target.forEach(r => {
+      if (r.status === "cancelada" && !r.is_refunded) return; // Ignora cancelados comuns no resumo financeiro de "vendas"
+      const pago = pagosByEnc.get(r.id) || 0;
+      const fin = computeFinStatus(r, pago);
+      stats[fin].count += 1;
+      stats[fin].total += Number(r.valor_total || 0);
+    });
+
+    return stats;
   }, [rows, pagosByEnc]);
 
   const catalog = useMemo<CatalogOption[]>(() => {
@@ -381,6 +408,9 @@ export default function OrdersPage() {
       origem: r.origem || "",
       origem_outro: r.origem_outro || "",
       client_id: r.client_id || "",
+      shipping_method: r.shipping_method || "",
+      tracking_code: r.tracking_code || "",
+      installments: r.installments || 1,
     });
     setOpen(true);
   };
@@ -423,6 +453,9 @@ export default function OrdersPage() {
       origem: form.origem || null,
       origem_outro: form.origem === "outros" ? (form.origem_outro.trim() || null) : null,
       client_id: clientId,
+      shipping_method: form.shipping_method || null,
+      tracking_code: form.tracking_code || null,
+      installments: Number(form.installments) || 1,
     };
     if (editing) {
       const { error } = await supabase.from("encomendas").update(payload).eq("id", editing.id);
@@ -469,6 +502,43 @@ export default function OrdersPage() {
     load();
   };
 
+  const refundOrder = async (r: Encomenda) => {
+    if (!user || !confirm("Deseja realmente reembolsar esta encomenda? O valor total já pago será lançado como saída no caixa.")) return;
+    const pago = pagosByEnc.get(r.id) || 0;
+    
+    const { error: updateErr } = await supabase
+      .from("encomendas")
+      .update({ is_refunded: true, status: "cancelada" })
+      .eq("id", r.id);
+
+    if (updateErr) {
+      toast.error(updateErr.message);
+      return;
+    }
+
+    if (pago > 0) {
+      const { error: cashErr } = await supabase.from("cash_transactions").insert({
+        user_id: user.id,
+        type: "outflow",
+        amount: pago,
+        description: `Reembolso: Encomenda ${r.codigo}, ${r.cliente_nome}`,
+        category: "outros",
+        encomenda_id: r.id,
+        transaction_date: new Date().toISOString().slice(0, 10),
+        payment_method: "pix",
+      });
+
+      if (cashErr) {
+        toast.error("Marcado como reembolsado, mas erro ao lançar saída no caixa.");
+      } else {
+        toast.success("Reembolso e saída de caixa registrados.");
+      }
+    } else {
+      toast.success("Marcado como reembolsado.");
+    }
+    load();
+  };
+
   const remove = async () => {
     if (!deleteTarget) return;
     // Cascade FK removes pagamentos e cash_transactions vinculadas
@@ -489,11 +559,12 @@ export default function OrdersPage() {
         <Button onClick={openNew} className="neon-glow"><Plus size={16} className="mr-2" /> Nova encomenda</Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <SummaryCard icon={<DollarSign size={16} />} label="Receita esperada" value={summary.receitaEsperada} color="text-primary" />
-        <SummaryCard icon={<CheckCircle2 size={16} />} label="Já recebido" value={summary.recebido} color="text-emerald-400" />
-        <SummaryCard icon={<Clock size={16} />} label="A receber" value={summary.aReceber} color="text-amber-400" />
-        <SummaryCard icon={<Package size={16} />} label="Entregue e pago" value={summary.entreguesPagos} color="text-blue-400" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <SummaryCard icon={<Clock size={16} />} label="Em aberto" value={summary.aberto.total} count={summary.aberto.count} color="text-red-400" />
+        <SummaryCard icon={<AlertTriangle size={16} />} label="Parcial" value={summary.parcial.total} count={summary.parcial.count} color="text-amber-400" />
+        <SummaryCard icon={<CreditCard size={16} />} label="Parcelado" value={summary.parcelado.total} count={summary.parcelado.count} color="text-blue-400" />
+        <SummaryCard icon={<CheckCircle2 size={16} />} label="Quitado" value={summary.quitado.total} count={summary.quitado.count} color="text-emerald-400" />
+        <SummaryCard icon={<RefreshCcw size={16} />} label="Reembolsado" value={summary.reembolsado.total} count={summary.reembolsado.count} color="text-gray-400" />
       </div>
 
       <div className="flex gap-2 flex-wrap">
@@ -526,7 +597,7 @@ export default function OrdersPage() {
             const total = Number(r.valor_total);
             const pago = pagosByEnc.get(r.id) || 0;
             const saldo = Math.max(0, total - pago);
-            const fin = computeFinStatus(total, pago);
+            const fin = computeFinStatus(r, pago);
             return (
               <Card key={r.id} className="glass">
                 <CardHeader className="pb-3">
@@ -567,27 +638,50 @@ export default function OrdersPage() {
                       <AlertTriangle size={12} /> Valor pendente
                     </div>
                   )}
+                  {r.tracking_code && (
+                    <div className="flex items-center gap-2 text-xs text-primary bg-primary/10 px-2 py-1 rounded">
+                      <Truck size={12} /> Rastreio: <span className="font-mono font-medium">{r.tracking_code}</span>
+                    </div>
+                  )}
                   {r.whatsapp && <p className="text-xs text-muted-foreground">📱 {r.whatsapp}</p>}
                   <p className="text-xs text-muted-foreground">Origem: {formatOrigem(r)}</p>
                   {r.data_entrega && <p className="text-xs text-emerald-400">Entregue em {new Date(r.data_entrega).toLocaleDateString("pt-BR")}</p>}
-                  <div className="flex gap-2 flex-wrap pt-2 border-t border-border">
-                    <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="flex-1">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
+                    <Button size="sm" variant="outline" onClick={() => setPaymentsTarget(r)} className="w-full">
                       <Wallet size={14} className="mr-1" /> Pagamentos
                     </Button>
-                    {NEXT[r.status] && (
-                      <Button size="sm" onClick={() => advance(r)} className="flex-1">
+                    {NEXT[r.status] ? (
+                      <Button size="sm" onClick={() => advance(r)} className="w-full">
                         <ArrowRight size={14} className="mr-1" /> {STATUS_LABEL[NEXT[r.status]!]}
                       </Button>
+                    ) : (
+                      <div className="w-full" />
                     )}
-                    <Button size="sm" variant="outline" onClick={() => openEdit(r)}><Pencil size={14} /></Button>
-                    {r.status !== "cancelada" && r.status !== "entregue" && (
-                      <Button size="sm" variant="outline" onClick={() => cancel(r)} className="text-red-400 hover:text-red-500">
-                        <XCircle size={14} />
-                      </Button>
-                    )}
-                    <Button size="sm" variant="outline" onClick={() => setDeleteTarget(r)} className="text-red-400 hover:text-red-500">
-                      <Trash2 size={14} />
+                    
+                    <Button size="sm" variant="outline" onClick={() => openEdit(r)} className="w-full">
+                      <Pencil size={14} className="mr-1" /> Editar
                     </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="sm" variant="outline" className="w-full">Opções</Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        {!r.is_refunded && r.status !== "cancelada" && (
+                          <DropdownMenuItem onClick={() => refundOrder(r)} className="text-red-400">
+                            <RefreshCcw size={14} className="mr-2" /> Reembolsar
+                          </DropdownMenuItem>
+                        )}
+                        {r.status !== "cancelada" && r.status !== "entregue" && (
+                          <DropdownMenuItem onClick={() => cancel(r)}>
+                            <XCircle size={14} className="mr-2" /> Cancelar Pedido
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => setDeleteTarget(r)} className="text-red-400">
+                          <Trash2 size={14} className="mr-2" /> Excluir Registro
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
@@ -739,7 +833,35 @@ export default function OrdersPage() {
               <Label>Valor total (R$)</Label>
               <Input type="number" step="0.01" value={form.valor_total} onChange={(e) => setForm({ ...form, valor_total: Number(e.target.value) })} />
             </div>
-            <p className="text-xs text-muted-foreground">Para registrar pagamentos parciais, use o botão "Pagamentos" na encomenda depois de salvar.</p>
+            <div className="grid grid-cols-2 gap-3 border-t border-border pt-3 mt-1">
+              <div>
+                <Label>Forma de envio</Label>
+                <Select
+                  value={form.shipping_method || "__none"}
+                  onValueChange={(v) => setForm({ ...form, shipping_method: v === "__none" ? "" : v })}
+                >
+                  <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">Não informado</SelectItem>
+                    <SelectItem value="correios">Correios</SelectItem>
+                    <SelectItem value="retirada">Retirada</SelectItem>
+                    <SelectItem value="entrega_local">Entrega Local</SelectItem>
+                    <SelectItem value="motoboy">Motoboy</SelectItem>
+                    <SelectItem value="transportadora">Transportadora</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Código de rastreio</Label>
+                <Input value={form.tracking_code} onChange={(e) => setForm({ ...form, tracking_code: e.target.value })} placeholder="Ex.: AA123456789BR" />
+              </div>
+            </div>
+
+            <div>
+              <Label>Número de parcelas (planejado)</Label>
+              <Input type="number" min={1} value={form.installments} onChange={(e) => setForm({ ...form, installments: Number(e.target.value) || 1 })} />
+            </div>
+
             <div>
               <Label>Observações internas</Label>
               <Textarea rows={2} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
@@ -801,11 +923,14 @@ export default function OrdersPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: number; color: string }) {
+function SummaryCard({ icon, label, value, count, color }: { icon: React.ReactNode; label: string; value: number; count: number; color: string }) {
   return (
     <Card className="glass">
       <CardContent className="pt-4">
-        <div className={`flex items-center gap-2 text-xs text-muted-foreground mb-1`}>{icon} {label}</div>
+        <div className={`flex items-center justify-between text-xs text-muted-foreground mb-1`}>
+          <div className="flex items-center gap-2">{icon} {label}</div>
+          <Badge variant="outline" className="text-[10px] h-4 px-1">{count}</Badge>
+        </div>
         <p className={`text-xl font-mono font-bold ${color}`}>R$ {value.toFixed(2)}</p>
       </CardContent>
     </Card>
@@ -834,7 +959,7 @@ function PaymentsDialog({ encomenda, onClose, onChanged }: { encomenda: Encomend
   const total = Number(encomenda.valor_total);
   const pago = list.reduce((s, p) => s + Number(p.valor || 0), 0);
   const saldo = Math.max(0, total - pago);
-  const fin = computeFinStatus(total, pago);
+  const fin = computeFinStatus(encomenda, pago);
 
   const resetForm = () => {
     setValor(0);
