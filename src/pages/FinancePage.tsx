@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO, startOfYear, endOfYear, eachMonthOfInterval, startOfDay, endOfDay, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2, TrendingUp, DollarSign, Wallet, ArrowUpRight, ArrowDownRight, Clock } from "lucide-react";
+import { Loader2, TrendingUp, Wallet, ArrowUpRight, ArrowDownRight, Clock } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Encomenda {
@@ -426,10 +427,3 @@ export default function FinancePage() {
   );
 }
 
-function Badge({ children, className, variant }: { children: React.ReactNode; className?: string; variant?: string }) {
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${className}`}>
-      {children}
-    </span>
-  );
-}
