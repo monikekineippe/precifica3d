@@ -114,6 +114,9 @@ export default function PrintersPage() {
 
   const handleToggleActive = async (printer: PrinterRow) => {
     if (!user) return;
+    
+    // If we are deactivating the primary printer, we should probably warn or handle it
+    // But for now, let's just allow it and the user can pick another primary
     const newStatus = !printer.is_active;
     
     const { error } = await supabase
