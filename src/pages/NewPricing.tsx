@@ -61,7 +61,7 @@ function createFilament(index: number): FilamentEntry {
 interface PrinterRow {
   id: string; nome: string; cinematica: string; custo_aquisicao: number;
   vida_util_horas: number; consumo_watts: number; custo_manutencao_mensal: number;
-  horas_uso_mensal: number; max_filamentos: number;
+  horas_uso_mensal: number; max_filamentos: number; is_active?: boolean;
 }
 
 interface MarginSuggestion {
@@ -193,6 +193,7 @@ export default function NewPricing() {
   const [marginLoading, setMarginLoading] = useState(false);
   const marginFetchRef = useRef<string>("");
 
+  const activePrinters = useMemo(() => printers.filter(p => p.is_active || p.id === printerId), [printers, printerId]);
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 

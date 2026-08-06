@@ -28,6 +28,7 @@ interface PrinterRow {
   max_filamentos: number;
   is_precadastrada: boolean;
   user_id: string;
+  is_active?: boolean;
 }
 
 const EMPTY_FORM = {
@@ -110,8 +111,35 @@ export default function PrintersPage() {
     refresh();
   };
 
+  const handleToggleActive = async (printer: PrinterRow) => {
+    if (!user) return;
+    const newStatus = !printer.is_active;
+    
+    const { error } = await supabase
+      .from("impressoras")
+      .update({ is_active: newStatus } as any)
+      .eq("id", printer.id);
+    
+    if (error) {
+      toast.error("Erro ao alterar status da impressora.");
+    } else {
+      toast.success(newStatus ? "Impressora ativada!" : "Impressora desativada.");
+      loadPrinters();
+    }
+  };
+
   const handleSetPrimary = async (printerId: string) => {
     if (!user || !profile) return;
+    
+    // First, ensure the printer is active if it's being set as primary
+    const printer = printers.find(p => p.id === printerId);
+    if (printer && !printer.is_active) {
+      await supabase
+        .from("impressoras")
+        .update({ is_active: true } as any)
+        .eq("id", printerId);
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({ primary_printer_id: printerId } as any)
@@ -122,6 +150,7 @@ export default function PrintersPage() {
     } else {
       await refreshProfile();
       toast.success("Impressora principal selecionada!");
+      loadPrinters();
     }
   };
 
@@ -147,48 +176,120 @@ export default function PrintersPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {printers.map(p => {
-          const depPerHour = p.vida_util_horas > 0 ? p.custo_aquisicao / p.vida_util_horas : 0;
-          const maintPerHour = p.horas_uso_mensal > 0 ? p.custo_manutencao_mensal / p.horas_uso_mensal : 0;
-          return (
-            <Card key={p.id} className="border-border bg-card hover:border-primary/30 transition-colors">
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="text-sm font-semibold text-foreground leading-tight">{p.nome}</CardTitle>
-                  {!p.is_precadastrada && (
-                    <div className="flex gap-1">
-                      <button onClick={() => openEdit(p)} className="p-1 text-muted-foreground hover:text-primary"><Edit2 size={14} /></button>
-                      <button onClick={() => handleDelete(p)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Badge className="bg-primary/20 text-primary border-primary/30">Ativas</Badge>
+          Impressoras em uso
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {printers.filter(p => p.is_active).map(p => {
+            const depPerHour = p.vida_util_horas > 0 ? p.custo_aquisicao / p.vida_util_horas : 0;
+            const maintPerHour = p.horas_uso_mensal > 0 ? p.custo_manutencao_mensal / p.horas_uso_mensal : 0;
+            const isPrimary = profile?.primary_printer_id === p.id;
+
+            return (
+              <Card key={p.id} className={cn(
+                "border-border bg-card hover:border-primary/30 transition-colors relative overflow-hidden",
+                isPrimary && "border-primary/50 ring-1 ring-primary/20"
+              )}>
+                {isPrimary && (
+                  <div className="absolute top-0 right-0">
+                    <div className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-bl-lg font-medium">
+                      Principal
                     </div>
-                  )}
-                  {p.is_precadastrada && <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">Padrão</Badge>}
-                </div>
-                <div className="flex gap-1.5 mt-1">
-                  <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{p.cinematica}</Badge>
-                  <Badge variant="outline" className="text-[10px] border-accent/30 text-accent">{p.max_filamentos} fil.</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="text-xs text-muted-foreground space-y-1">
-                <div className="flex justify-between"><span>Custo</span><span className="font-mono text-foreground">R$ {p.custo_aquisicao.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span>Vida útil</span><span className="font-mono text-foreground">{p.vida_util_horas.toLocaleString()}h</span></div>
-                <div className="flex justify-between"><span>Consumo</span><span className="font-mono text-foreground">{p.consumo_watts}W</span></div>
-                <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span>Manutenção/h</span><span className="font-mono text-primary">R$ {maintPerHour.toFixed(2)}</span></div>
-                <div className="pt-2">
-                  <Button 
-                    variant={profile?.primary_printer_id === p.id ? "default" : "outline"} 
-                    size="sm" 
-                    className="w-full text-[11px] h-8"
-                    onClick={() => handleSetPrimary(p.id)}
-                  >
-                    {profile?.primary_printer_id === p.id ? "Impressora Principal" : "Usar esta impressora"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+                  </div>
+                )}
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-sm font-semibold text-foreground leading-tight">{p.nome}</CardTitle>
+                    <div className="flex gap-1">
+                      {!p.is_precadastrada && (
+                        <>
+                          <button onClick={() => openEdit(p)} className="p-1 text-muted-foreground hover:text-primary"><Edit2 size={14} /></button>
+                          <button onClick={() => handleDelete(p)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+                        </>
+                      )}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        onClick={() => handleToggleActive(p)}
+                        title="Desativar"
+                      >
+                        <RotateCcw size={14} className="rotate-45" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 mt-1">
+                    <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{p.cinematica}</Badge>
+                    {p.is_precadastrada && <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">Padrão</Badge>}
+                  </div>
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>Manutenção/h</span><span className="font-mono text-primary">R$ {maintPerHour.toFixed(2)}</span></div>
+                  <div className="pt-3">
+                    <Button 
+                      variant={isPrimary ? "default" : "outline"} 
+                      size="sm" 
+                      className="w-full text-[11px] h-8"
+                      onClick={() => handleSetPrimary(p.id)}
+                      disabled={isPrimary}
+                    >
+                      {isPrimary ? "Impressora Principal" : "Tornar Principal"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+          {printers.filter(p => p.is_active).length === 0 && (
+            <div className="col-span-full py-8 text-center border-2 border-dashed border-border rounded-lg text-muted-foreground">
+              Nenhuma impressora ativa. Ative uma no catálogo abaixo.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="space-y-4 pt-4 border-t border-border">
+        <h2 className="text-lg font-semibold text-foreground">Catálogo de Impressoras</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-80 hover:opacity-100 transition-opacity">
+          {printers.filter(p => !p.is_active).map(p => {
+            return (
+              <Card key={p.id} className="border-border bg-card/50 hover:border-primary/20 transition-colors">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="text-sm font-semibold text-foreground/80 leading-tight">{p.nome}</CardTitle>
+                    {!p.is_precadastrada && (
+                      <div className="flex gap-1">
+                        <button onClick={() => openEdit(p)} className="p-1 text-muted-foreground hover:text-primary"><Edit2 size={14} /></button>
+                        <button onClick={() => handleDelete(p)} className="p-1 text-muted-foreground hover:text-destructive"><Trash2 size={14} /></button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1.5 mt-1">
+                    <Badge variant="outline" className="text-[10px] border-border text-muted-foreground">{p.cinematica}</Badge>
+                    {p.is_precadastrada && <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">Padrão</Badge>}
+                  </div>
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground space-y-1">
+                  <div className="flex justify-between"><span>Custo</span><span className="font-mono text-foreground/70">R$ {p.custo_aquisicao.toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Consumo</span><span className="font-mono text-foreground/70">{p.consumo_watts}W</span></div>
+                  <div className="pt-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full text-[11px] h-8 border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => handleToggleActive(p)}
+                    >
+                      <Plus size={14} className="mr-1" /> Ativar Impressora
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Dialog */}
