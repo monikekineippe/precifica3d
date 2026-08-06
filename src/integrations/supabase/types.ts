@@ -178,15 +178,19 @@ export type Database = {
           descricao: string | null
           estoque_deduzido: boolean
           id: string
+          installments: number | null
           inventory_item_id: string | null
+          is_refunded: boolean | null
           observacoes: string | null
           origem: string | null
           origem_outro: string | null
           produto: string
           quantidade: number
+          shipping_method: string | null
           sinal_recebido: boolean
           sinal_valor: number
           status: string
+          tracking_code: string | null
           updated_at: string
           user_id: string
           valor_total: number
@@ -202,15 +206,19 @@ export type Database = {
           descricao?: string | null
           estoque_deduzido?: boolean
           id?: string
+          installments?: number | null
           inventory_item_id?: string | null
+          is_refunded?: boolean | null
           observacoes?: string | null
           origem?: string | null
           origem_outro?: string | null
           produto: string
           quantidade?: number
+          shipping_method?: string | null
           sinal_recebido?: boolean
           sinal_valor?: number
           status?: string
+          tracking_code?: string | null
           updated_at?: string
           user_id: string
           valor_total?: number
@@ -226,15 +234,19 @@ export type Database = {
           descricao?: string | null
           estoque_deduzido?: boolean
           id?: string
+          installments?: number | null
           inventory_item_id?: string | null
+          is_refunded?: boolean | null
           observacoes?: string | null
           origem?: string | null
           origem_outro?: string | null
           produto?: string
           quantidade?: number
+          shipping_method?: string | null
           sinal_recebido?: boolean
           sinal_valor?: number
           status?: string
+          tracking_code?: string | null
           updated_at?: string
           user_id?: string
           valor_total?: number
