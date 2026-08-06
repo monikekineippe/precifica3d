@@ -274,7 +274,12 @@ export default function OrdersPage() {
       if (statusFilter !== "todos" && r.status !== statusFilter) return false;
       if (search) {
         const s = search.toLowerCase();
-        if (!r.cliente_nome.toLowerCase().includes(s) && !r.produto.toLowerCase().includes(s) && !r.codigo.toLowerCase().includes(s)) return false;
+        if (
+          !r.cliente_nome.toLowerCase().includes(s) && 
+          !r.produto.toLowerCase().includes(s) && 
+          !r.codigo.toLowerCase().includes(s) &&
+          !(r.tracking_code || "").toLowerCase().includes(s)
+        ) return false;
       }
       return true;
     });
