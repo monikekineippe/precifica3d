@@ -105,7 +105,9 @@ export default function NewPricing() {
               setTaxRate(settingsData.default_tax_rate);
               // Apply saved defaults
               if (!defaultsApplied) {
-                if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
+                if (profile?.primary_printer_id && data?.some((p: any) => p.id === profile.primary_printer_id)) {
+                  setPrinterId(profile.primary_printer_id);
+                } else if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
                   setPrinterId(settingsData.default_printer_id);
                 }
                 if (settingsData.default_state) {
@@ -610,8 +612,16 @@ export default function NewPricing() {
           <div>
             <Label className="text-foreground">Impressora</Label>
             <Select value={printerId} onValueChange={handlePrinterChange}>
-              <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-               <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="bg-muted border-border">
+                <SelectValue placeholder="Selecione a impressora" />
+              </SelectTrigger>
+              <SelectContent>
+                {activePrinters.map(p => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.nome} {p.id === profile?.primary_printer_id && "(Principal)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             {printer && (
               <div className="flex gap-1.5 mt-2">
