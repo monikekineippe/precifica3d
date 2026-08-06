@@ -32,7 +32,8 @@ const formatBRL = (v: number) =>
 
 const toDateKey = (value?: string | null) => {
   if (!value) return "";
-  const key = String(value).slice(0, 10);
+  // Se for ISO string com T ou espaço, pega a parte da data
+  const key = String(value).split(/[T ]/)[0];
   return /^\d{4}-\d{2}-\d{2}$/.test(key) ? key : "";
 };
 
