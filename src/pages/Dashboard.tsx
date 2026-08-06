@@ -212,7 +212,7 @@ export default function Dashboard() {
           const isQuitado = total > 0 && pago + 0.001 >= total && Boolean(info.lastDateKey);
           return { ...e, _pago: pago, _quitadoEm: info.lastDateKey, _isQuitado: isQuitado };
         })
-        .filter((e: any) => e._isQuitado);
+        .filter((e: any) => e._isQuitado && !e.is_refunded);
 
       const recent = [...quitadas]
         .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
