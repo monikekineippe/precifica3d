@@ -172,15 +172,23 @@ export default function Dashboard() {
       });
 
 
-      // 5. Encomendas quitadas: usadas como "vendas" para os widgets
+      // 5. Unificação de Encomendas Quitadas e Vendas Diretas
       const { data: encRows } = await supabase
         .from("encomendas")
         .select("id, cliente_nome, produto, quantidade, valor_total, created_at, inventory_item_id")
         .eq("user_id", user.id);
+      
       const { data: pagRows } = await supabase
         .from("encomenda_pagamentos")
         .select("encomenda_id, valor, data_pagamento, created_at")
         .eq("user_id", user.id);
+
+      const { data: directSales } = await supabase
+        .from("cash_transactions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "COMPLETED")
+        .not("description", "is", null);
 
       // Custos unitários vindos do módulo de precificação (inventory.cost_per_unit)
       const { data: invRows } = await supabase
@@ -204,67 +212,93 @@ export default function Dashboard() {
         pagosMap[key] = cur;
       });
 
+      // Vendas de Encomendas Quitadas
       const quitadas = (encRows || [])
         .map((e: any) => {
           const total = Number(e.valor_total || 0);
           const info = pagosMap[e.id] || { total: 0, lastDateKey: "" };
           const pago = info.total;
           const isQuitado = total > 0 && pago + 0.001 >= total && Boolean(info.lastDateKey);
-          return { ...e, _pago: pago, _quitadoEm: info.lastDateKey, _isQuitado: isQuitado };
+          
+          const qty = Number(e.quantidade || 0);
+          const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
+          const profit = total - (qty * unitCost);
+
+          return { 
+            id: e.id,
+            cliente_nome: e.cliente_nome,
+            produto: e.produto,
+            quantidade: qty,
+            valor_total: total,
+            lucro: profit,
+            _dateKey: info.lastDateKey, 
+            _isQuitado: isQuitado,
+            _source: 'encomenda'
+          };
         })
         .filter((e: any) => e._isQuitado && !e.is_refunded);
 
-      const recent = [...quitadas]
-        .sort((a, b) => (a._quitadoEm < b._quitadoEm ? 1 : -1))
+      // Vendas Diretas (Gestão de Caixa) que representam faturamento (category usually 'venda_estoque')
+      const vendasDiretas = (directSales || [])
+        .filter((t: any) => t.type === 'inflow' && (t.category === 'venda_estoque' || t.category === 'venda_direta'))
+        .map((t: any) => {
+          const dateKey = toDateKey(t.transaction_date || t.created_at);
+          return {
+            id: t.id,
+            cliente_nome: t.customer_name || "Venda Direta",
+            produto: t.description || "Produto",
+            quantidade: t.quantity || 1,
+            valor_total: Number(t.amount || 0),
+            lucro: Number(t.net_profit || t.amount || 0), // Reaproveita lucro líquido se disponível
+            _dateKey: dateKey,
+            _isQuitado: true,
+            _source: 'caixa'
+          };
+        });
+
+      // Unificação das duas fontes
+      const allSales = [...quitadas, ...vendasDiretas];
+
+      const recent = [...allSales]
+        .sort((a, b) => (a._dateKey < b._dateKey ? 1 : -1))
         .slice(0, 10);
 
-      // Encomendas quitadas no mês atual (data de quitação dentro do mês)
-      const quitadasMes = quitadas.filter((e: any) => {
-        if (!e._quitadoEm) return false;
-        const [year, month] = e._quitadoEm.split("-");
-        // Normaliza para comparação numérica (meses no JS são 0-11)
+      // Filtragem para o mês atual
+      const salesMes = allSales.filter((s: any) => {
+        if (!s._dateKey) return false;
+        const [year, month] = s._dateKey.split("-");
         return Number(year) === now.getFullYear() && (Number(month) - 1) === now.getMonth();
       });
-      const monthlyRevenueEncomendas = quitadasMes.reduce(
-        (sum: number, e: any) => sum + Number(e.valor_total || 0),
-        0
-      );
-      const monthlySalesCountEnc = quitadasMes.length;
-      const ticketMedioEnc = monthlySalesCountEnc > 0 ? monthlyRevenueEncomendas / monthlySalesCountEnc : 0;
-      const monthlyCogsEnc = quitadasMes.reduce((sum: number, e: any) => {
-        const qty = Number(e.quantidade || 0);
-        const unitCost = e.inventory_item_id ? (costByInv[e.inventory_item_id] || 0) : 0;
-        return sum + qty * unitCost;
-      }, 0);
-      const monthlyGrossProfitEnc = monthlyRevenueEncomendas - monthlyCogsEnc;
 
+      const monthlyRevenue = salesMes.reduce((sum: number, s: any) => sum + s.valor_total, 0);
+      const monthlySalesCount = salesMes.length;
+      const ticketMedio = monthlySalesCount > 0 ? monthlyRevenue / monthlySalesCount : 0;
+      const monthlyGrossProfit = salesMes.reduce((sum: number, s: any) => sum + s.lucro, 0);
+
+      // Itens mais vendidos (Top 5)
       const topAgg: Record<string, { produto: string; quantidade: number; valor: number }> = {};
-      quitadas.forEach((e: any) => {
-        const nome = (e.produto || "Sem nome").trim();
+      allSales.forEach((s: any) => {
+        const nome = (s.produto || "Sem nome").trim();
         const cur = topAgg[nome] || { produto: nome, quantidade: 0, valor: 0 };
-        cur.quantidade += Number(e.quantidade || 0);
-        cur.valor += Number(e.valor_total || 0);
+        cur.quantidade += Number(s.quantidade || 0);
+        cur.valor += Number(s.valor_total || 0);
         topAgg[nome] = cur;
       });
       const topList = Object.values(topAgg)
         .sort((a, b) => b.quantidade - a.quantidade)
         .slice(0, 5);
 
-
-      // 6. Evolução (últimos 30 dias): encomendas quitadas por data de quitação
-      // Normalização: chave "yyyy-MM-dd" no fuso local, tanto para cada
-      // coluna do eixo X quanto para _quitadoEm. Evita deslocamento por fuso
-      // e agrupamento em índice errado.
+      // 6. Evolução (últimos 30 dias): Unificado
       const dayKey = (d: Date) => format(d, "yyyy-MM-dd");
       const last30Days: Date[] = [];
       for (let i = 29; i >= 0; i--) {
         last30Days.push(subDays(now, i));
       }
       const chartTotalsByDate: Record<string, number> = {};
-      quitadas.forEach((e: any) => {
-        const key = e._quitadoEm;
+      allSales.forEach((s: any) => {
+        const key = s._dateKey;
         if (!key) return;
-        chartTotalsByDate[key] = (chartTotalsByDate[key] || 0) + Number(e.valor_total || 0);
+        chartTotalsByDate[key] = (chartTotalsByDate[key] || 0) + s.valor_total;
       });
       const chartDataFormatted = last30Days.map((day) => {
         const key = dayKey(day);
@@ -293,11 +327,11 @@ export default function Dashboard() {
       }
 
       setStats({
-        monthlyRevenue: monthlyRevenueEncomendas,
-        monthlyGrossProfit: monthlyGrossProfitEnc,
+        monthlyRevenue: monthlyRevenue,
+        monthlyGrossProfit: monthlyGrossProfit,
         monthlyGoal: userSettings?.monthly_revenue_goal || 0,
-        monthlySalesCount: monthlySalesCountEnc,
-        ticketMedio: ticketMedioEnc,
+        monthlySalesCount: monthlySalesCount,
+        ticketMedio: ticketMedio,
         criticalStock: criticalCount,
         operationalExpenses: operational,
         materialExpenses: material,
