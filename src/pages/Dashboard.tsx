@@ -222,7 +222,8 @@ export default function Dashboard() {
       const quitadasMes = quitadas.filter((e: any) => {
         if (!e._quitadoEm) return false;
         const [year, month] = e._quitadoEm.split("-");
-        return Number(year) === now.getFullYear() && Number(month) === (now.getMonth() + 1);
+        // Normaliza para comparação numérica (meses no JS são 0-11)
+        return Number(year) === now.getFullYear() && (Number(month) - 1) === now.getMonth();
       });
       const monthlyRevenueEncomendas = quitadasMes.reduce(
         (sum: number, e: any) => sum + Number(e.valor_total || 0),
