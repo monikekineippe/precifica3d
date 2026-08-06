@@ -292,6 +292,7 @@ export type Database = {
           custo_manutencao_mensal: number
           horas_uso_mensal: number
           id: string
+          is_active: boolean | null
           is_precadastrada: boolean
           max_filamentos: number
           nome: string
@@ -306,6 +307,7 @@ export type Database = {
           custo_manutencao_mensal?: number
           horas_uso_mensal?: number
           id?: string
+          is_active?: boolean | null
           is_precadastrada?: boolean
           max_filamentos?: number
           nome: string
@@ -320,6 +322,7 @@ export type Database = {
           custo_manutencao_mensal?: number
           horas_uso_mensal?: number
           id?: string
+          is_active?: boolean | null
           is_precadastrada?: boolean
           max_filamentos?: number
           nome?: string

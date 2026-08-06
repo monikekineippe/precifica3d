@@ -61,7 +61,7 @@ function createFilament(index: number): FilamentEntry {
 interface PrinterRow {
   id: string; nome: string; cinematica: string; custo_aquisicao: number;
   vida_util_horas: number; consumo_watts: number; custo_manutencao_mensal: number;
-  horas_uso_mensal: number; max_filamentos: number;
+  horas_uso_mensal: number; max_filamentos: number; is_active?: boolean;
 }
 
 interface MarginSuggestion {
@@ -75,7 +75,7 @@ interface MarginSuggestion {
 
 export default function NewPricing() {
   const navigate = useNavigate();
-  const { user, isPro, isAnual } = useAuth();
+  const { user, profile, isPro, isAnual } = useAuth();
   const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
@@ -105,7 +105,9 @@ export default function NewPricing() {
               setTaxRate(settingsData.default_tax_rate);
               // Apply saved defaults
               if (!defaultsApplied) {
-                if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
+                if (profile?.primary_printer_id && data?.some((p: any) => p.id === profile.primary_printer_id)) {
+                  setPrinterId(profile.primary_printer_id);
+                } else if (settingsData.default_printer_id && data?.some((p: any) => p.id === settingsData.default_printer_id)) {
                   setPrinterId(settingsData.default_printer_id);
                 }
                 if (settingsData.default_state) {
@@ -193,6 +195,7 @@ export default function NewPricing() {
   const [marginLoading, setMarginLoading] = useState(false);
   const marginFetchRef = useRef<string>("");
 
+  const activePrinters = useMemo(() => printers.filter(p => p.is_active || p.id === printerId), [printers, printerId]);
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
@@ -609,8 +612,16 @@ export default function NewPricing() {
           <div>
             <Label className="text-foreground">Impressora</Label>
             <Select value={printerId} onValueChange={handlePrinterChange}>
-              <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-               <SelectContent>{printers.map(p => <SelectItem key={p.id} value={p.id}>{p.nome}</SelectItem>)}</SelectContent>
+              <SelectTrigger className="bg-muted border-border">
+                <SelectValue placeholder="Selecione a impressora" />
+              </SelectTrigger>
+              <SelectContent>
+                {activePrinters.map(p => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.nome} {p.id === profile?.primary_printer_id && "(Principal)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
             {printer && (
               <div className="flex gap-1.5 mt-2">
