@@ -129,15 +129,17 @@ export default function FinancePage() {
   const margemContribuicao = totalInflows > 0 ? (netFlow / totalInflows) * 100 : 0;
 
   // Recebimentos Pendentes (Baseado em TODAS as encomendas com saldo, independente do filtro de data)
+  // Segue a mesma lógica do dashboard: saldo > 0.005 para evitar erros de ponto flutuante
   const pendingOrders = useMemo(() => {
     return encomendas
       .filter(e => e.status !== "cancelada" && !e.is_refunded)
       .map(e => {
-        const total = Number(e.valor_total);
+        const total = Number(e.valor_total || 0);
         const pago = pagamentos.filter(p => p.encomenda_id === e.id).reduce((s, p) => s + Number(p.valor), 0);
-        return { ...e, pago, saldo: total - pago };
+        const saldo = total - pago;
+        return { ...e, pago, saldo };
       })
-      .filter(e => e.saldo > 0.01);
+      .filter(e => e.saldo > 0.005);
   }, [encomendas, pagamentos]);
 
   const totalAReceber = useMemo(() => pendingOrders.reduce((s, e) => s + e.saldo, 0), [pendingOrders]);
