@@ -120,8 +120,8 @@ export default function Dashboard() {
         .select("*")
         .eq("user_id", user.id)
         .eq("type", "outflow")
-        .gte("created_at", firstDay.toISOString())
-        .lte("created_at", lastDay.toISOString());
+        .or(`transaction_date.gte.${firstDay.toISOString()},and(transaction_date.is.null,created_at.gte.${firstDay.toISOString()})`)
+        .or(`transaction_date.lte.${lastDay.toISOString()},and(transaction_date.is.null,created_at.lte.${lastDay.toISOString()})`);
 
       // 4b. Cash summary: all-time balance and month totals
       const { data: allCash } = await supabase
@@ -137,7 +137,8 @@ export default function Dashboard() {
           const amt = Number(t.amount || 0);
           if (t.type === "inflow") cashBalance += amt;
           else if (t.type === "outflow") cashBalance -= amt;
-          const d = new Date(t.created_at);
+          const dateStr = t.transaction_date || t.created_at;
+          const d = new Date(dateStr);
           if (d >= firstDay && d <= lastDay) {
             if (t.type === "inflow") cashInflowsMonth += amt;
             else if (t.type === "outflow") cashOutflowsMonth += amt;
