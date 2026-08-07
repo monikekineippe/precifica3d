@@ -26,6 +26,7 @@ export type Database = {
           id: string
           inventory_data: Json | null
           payment_method: string | null
+          profit_amount: number | null
           sale_id: string | null
           transaction_date: string | null
           type: string
@@ -42,6 +43,7 @@ export type Database = {
           id?: string
           inventory_data?: Json | null
           payment_method?: string | null
+          profit_amount?: number | null
           sale_id?: string | null
           transaction_date?: string | null
           type: string
@@ -58,6 +60,7 @@ export type Database = {
           id?: string
           inventory_data?: Json | null
           payment_method?: string | null
+          profit_amount?: number | null
           sale_id?: string | null
           transaction_date?: string | null
           type?: string
