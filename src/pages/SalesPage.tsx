@@ -50,6 +50,7 @@ interface CashTransaction {
   description: string;
   category: string;
   created_at: string;
+  transaction_date: string | null;
   auto_inventory_update?: boolean;
   inventory_data?: any;
 }
