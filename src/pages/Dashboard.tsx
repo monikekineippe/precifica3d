@@ -241,13 +241,16 @@ export default function Dashboard() {
       const vendasDiretas = (directSales || [])
         .map((t: any) => {
           const dateKey = toDateKey(t.transaction_date || t.created_at);
+          // Buscar lucro real gravado na tabela sales se houver vínculo
+          const profit = Number(t.profit_amount || t.amount || 0);
+          
           return {
             id: t.id,
             cliente_nome: t.customer_name || "Venda Direta",
             produto: t.description || "Produto",
             quantidade: t.quantity || 1,
             valor_total: Number(t.amount || 0),
-            lucro: Number(t.net_profit || t.amount || 0),
+            lucro: profit,
             _dateKey: dateKey,
             _isQuitado: true,
             _source: 'caixa'
@@ -438,7 +441,7 @@ export default function Dashboard() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium flex flex-wrap gap-1">
-                  Lucro Bruto <span className="text-profit/70">· {currentMonthCapitalized}</span>
+                  Lucro Líquido <span className="text-profit/70">· {currentMonthCapitalized}</span>
                 </p>
                 <TrendingUp size={16} className="text-profit/60" />
               </div>

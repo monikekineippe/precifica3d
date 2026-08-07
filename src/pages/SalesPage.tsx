@@ -284,6 +284,7 @@ export default function SalesPage() {
         .update({
           amount: netValue,
           description: `Venda para ${saleData.customer_name || "Cliente"}`,
+          profit_amount: profitAmount
         })
         .eq("sale_id", editingSale.id);
 
@@ -313,7 +314,8 @@ export default function SalesPage() {
         description: `Venda para ${saleData.customer_name || "Cliente"}`,
         category: 'venda',
         sale_id: sale.id,
-        transaction_date: new Date().toISOString()
+        transaction_date: new Date().toISOString(),
+        profit_amount: profitAmount
       });
 
       // Automatically manage inventory if orcamento or inventory item is linked
