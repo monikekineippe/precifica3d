@@ -1,0 +1,1 @@
+ALTER TABLE public.cash_transactions ADD COLUMN profit_amount numeric(10,2);
