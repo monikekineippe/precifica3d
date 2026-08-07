@@ -1,0 +1,1 @@
+UPDATE public.cash_transactions SET transaction_date = created_at WHERE transaction_date IS NULL;
