@@ -112,13 +112,14 @@ export default function SalesPage() {
     return { periodStart: start, periodEnd: end };
   })();
 
-  const inPeriod = (iso: string) => {
+  const inPeriod = (iso: string | null) => {
+    if (!iso) return false;
     const d = new Date(iso);
     return d >= periodStart && d <= periodEnd;
   };
 
   const periodSales = sales.filter(s => inPeriod(s.created_at));
-  const periodTransactions = transactions.filter(t => inPeriod(t.created_at));
+  const periodTransactions = transactions.filter(t => inPeriod(t.transaction_date || t.created_at));
 
   const [saleForm, setSaleForm] = useState({
     customer_id: "none",
