@@ -292,7 +292,8 @@ export default function SalesPage() {
         .insert({
           ...saleData,
           user_id: user.id,
-          status: 'completed'
+          status: 'completed',
+          created_at: new Date().toISOString()
         })
         .select()
         .single();
@@ -309,7 +310,8 @@ export default function SalesPage() {
         amount: netValue,
         description: `Venda para ${saleData.customer_name || "Cliente"}`,
         category: 'venda',
-        sale_id: sale.id
+        sale_id: sale.id,
+        transaction_date: new Date().toISOString()
       });
 
       // Automatically manage inventory if orcamento or inventory item is linked
@@ -408,7 +410,8 @@ export default function SalesPage() {
         amount: transactionForm.amount,
         description: transactionForm.description,
         category: transactionForm.category,
-        auto_inventory_update: transactionForm.auto_inventory_update
+        auto_inventory_update: transactionForm.auto_inventory_update,
+        transaction_date: new Date().toISOString()
       };
 
       if (transactionForm.auto_inventory_update) {
