@@ -285,7 +285,7 @@ export default function SalesPage() {
           amount: netValue,
           description: `Venda para ${saleData.customer_name || "Cliente"}`,
           profit_amount: profitAmount
-        })
+        } as any)
         .eq("sale_id", editingSale.id);
 
       toast.success("Venda atualizada com sucesso!");
@@ -313,10 +313,10 @@ export default function SalesPage() {
         amount: netValue,
         description: `Venda para ${saleData.customer_name || "Cliente"}`,
         category: 'venda',
-        sale_id: sale.id,
+        sale_id: (sale as any).id,
         transaction_date: new Date().toISOString(),
         profit_amount: profitAmount
-      });
+      } as any);
 
       // Automatically manage inventory if orcamento or inventory item is linked
       if (saleForm.inventory_item_id !== "none") {

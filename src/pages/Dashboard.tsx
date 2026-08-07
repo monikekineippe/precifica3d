@@ -241,8 +241,8 @@ export default function Dashboard() {
       const vendasDiretas = (directSales || [])
         .map((t: any) => {
           const dateKey = toDateKey(t.transaction_date || t.created_at);
-          // Buscar lucro real gravado na tabela sales se houver vínculo
-          const profit = Number(t.profit_amount || t.amount || 0);
+          // Buscar lucro real gravado na tabela cash_transactions se disponível
+          const profit = Number((t as any).profit_amount || t.amount || 0);
           
           return {
             id: t.id,
