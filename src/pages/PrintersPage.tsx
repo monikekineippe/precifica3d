@@ -116,23 +116,65 @@ export default function PrintersPage() {
     if (!user) return;
     
     const newStatus = !printer.is_active;
-    
-    // Optimistic update
-    setPrinters(prev => prev.map(p => p.id === printer.id ? { ...p, is_active: newStatus } : p));
 
-    const { error } = await supabase
-      .from("impressoras")
-      .update({ is_active: newStatus } as any)
-      .eq("id", printer.id);
-    
-    if (error) {
-      toast.error("Erro ao alterar status da impressora.");
-      // Rollback
-      setPrinters(prev => prev.map(p => p.id === printer.id ? { ...p, is_active: !newStatus } : p));
-    } else {
-      toast.success(newStatus ? "Impressora ativada!" : "Impressora desativada.");
-      // Re-load to be sure we have the latest server state
+    try {
+      if (newStatus && printer.is_precadastrada) {
+        // ATIVAR uma impressora do catálogo (pré-cadastrada)
+        // 1. Verificar se o usuário já tem uma cópia dessa impressora (pelo nome)
+        const { data: existing } = await supabase
+          .from("impressoras")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("nome", printer.nome)
+          .maybeSingle();
+
+        if (existing) {
+          // Reutiliza a cópia existente
+          await supabase
+            .from("impressoras")
+            .update({ is_active: true } as any)
+            .eq("id", existing.id);
+        } else {
+          // Cria uma CÓPIA
+          await supabase.from("impressoras").insert({
+            user_id: user.id,
+            nome: printer.nome,
+            cinematica: printer.cinematica,
+            custo_aquisicao: printer.custo_aquisicao,
+            vida_util_horas: printer.vida_util_horas,
+            consumo_watts: printer.consumo_watts,
+            custo_manutencao_mensal: printer.custo_manutencao_mensal,
+            horas_uso_mensal: printer.horas_uso_mensal,
+            max_filamentos: printer.max_filamentos,
+            is_precadastrada: false,
+            is_active: true,
+          } as any);
+        }
+        toast.success("Impressora ativada!");
+      } else if (!newStatus && !printer.is_precadastrada) {
+        // DESATIVAR (marcar is_active = false) a cópia do usuário
+        await supabase
+          .from("impressoras")
+          .update({ is_active: false } as any)
+          .eq("id", printer.id);
+        toast.success("Impressora desativada.");
+      } else if (!newStatus && printer.is_precadastrada) {
+        // Caso tente desativar uma pré-cadastrada (que teoricamente não aparece em "em uso")
+        // Mas se aparecer por algum motivo, apenas ignoramos ou avisamos
+        return;
+      } else {
+        // Caso normal (impressora própria do usuário)
+        await supabase
+          .from("impressoras")
+          .update({ is_active: newStatus } as any)
+          .eq("id", printer.id);
+        toast.success(newStatus ? "Impressora ativada!" : "Impressora desativada.");
+      }
+      
       loadPrinters();
+    } catch (error) {
+      console.error("Erro ao alterar status da impressora:", error);
+      toast.error("Erro ao alterar status da impressora.");
     }
   };
 
@@ -190,7 +232,7 @@ export default function PrintersPage() {
           Impressoras em uso
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {printers.filter(p => p.is_active).map(p => {
+          {printers.filter(p => p.is_active && p.user_id === user?.id).map(p => {
             const depPerHour = p.vida_util_horas > 0 ? p.custo_aquisicao / p.vida_util_horas : 0;
             const maintPerHour = p.horas_uso_mensal > 0 ? p.custo_manutencao_mensal / p.horas_uso_mensal : 0;
             const isPrimary = profile?.primary_printer_id === p.id;
@@ -251,7 +293,7 @@ export default function PrintersPage() {
               </Card>
             );
           })}
-          {printers.filter(p => p.is_active).length === 0 && (
+          {printers.filter(p => p.is_active && p.user_id === user?.id).length === 0 && (
             <div className="col-span-full py-8 text-center border-2 border-dashed border-border rounded-lg text-muted-foreground">
               Nenhuma impressora ativa. Ative uma no catálogo abaixo.
             </div>
@@ -262,7 +304,7 @@ export default function PrintersPage() {
       <div className="space-y-4 pt-4 border-t border-border">
         <h2 className="text-lg font-semibold text-foreground">Catálogo de Impressoras</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-80 hover:opacity-100 transition-opacity">
-          {printers.filter(p => !p.is_active).map(p => {
+          {printers.filter(p => p.is_precadastrada && !printers.some(up => up.user_id === user?.id && up.nome === p.nome && up.is_active)).map(p => {
             return (
               <Card key={p.id} className="border-border bg-card/50 hover:border-primary/20 transition-colors">
                 <CardHeader className="pb-2">

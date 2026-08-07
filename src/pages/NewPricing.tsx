@@ -92,10 +92,18 @@ export default function NewPricing() {
     if (!user) return;
     
     // Fetch Printers
-    supabase.from("impressoras").select("*")
-      .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
-      .then(({ data }) => {
-        if (data) setPrinters(data as any);
+      supabase.from("impressoras").select("*")
+        .or(`user_id.eq.${user.id},is_precadastrada.eq.true`)
+        .then(({ data }) => {
+          if (data) {
+            // Filter printers to only include user's active printers
+            // Plus any preset that might be set as primary (though ideally primary should be a copy)
+            const filtered = data.filter((p: any) => 
+              (p.user_id === user.id && p.is_active) || 
+              (p.is_precadastrada && profile?.primary_printer_id === p.id)
+            );
+            setPrinters(filtered as any);
+          }
         // Load user settings and apply defaults after printers are loaded
         supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle()
           .then(({ data: settingsData }) => {
@@ -195,7 +203,7 @@ export default function NewPricing() {
   const [marginLoading, setMarginLoading] = useState(false);
   const marginFetchRef = useRef<string>("");
 
-  const activePrinters = useMemo(() => printers.filter(p => p.is_active), [printers]);
+  const activePrinters = useMemo(() => printers, [printers]);
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
