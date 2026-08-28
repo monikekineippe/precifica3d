@@ -30,12 +30,34 @@ interface PrinterRow {
   is_precadastrada: boolean;
   user_id: string;
   is_active?: boolean;
+  consumo_medio_watts?: number | null;
+  potencia_nominal_watts?: number | null;
+  origem_consumo?: string | null;
+  origem_custo?: string | null;
+  preco_referencia_data?: string | null;
+  catalogo_id?: string | null;
 }
 
 const EMPTY_FORM = {
   nome: '', cinematica: 'Cartesiana' as string, custo_aquisicao: 0, vida_util_horas: 0,
   consumo_watts: 0, custo_manutencao_mensal: 0, horas_uso_mensal: 160, max_filamentos: 1,
+  consumo_medio_watts: null as number | null,
+  potencia_nominal_watts: null as number | null,
+  origem_consumo: null as string | null,
+  origem_custo: 'informado' as 'media_mercado' | 'informado',
+  preco_referencia_data: null as string | null,
+  catalogo_id: null as string | null,
 };
+
+const formatRefDate = (d?: string | null) => {
+  if (!d) return null;
+  const [y, m, day] = d.slice(0, 10).split('-');
+  if (!y || !m || !day) return null;
+  return `${day}/${m}/${y}`;
+};
+
+const getBrand = (nome: string) => (nome.trim().split(' ')[0] || 'Outros');
+
 
 export default function PrintersPage() {
   const { user, profile, refreshProfile } = useAuth();
