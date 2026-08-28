@@ -689,6 +689,36 @@ export default function NewPricing() {
           <div><Label className="text-foreground">Nome da peça</Label><Input value={pieceName} onChange={e => setPieceName(e.target.value)} placeholder="Ex: Vaso decorativo" className="bg-muted border-border" /></div>
           <div>
             <Label className="text-foreground">Impressora</Label>
+            {activePrinters.length === 0 ? (
+              <div className="space-y-2">
+                <Select value={catalogSelection} onValueChange={setCatalogSelection}>
+                  <SelectTrigger className="bg-muted border-border">
+                    <SelectValue placeholder="Escolha um modelo do catálogo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {catalogByBrand.map(g => (
+                      <SelectGroup key={g.marca}>
+                        <SelectLabel>{g.marca}</SelectLabel>
+                        {g.modelos.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  onClick={handleActivateCatalogPrinter}
+                  disabled={!catalogSelection || activating}
+                  className="bg-primary text-primary-foreground"
+                >
+                  {activating ? "Ativando..." : "Ativar impressora"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Você ainda não tem impressoras ativas. Ative um modelo do catálogo para continuar.
+                </p>
+              </div>
+            ) : (
             <Select value={printerId} onValueChange={handlePrinterChange}>
               <SelectTrigger className="bg-muted border-border">
                 <SelectValue placeholder="Selecione a impressora" />
@@ -701,6 +731,7 @@ export default function NewPricing() {
                 ))}
               </SelectContent>
             </Select>
+            )}
             {printer && (
               <div className="flex gap-1.5 mt-2">
                 <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.cinematica}</Badge>
