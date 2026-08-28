@@ -260,7 +260,8 @@ export default function NewPricing() {
       } as any).select().single();
 
       if (error || !data) {
-        toast.error("Erro ao ativar impressora.");
+        console.error("ativar impressora", error);
+        toast.error("Erro ao ativar: " + (error?.message || "sem detalhes"));
         return;
       }
 
