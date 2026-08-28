@@ -58,11 +58,22 @@ function createFilament(index: number): FilamentEntry {
   return { id: crypto.randomUUID(), color: FILAMENT_COLORS[index % FILAMENT_COLORS.length], type: 'PLA', brand: '', costPerKg: 0, weightUsed: 0, computedCost: 0 };
 }
 
+const HIGH_TEMP_FACTOR = 1.35;
+const HIGH_TEMP_MATERIALS = new Set(['ABS', 'ASA', 'PC', 'Nylon', 'HIPS', 'Carbon Fiber']);
+
 interface PrinterRow {
   id: string; nome: string; cinematica: string; custo_aquisicao: number;
   vida_util_horas: number; consumo_watts: number; custo_manutencao_mensal: number;
   horas_uso_mensal: number; max_filamentos: number; is_active?: boolean;
+  consumo_medio_watts?: number | null;
+  potencia_nominal_watts?: number | null;
+  origem_consumo?: string | null;
+  origem_custo?: string | null;
+  preco_referencia_data?: string | null;
+  catalogo_id?: string | null;
+  is_precadastrada?: boolean;
 }
+
 
 interface MarginSuggestion {
   categoria: string;
@@ -326,7 +337,9 @@ export default function NewPricing() {
   const totalFilamentCost = filaments.reduce((s, f) => s + f.computedCost, 0);
   const totalAccessoriesCost = accessories.reduce((s, a) => s + (Number(a.unitCost || 0) * Number(a.quantity || 1)), 0);
   const totalPkgCost = pkgCost * pkgQty;
-  const energyCost = printer ? (printer.consumo_watts / 1000) * printTimeH * tariff : 0;
+  const effectiveWatts = printer ? (printer.consumo_medio_watts ?? printer.consumo_watts) : 0;
+  const highTempFactor = filaments.some(f => HIGH_TEMP_MATERIALS.has(f.type)) ? HIGH_TEMP_FACTOR : 1;
+  const energyCost = printer ? (effectiveWatts / 1000) * highTempFactor * printTimeH * tariff : 0;
   const manualLaborCost = laborRate * (laborHours + laborMinutes / 60);
   const maintPerHour = printer && printer.horas_uso_mensal > 0 ? printer.custo_manutencao_mensal / printer.horas_uso_mensal : 0;
   const depPerHour = printer && printer.vida_util_horas > 0 ? printer.custo_aquisicao / printer.vida_util_horas : 0;
