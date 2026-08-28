@@ -219,6 +219,59 @@ export default function NewPricing() {
   const marginFetchRef = useRef<string>("");
 
   const activePrinters = useMemo(() => printers, [printers]);
+
+  const catalogByBrand = useMemo(() => {
+    const groups: Record<string, PrinterRow[]> = {};
+    catalogPrinters.forEach(p => {
+      const marca = (p.nome || "").trim().split(" ")[0] || "Outros";
+      (groups[marca] ||= []).push(p);
+    });
+    return Object.keys(groups)
+      .sort((a, b) => a.localeCompare(b, "pt-BR"))
+      .map(marca => ({
+        marca,
+        modelos: groups[marca].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
+      }));
+  }, [catalogPrinters]);
+
+  const handleActivateCatalogPrinter = async () => {
+    if (!user || !catalogSelection || activating) return;
+    const model = catalogPrinters.find(p => p.id === catalogSelection);
+    if (!model) return;
+    setActivating(true);
+    try {
+      const { data, error } = await supabase.from("impressoras").insert({
+        user_id: user.id,
+        nome: model.nome,
+        cinematica: model.cinematica,
+        custo_aquisicao: model.custo_aquisicao,
+        vida_util_horas: model.vida_util_horas,
+        consumo_watts: model.consumo_watts,
+        consumo_medio_watts: model.consumo_medio_watts ?? null,
+        potencia_nominal_watts: model.potencia_nominal_watts ?? null,
+        origem_consumo: model.origem_consumo ?? null,
+        custo_manutencao_mensal: model.custo_manutencao_mensal,
+        horas_uso_mensal: model.horas_uso_mensal,
+        max_filamentos: model.max_filamentos,
+        is_precadastrada: false,
+        is_active: true,
+        catalogo_id: model.id,
+        origem_custo: 'media_mercado',
+      } as any).select().single();
+
+      if (error || !data) {
+        toast.error("Erro ao ativar impressora.");
+        return;
+      }
+
+      setPrinters(prev => [...prev, data as any]);
+      setPrinterId((data as any).id);
+      toast.success("Impressora ativada! O custo veio da média de mercado: se você sabe quanto pagou, ajuste na tela Impressoras.");
+    } finally {
+      setActivating(false);
+    }
+  };
+
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
