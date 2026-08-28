@@ -117,6 +117,7 @@ export default function NewPricing() {
               (p.is_precadastrada && profile?.primary_printer_id === p.id)
             );
             setPrinters(filtered as any);
+            setCatalogPrinters(data.filter((p: any) => p.is_precadastrada === true) as any);
           }
         // Load user settings and apply defaults after printers are loaded
         supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle()
