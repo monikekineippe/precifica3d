@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -90,6 +90,9 @@ export default function NewPricing() {
   const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
+  const [catalogPrinters, setCatalogPrinters] = useState<PrinterRow[]>([]);
+  const [catalogSelection, setCatalogSelection] = useState<string>("");
+  const [activating, setActivating] = useState(false);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [pixDiscount, setPixDiscount] = useState(0);
@@ -114,6 +117,7 @@ export default function NewPricing() {
               (p.is_precadastrada && profile?.primary_printer_id === p.id)
             );
             setPrinters(filtered as any);
+            setCatalogPrinters(data.filter((p: any) => p.is_precadastrada === true) as any);
           }
         // Load user settings and apply defaults after printers are loaded
         supabase.from("user_settings").select("*").eq("user_id", user.id).maybeSingle()
@@ -215,6 +219,59 @@ export default function NewPricing() {
   const marginFetchRef = useRef<string>("");
 
   const activePrinters = useMemo(() => printers, [printers]);
+
+  const catalogByBrand = useMemo(() => {
+    const groups: Record<string, PrinterRow[]> = {};
+    catalogPrinters.forEach(p => {
+      const marca = (p.nome || "").trim().split(" ")[0] || "Outros";
+      (groups[marca] ||= []).push(p);
+    });
+    return Object.keys(groups)
+      .sort((a, b) => a.localeCompare(b, "pt-BR"))
+      .map(marca => ({
+        marca,
+        modelos: groups[marca].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR")),
+      }));
+  }, [catalogPrinters]);
+
+  const handleActivateCatalogPrinter = async () => {
+    if (!user || !catalogSelection || activating) return;
+    const model = catalogPrinters.find(p => p.id === catalogSelection);
+    if (!model) return;
+    setActivating(true);
+    try {
+      const { data, error } = await supabase.from("impressoras").insert({
+        user_id: user.id,
+        nome: model.nome,
+        cinematica: model.cinematica,
+        custo_aquisicao: model.custo_aquisicao,
+        vida_util_horas: model.vida_util_horas,
+        consumo_watts: model.consumo_watts,
+        consumo_medio_watts: model.consumo_medio_watts ?? null,
+        potencia_nominal_watts: model.potencia_nominal_watts ?? null,
+        origem_consumo: model.origem_consumo ?? null,
+        custo_manutencao_mensal: model.custo_manutencao_mensal,
+        horas_uso_mensal: model.horas_uso_mensal,
+        max_filamentos: model.max_filamentos,
+        is_precadastrada: false,
+        is_active: true,
+        catalogo_id: model.id,
+        origem_custo: 'media_mercado',
+      } as any).select().single();
+
+      if (error || !data) {
+        toast.error("Erro ao ativar impressora.");
+        return;
+      }
+
+      setPrinters(prev => [...prev, data as any]);
+      setPrinterId((data as any).id);
+      toast.success("Impressora ativada! O custo veio da média de mercado: se você sabe quanto pagou, ajuste na tela Impressoras.");
+    } finally {
+      setActivating(false);
+    }
+  };
+
   const printer = useMemo(() => printers.find(p => p.id === printerId), [printerId, printers]);
   const printTimeH = hours + minutes / 60;
 
@@ -632,6 +689,36 @@ export default function NewPricing() {
           <div><Label className="text-foreground">Nome da peça</Label><Input value={pieceName} onChange={e => setPieceName(e.target.value)} placeholder="Ex: Vaso decorativo" className="bg-muted border-border" /></div>
           <div>
             <Label className="text-foreground">Impressora</Label>
+            {activePrinters.length === 0 ? (
+              <div className="space-y-2">
+                <Select value={catalogSelection} onValueChange={setCatalogSelection}>
+                  <SelectTrigger className="bg-muted border-border">
+                    <SelectValue placeholder="Escolha um modelo do catálogo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {catalogByBrand.map(g => (
+                      <SelectGroup key={g.marca}>
+                        <SelectLabel>{g.marca}</SelectLabel>
+                        {g.modelos.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  size="sm"
+                  onClick={handleActivateCatalogPrinter}
+                  disabled={!catalogSelection || activating}
+                  className="bg-primary text-primary-foreground"
+                >
+                  {activating ? "Ativando..." : "Ativar impressora"}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Você ainda não tem impressoras ativas. Ative um modelo do catálogo para continuar.
+                </p>
+              </div>
+            ) : (
             <Select value={printerId} onValueChange={handlePrinterChange}>
               <SelectTrigger className="bg-muted border-border">
                 <SelectValue placeholder="Selecione a impressora" />
@@ -644,6 +731,7 @@ export default function NewPricing() {
                 ))}
               </SelectContent>
             </Select>
+            )}
             {printer && (
               <div className="flex gap-1.5 mt-2">
                 <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{printer.cinematica}</Badge>
