@@ -345,10 +345,19 @@ export default function PrintersPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex gap-1.5 mt-1">
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
                     <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{p.cinematica}</Badge>
                     {p.is_precadastrada && <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">Padrão</Badge>}
+                    {p.origem_custo === 'media_mercado' && (
+                      <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">
+                        média de mercado{formatRefDate(p.preco_referencia_data) ? ` (ref. ${formatRefDate(p.preco_referencia_data)})` : ''}
+                      </Badge>
+                    )}
+                    {p.origem_custo === 'informado' && (
+                      <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">valor informado</Badge>
+                    )}
                   </div>
+
                 </CardHeader>
                 <CardContent className="text-xs text-muted-foreground space-y-1">
                   <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
