@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -30,12 +31,34 @@ interface PrinterRow {
   is_precadastrada: boolean;
   user_id: string;
   is_active?: boolean;
+  consumo_medio_watts?: number | null;
+  potencia_nominal_watts?: number | null;
+  origem_consumo?: string | null;
+  origem_custo?: string | null;
+  preco_referencia_data?: string | null;
+  catalogo_id?: string | null;
 }
 
 const EMPTY_FORM = {
   nome: '', cinematica: 'Cartesiana' as string, custo_aquisicao: 0, vida_util_horas: 0,
   consumo_watts: 0, custo_manutencao_mensal: 0, horas_uso_mensal: 160, max_filamentos: 1,
+  consumo_medio_watts: null as number | null,
+  potencia_nominal_watts: null as number | null,
+  origem_consumo: null as string | null,
+  origem_custo: 'informado' as 'media_mercado' | 'informado',
+  preco_referencia_data: null as string | null,
+  catalogo_id: null as string | null,
 };
+
+const formatRefDate = (d?: string | null) => {
+  if (!d) return null;
+  const [y, m, day] = d.slice(0, 10).split('-');
+  if (!y || !m || !day) return null;
+  return `${day}/${m}/${y}`;
+};
+
+const getBrand = (nome: string) => (nome.trim().split(' ')[0] || 'Outros');
+
 
 export default function PrintersPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -74,35 +97,88 @@ export default function PrintersPage() {
       vida_util_horas: p.vida_util_horas, consumo_watts: p.consumo_watts,
       custo_manutencao_mensal: p.custo_manutencao_mensal,
       horas_uso_mensal: p.horas_uso_mensal, max_filamentos: p.max_filamentos,
+      consumo_medio_watts: p.consumo_medio_watts ?? null,
+      potencia_nominal_watts: p.potencia_nominal_watts ?? null,
+      origem_consumo: p.origem_consumo ?? null,
+      origem_custo: (p.origem_custo === 'media_mercado' ? 'media_mercado' : 'informado'),
+      preco_referencia_data: p.preco_referencia_data ?? null,
+      catalogo_id: p.catalogo_id ?? null,
     });
     setDialogOpen(true);
+  };
+
+  const applyCatalogModel = (modelId: string) => {
+    if (modelId === 'manual') {
+      setForm({ ...EMPTY_FORM });
+      return;
+    }
+    const model = printers.find(p => p.id === modelId);
+    if (!model) return;
+    setForm({
+      nome: model.nome,
+      cinematica: model.cinematica,
+      custo_aquisicao: model.custo_aquisicao,
+      vida_util_horas: model.vida_util_horas,
+      consumo_watts: model.consumo_watts,
+      custo_manutencao_mensal: model.custo_manutencao_mensal,
+      horas_uso_mensal: model.horas_uso_mensal,
+      max_filamentos: model.max_filamentos,
+      consumo_medio_watts: model.consumo_medio_watts ?? null,
+      potencia_nominal_watts: model.potencia_nominal_watts ?? null,
+      origem_consumo: model.origem_consumo ?? null,
+      origem_custo: 'media_mercado',
+      preco_referencia_data: model.preco_referencia_data ?? null,
+      catalogo_id: model.id,
+    });
+  };
+
+  const handleCostOrigin = (origem: 'media_mercado' | 'informado') => {
+    if (origem === 'media_mercado' && form.catalogo_id) {
+      const model = printers.find(p => p.id === form.catalogo_id);
+      setForm(f => ({
+        ...f,
+        origem_custo: 'media_mercado',
+        custo_aquisicao: model ? model.custo_aquisicao : f.custo_aquisicao,
+        preco_referencia_data: model?.preco_referencia_data ?? f.preco_referencia_data,
+      }));
+      return;
+    }
+    setForm(f => ({ ...f, origem_custo: origem, ...(origem === 'informado' ? { preco_referencia_data: null } : {}) }));
   };
 
   const handleSave = async () => {
     if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!user) return;
 
+    const payload = {
+      nome: form.nome, cinematica: form.cinematica, custo_aquisicao: form.custo_aquisicao,
+      vida_util_horas: form.vida_util_horas, consumo_watts: form.consumo_watts,
+      custo_manutencao_mensal: form.custo_manutencao_mensal,
+      horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos,
+      consumo_medio_watts: form.consumo_medio_watts,
+      potencia_nominal_watts: form.potencia_nominal_watts,
+      origem_consumo: form.origem_consumo,
+      origem_custo: form.origem_custo,
+      preco_referencia_data: form.origem_custo === 'media_mercado' ? form.preco_referencia_data : null,
+      catalogo_id: form.catalogo_id,
+    };
+
     if (editing) {
-      await supabase.from("impressoras").update({
-        nome: form.nome, cinematica: form.cinematica, custo_aquisicao: form.custo_aquisicao,
-        vida_util_horas: form.vida_util_horas, consumo_watts: form.consumo_watts,
-        custo_manutencao_mensal: form.custo_manutencao_mensal,
-        horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos,
-      } as any).eq("id", editing.id);
+      const { error } = await supabase.from("impressoras").update(payload as any).eq("id", editing.id);
+      if (error) { console.error("salvar impressora", error); toast.error("Erro ao salvar: " + (error.message || "sem detalhes")); return; }
       toast.success("Impressora atualizada!");
     } else {
-      await supabase.from("impressoras").insert({
-        user_id: user.id, nome: form.nome, cinematica: form.cinematica,
-        custo_aquisicao: form.custo_aquisicao, vida_util_horas: form.vida_util_horas,
-        consumo_watts: form.consumo_watts, custo_manutencao_mensal: form.custo_manutencao_mensal,
-        horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos, is_precadastrada: false,
+      const { error } = await supabase.from("impressoras").insert({
+        ...payload, user_id: user.id, is_precadastrada: false, is_active: true,
       } as any);
+      if (error) { console.error("salvar impressora", error); toast.error("Erro ao salvar: " + (error.message || "sem detalhes")); return; }
       toast.success("Impressora adicionada!");
       refresh();
     }
     setDialogOpen(false);
     loadPrinters();
   };
+
 
   const handleDelete = async (p: PrinterRow) => {
     if (p.is_precadastrada) { toast.info("Impressoras pré-cadastradas não podem ser removidas."); return; }
@@ -270,10 +346,19 @@ export default function PrintersPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="flex gap-1.5 mt-1">
+                  <div className="flex gap-1.5 mt-1 flex-wrap">
                     <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">{p.cinematica}</Badge>
                     {p.is_precadastrada && <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">Padrão</Badge>}
+                    {p.origem_custo === 'media_mercado' && (
+                      <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">
+                        média de mercado{formatRefDate(p.preco_referencia_data) ? ` (ref. ${formatRefDate(p.preco_referencia_data)})` : ''}
+                      </Badge>
+                    )}
+                    {p.origem_custo === 'informado' && (
+                      <Badge variant="outline" className="text-[9px] border-border text-muted-foreground">valor informado</Badge>
+                    )}
                   </div>
+
                 </CardHeader>
                 <CardContent className="text-xs text-muted-foreground space-y-1">
                   <div className="flex justify-between"><span>Depreciação/h</span><span className="font-mono text-primary">R$ {depPerHour.toFixed(2)}</span></div>
@@ -349,6 +434,31 @@ export default function PrintersPage() {
             <DialogTitle className="text-foreground">{editing ? "Editar" : "Nova"} Impressora</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label className="text-foreground">Qual o seu modelo?</Label>
+              <Select value={form.catalogo_id ?? 'manual'} onValueChange={applyCatalogModel}>
+                <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione o modelo" /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value="manual">Outro modelo (cadastro manual)</SelectItem>
+                  {Object.entries(
+                    printers.filter(p => p.is_precadastrada).reduce((acc, p) => {
+                      const brand = getBrand(p.nome);
+                      (acc[brand] ||= []).push(p);
+                      return acc;
+                    }, {} as Record<string, PrinterRow[]>)
+                  )
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([brand, models]) => (
+                      <SelectGroup key={brand}>
+                        <SelectLabel>{brand}</SelectLabel>
+                        {models.sort((a, b) => a.nome.localeCompare(b.nome)).map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div><Label className="text-foreground">Nome/Modelo</Label><Input value={form.nome} onChange={e => setField('nome', e.target.value)} className="bg-muted border-border" /></div>
             <div><Label className="text-foreground">Cinemática</Label>
               <Select value={form.cinematica} onValueChange={v => setField('cinematica', v)}>
@@ -356,9 +466,38 @@ export default function PrintersPage() {
                 <SelectContent><SelectItem value="Cartesiana">Cartesiana</SelectItem><SelectItem value="Delta">Delta</SelectItem></SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label className="text-foreground">Custo de aquisição (R$)</Label>
+              <Input
+                type="number"
+                value={form.custo_aquisicao || ''}
+                onChange={e => setField('custo_aquisicao', +e.target.value)}
+                disabled={form.origem_custo === 'media_mercado'}
+                className="bg-muted border-border"
+              />
+              <p className="text-[11px] text-muted-foreground">média do mercado brasileiro, ajuste se você pagou diferente</p>
+              <RadioGroup
+                value={form.origem_custo}
+                onValueChange={v => handleCostOrigin(v as 'media_mercado' | 'informado')}
+                className="gap-2 pt-1"
+              >
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="media_mercado" id="custo-media" disabled={!form.catalogo_id} />
+                  <Label htmlFor="custo-media" className="text-xs text-muted-foreground font-normal">Usar a média de mercado</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="informado" id="custo-informado" />
+                  <Label htmlFor="custo-informado" className="text-xs text-muted-foreground font-normal">Informar quanto eu paguei</Label>
+                </div>
+              </RadioGroup>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-foreground">Custo (R$)</Label><Input type="number" value={form.custo_aquisicao || ''} onChange={e => setField('custo_aquisicao', +e.target.value)} className="bg-muted border-border" /></div>
-              <div><Label className="text-foreground">Vida útil (h)</Label><Input type="number" value={form.vida_util_horas || ''} onChange={e => setField('vida_util_horas', +e.target.value)} className="bg-muted border-border" /></div>
+              <div className="col-span-2">
+                <Label className="text-foreground">Vida útil (h)</Label>
+                <Input type="number" value={form.vida_util_horas || ''} onChange={e => setField('vida_util_horas', +e.target.value)} className="bg-muted border-border" />
+                <p className="text-[11px] text-muted-foreground mt-1">estimativa por convenção do setor, fabricantes não publicam esse número</p>
+              </div>
+
               <div><Label className="text-foreground">Consumo (W)</Label><Input type="number" value={form.consumo_watts || ''} onChange={e => setField('consumo_watts', +e.target.value)} className="bg-muted border-border" /></div>
               <div><Label className="text-foreground">Manutenção/mês (R$)</Label><Input type="number" value={form.custo_manutencao_mensal || ''} onChange={e => setField('custo_manutencao_mensal', +e.target.value)} className="bg-muted border-border" /></div>
               <div><Label className="text-foreground">Horas uso/mês</Label><Input type="number" value={form.horas_uso_mensal || ''} onChange={e => setField('horas_uso_mensal', +e.target.value)} className="bg-muted border-border" /></div>

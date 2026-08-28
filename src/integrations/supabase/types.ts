@@ -288,7 +288,9 @@ export type Database = {
       }
       impressoras: {
         Row: {
+          catalogo_id: string | null
           cinematica: string
+          consumo_medio_watts: number | null
           consumo_watts: number
           created_at: string
           custo_aquisicao: number
@@ -299,11 +301,17 @@ export type Database = {
           is_precadastrada: boolean
           max_filamentos: number
           nome: string
+          origem_consumo: string | null
+          origem_custo: string | null
+          potencia_nominal_watts: number | null
+          preco_referencia_data: string | null
           user_id: string | null
           vida_util_horas: number
         }
         Insert: {
+          catalogo_id?: string | null
           cinematica?: string
+          consumo_medio_watts?: number | null
           consumo_watts?: number
           created_at?: string
           custo_aquisicao?: number
@@ -314,11 +322,17 @@ export type Database = {
           is_precadastrada?: boolean
           max_filamentos?: number
           nome: string
+          origem_consumo?: string | null
+          origem_custo?: string | null
+          potencia_nominal_watts?: number | null
+          preco_referencia_data?: string | null
           user_id?: string | null
           vida_util_horas?: number
         }
         Update: {
+          catalogo_id?: string | null
           cinematica?: string
+          consumo_medio_watts?: number | null
           consumo_watts?: number
           created_at?: string
           custo_aquisicao?: number
@@ -329,10 +343,22 @@ export type Database = {
           is_precadastrada?: boolean
           max_filamentos?: number
           nome?: string
+          origem_consumo?: string | null
+          origem_custo?: string | null
+          potencia_nominal_watts?: number | null
+          preco_referencia_data?: string | null
           user_id?: string | null
           vida_util_horas?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "impressoras_catalogo_id_fkey"
+            columns: ["catalogo_id"]
+            isOneToOne: false
+            referencedRelation: "impressoras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory: {
         Row: {
