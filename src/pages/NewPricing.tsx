@@ -90,6 +90,9 @@ export default function NewPricing() {
   const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
+  const [catalogPrinters, setCatalogPrinters] = useState<PrinterRow[]>([]);
+  const [catalogSelection, setCatalogSelection] = useState<string>("");
+  const [activating, setActivating] = useState(false);
   const [settings, setSettings] = useState({ defaultTariff: 0.85, defaultMargin: 150, defaultTaxRate: 6 });
   const [defaultsApplied, setDefaultsApplied] = useState(false);
   const [pixDiscount, setPixDiscount] = useState(0);
