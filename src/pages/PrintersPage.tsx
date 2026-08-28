@@ -96,35 +96,88 @@ export default function PrintersPage() {
       vida_util_horas: p.vida_util_horas, consumo_watts: p.consumo_watts,
       custo_manutencao_mensal: p.custo_manutencao_mensal,
       horas_uso_mensal: p.horas_uso_mensal, max_filamentos: p.max_filamentos,
+      consumo_medio_watts: p.consumo_medio_watts ?? null,
+      potencia_nominal_watts: p.potencia_nominal_watts ?? null,
+      origem_consumo: p.origem_consumo ?? null,
+      origem_custo: (p.origem_custo === 'media_mercado' ? 'media_mercado' : 'informado'),
+      preco_referencia_data: p.preco_referencia_data ?? null,
+      catalogo_id: p.catalogo_id ?? null,
     });
     setDialogOpen(true);
+  };
+
+  const applyCatalogModel = (modelId: string) => {
+    if (modelId === 'manual') {
+      setForm({ ...EMPTY_FORM });
+      return;
+    }
+    const model = printers.find(p => p.id === modelId);
+    if (!model) return;
+    setForm({
+      nome: model.nome,
+      cinematica: model.cinematica,
+      custo_aquisicao: model.custo_aquisicao,
+      vida_util_horas: model.vida_util_horas,
+      consumo_watts: model.consumo_watts,
+      custo_manutencao_mensal: model.custo_manutencao_mensal,
+      horas_uso_mensal: model.horas_uso_mensal,
+      max_filamentos: model.max_filamentos,
+      consumo_medio_watts: model.consumo_medio_watts ?? null,
+      potencia_nominal_watts: model.potencia_nominal_watts ?? null,
+      origem_consumo: model.origem_consumo ?? null,
+      origem_custo: 'media_mercado',
+      preco_referencia_data: model.preco_referencia_data ?? null,
+      catalogo_id: model.id,
+    });
+  };
+
+  const handleCostOrigin = (origem: 'media_mercado' | 'informado') => {
+    if (origem === 'media_mercado' && form.catalogo_id) {
+      const model = printers.find(p => p.id === form.catalogo_id);
+      setForm(f => ({
+        ...f,
+        origem_custo: 'media_mercado',
+        custo_aquisicao: model ? model.custo_aquisicao : f.custo_aquisicao,
+        preco_referencia_data: model?.preco_referencia_data ?? f.preco_referencia_data,
+      }));
+      return;
+    }
+    setForm(f => ({ ...f, origem_custo: origem, ...(origem === 'informado' ? { preco_referencia_data: null } : {}) }));
   };
 
   const handleSave = async () => {
     if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
     if (!user) return;
 
+    const payload = {
+      nome: form.nome, cinematica: form.cinematica, custo_aquisicao: form.custo_aquisicao,
+      vida_util_horas: form.vida_util_horas, consumo_watts: form.consumo_watts,
+      custo_manutencao_mensal: form.custo_manutencao_mensal,
+      horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos,
+      consumo_medio_watts: form.consumo_medio_watts,
+      potencia_nominal_watts: form.potencia_nominal_watts,
+      origem_consumo: form.origem_consumo,
+      origem_custo: form.origem_custo,
+      preco_referencia_data: form.origem_custo === 'media_mercado' ? form.preco_referencia_data : null,
+      catalogo_id: form.catalogo_id,
+    };
+
     if (editing) {
-      await supabase.from("impressoras").update({
-        nome: form.nome, cinematica: form.cinematica, custo_aquisicao: form.custo_aquisicao,
-        vida_util_horas: form.vida_util_horas, consumo_watts: form.consumo_watts,
-        custo_manutencao_mensal: form.custo_manutencao_mensal,
-        horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos,
-      } as any).eq("id", editing.id);
+      const { error } = await supabase.from("impressoras").update(payload as any).eq("id", editing.id);
+      if (error) { console.error("salvar impressora", error); toast.error("Erro ao salvar: " + (error.message || "sem detalhes")); return; }
       toast.success("Impressora atualizada!");
     } else {
-      await supabase.from("impressoras").insert({
-        user_id: user.id, nome: form.nome, cinematica: form.cinematica,
-        custo_aquisicao: form.custo_aquisicao, vida_util_horas: form.vida_util_horas,
-        consumo_watts: form.consumo_watts, custo_manutencao_mensal: form.custo_manutencao_mensal,
-        horas_uso_mensal: form.horas_uso_mensal, max_filamentos: form.max_filamentos, is_precadastrada: false,
+      const { error } = await supabase.from("impressoras").insert({
+        ...payload, user_id: user.id, is_precadastrada: false, is_active: true,
       } as any);
+      if (error) { console.error("salvar impressora", error); toast.error("Erro ao salvar: " + (error.message || "sem detalhes")); return; }
       toast.success("Impressora adicionada!");
       refresh();
     }
     setDialogOpen(false);
     loadPrinters();
   };
+
 
   const handleDelete = async (p: PrinterRow) => {
     if (p.is_precadastrada) { toast.info("Impressoras pré-cadastradas não podem ser removidas."); return; }
