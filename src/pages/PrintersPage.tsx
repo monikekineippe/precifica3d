@@ -433,6 +433,31 @@ export default function PrintersPage() {
             <DialogTitle className="text-foreground">{editing ? "Editar" : "Nova"} Impressora</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div>
+              <Label className="text-foreground">Qual o seu modelo?</Label>
+              <Select value={form.catalogo_id ?? 'manual'} onValueChange={applyCatalogModel}>
+                <SelectTrigger className="bg-muted border-border"><SelectValue placeholder="Selecione o modelo" /></SelectTrigger>
+                <SelectContent className="max-h-72">
+                  <SelectItem value="manual">Outro modelo (cadastro manual)</SelectItem>
+                  {Object.entries(
+                    printers.filter(p => p.is_precadastrada).reduce((acc, p) => {
+                      const brand = getBrand(p.nome);
+                      (acc[brand] ||= []).push(p);
+                      return acc;
+                    }, {} as Record<string, PrinterRow[]>)
+                  )
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([brand, models]) => (
+                      <SelectGroup key={brand}>
+                        <SelectLabel>{brand}</SelectLabel>
+                        {models.sort((a, b) => a.nome.localeCompare(b.nome)).map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.nome}</SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div><Label className="text-foreground">Nome/Modelo</Label><Input value={form.nome} onChange={e => setField('nome', e.target.value)} className="bg-muted border-border" /></div>
             <div><Label className="text-foreground">Cinemática</Label>
               <Select value={form.cinematica} onValueChange={v => setField('cinematica', v)}>
@@ -440,9 +465,38 @@ export default function PrintersPage() {
                 <SelectContent><SelectItem value="Cartesiana">Cartesiana</SelectItem><SelectItem value="Delta">Delta</SelectItem></SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label className="text-foreground">Custo de aquisição (R$)</Label>
+              <Input
+                type="number"
+                value={form.custo_aquisicao || ''}
+                onChange={e => setField('custo_aquisicao', +e.target.value)}
+                disabled={form.origem_custo === 'media_mercado'}
+                className="bg-muted border-border"
+              />
+              <p className="text-[11px] text-muted-foreground">média do mercado brasileiro, ajuste se você pagou diferente</p>
+              <RadioGroup
+                value={form.origem_custo}
+                onValueChange={v => handleCostOrigin(v as 'media_mercado' | 'informado')}
+                className="gap-2 pt-1"
+              >
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="media_mercado" id="custo-media" disabled={!form.catalogo_id} />
+                  <Label htmlFor="custo-media" className="text-xs text-muted-foreground font-normal">Usar a média de mercado</Label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <RadioGroupItem value="informado" id="custo-informado" />
+                  <Label htmlFor="custo-informado" className="text-xs text-muted-foreground font-normal">Informar quanto eu paguei</Label>
+                </div>
+              </RadioGroup>
+            </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-foreground">Custo (R$)</Label><Input type="number" value={form.custo_aquisicao || ''} onChange={e => setField('custo_aquisicao', +e.target.value)} className="bg-muted border-border" /></div>
-              <div><Label className="text-foreground">Vida útil (h)</Label><Input type="number" value={form.vida_util_horas || ''} onChange={e => setField('vida_util_horas', +e.target.value)} className="bg-muted border-border" /></div>
+              <div className="col-span-2">
+                <Label className="text-foreground">Vida útil (h)</Label>
+                <Input type="number" value={form.vida_util_horas || ''} onChange={e => setField('vida_util_horas', +e.target.value)} className="bg-muted border-border" />
+                <p className="text-[11px] text-muted-foreground mt-1">estimativa por convenção do setor, fabricantes não publicam esse número</p>
+              </div>
+
               <div><Label className="text-foreground">Consumo (W)</Label><Input type="number" value={form.consumo_watts || ''} onChange={e => setField('consumo_watts', +e.target.value)} className="bg-muted border-border" /></div>
               <div><Label className="text-foreground">Manutenção/mês (R$)</Label><Input type="number" value={form.custo_manutencao_mensal || ''} onChange={e => setField('custo_manutencao_mensal', +e.target.value)} className="bg-muted border-border" /></div>
               <div><Label className="text-foreground">Horas uso/mês</Label><Input type="number" value={form.horas_uso_mensal || ''} onChange={e => setField('horas_uso_mensal', +e.target.value)} className="bg-muted border-border" /></div>
