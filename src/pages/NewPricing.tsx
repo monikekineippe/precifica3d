@@ -448,7 +448,9 @@ export default function NewPricing() {
   ].filter(d => d.value > 0);
   const reverseProfit = manualPriceValue - totalCost - reverseTaxAmount - reverseMarketplaceAmount - reverseCardAmount;
   const reverseMargin = manualPriceValue > 0 ? (reverseProfit / manualPriceValue) * 100 : 0;
-  const minMarginPct = marginSuggestion?.margem_minima ?? settings.defaultMargin;
+  const minMarkup = marginSuggestion?.margem_minima ?? settings.defaultMargin;
+  // Converte markup sobre custo em margem sobre o preço, pra comparar com a margem real
+  const minMarginPct = minMarkup > 0 ? (minMarkup / (100 + minMarkup)) * 100 : 0;
 
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
@@ -541,12 +543,12 @@ export default function NewPricing() {
       quantidade_embalagem: pkgQty,
       acessorios: accessories as any,
       custo_acessorios: totalAccessoriesCost,
-      margem_lucro: margin, 
+      margem_lucro: priceMode === "preco" ? Number(reverseMargin.toFixed(2)) : margin,
       percentual_impostos: taxRate,
       custo_total: totalCost, 
-      preco_sugerido: suggestedPrice, 
+      preco_sugerido: priceMode === "preco" ? manualPriceValue : suggestedPrice, 
       preco_minimo: minimumPrice,
-      lucro_liquido: profit,
+      lucro_liquido: priceMode === "preco" ? Number(reverseProfit.toFixed(2)) : profit,
     };
 
     console.log("Saving quote to 'orcamentos' table:", quoteData);
@@ -1697,6 +1699,20 @@ export default function NewPricing() {
         onMarginChange={setMargin}
         lines={panelLines}
         missing={panelMissing}
+        mode={priceMode}
+        onModeChange={setPriceMode}
+        manualPrice={manualPrice}
+        onManualPriceChange={setManualPrice}
+        marketplaceFee={marketplaceFee}
+        onMarketplaceFeeChange={setMarketplaceFee}
+        applyCardFee={applyCardFee}
+        onApplyCardFeeChange={setApplyCardFee}
+        cardFeePercent={cardFeePercent}
+        taxRate={taxRate}
+        reverseDeductions={reverseDeductions}
+        reverseProfit={reverseProfit}
+        reverseMargin={reverseMargin}
+        minMargin={minMarginPct}
       />
       </div>
     </div>
