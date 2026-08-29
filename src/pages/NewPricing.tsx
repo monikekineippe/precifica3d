@@ -667,8 +667,31 @@ export default function NewPricing() {
 
   const isBlocked = !canCreateQuote;
 
+  const panelMissing = useMemo(() => {
+    const m: string[] = [];
+    if (!pieceName.trim()) m.push("Nome da peça");
+    if (!printer) m.push("Impressora");
+    if (printTimeH <= 0) m.push("Tempo de impressão");
+    if (totalWeight <= 0) m.push("Peso do filamento");
+    if (totalFilamentCost <= 0) m.push("Custo do filamento por kg");
+    return m;
+  }, [pieceName, printer, printTimeH, totalWeight, totalFilamentCost]);
+
+  const panelLines = useMemo(() => ([
+    { label: "Material", value: totalFilamentCost },
+    { label: "Energia", value: energyCost },
+    { label: "Depreciação da impressora", value: depreciationCost },
+    { label: "Manutenção", value: maintenanceCost },
+    { label: "Mão de obra", value: laborCost + postProcessCost },
+    { label: "Falha e risco", value: failureCost },
+    { label: "Custos extras", value: totalPkgCost + totalAccessoriesCost },
+  ]), [totalFilamentCost, energyCost, depreciationCost, maintenanceCost, laborCost, postProcessCost, failureCost, totalPkgCost, totalAccessoriesCost]);
+
   return (
-    <div className="space-y-6 max-w-3xl relative">
+    <div className="relative pb-24 lg:pb-0">
+      <div className="lg:flex lg:gap-6 lg:items-start">
+      <div className="space-y-6 flex-1 min-w-0 max-w-3xl">
+
       {isBlocked && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-card border border-border rounded-xl p-8 max-w-md mx-4 text-center space-y-5 shadow-2xl">
