@@ -211,6 +211,11 @@ export default function NewPricing() {
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
   const [failureRate, setFailureRate] = useState(5);
+  // Modo de precificação: margem (padrão) ou preço reverso
+  const [priceMode, setPriceMode] = useState<"margem" | "preco">("margem");
+  const [manualPrice, setManualPrice] = useState("");
+  const [marketplaceFee, setMarketplaceFee] = useState("");
+  const [applyCardFee, setApplyCardFee] = useState(false);
   const [finishHours, setFinishHours] = useState(0);
   const [finishMinutes, setFinishMinutes] = useState(0);
   const [finishRate, setFinishRate] = useState<number | "">("");
