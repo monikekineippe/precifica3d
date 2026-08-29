@@ -417,6 +417,7 @@ export type Database = {
       orcamentos: {
         Row: {
           acessorios: Json | null
+          canais_venda: Json | null
           categoria_ia: string | null
           cidade: string | null
           created_at: string
@@ -459,6 +460,7 @@ export type Database = {
         }
         Insert: {
           acessorios?: Json | null
+          canais_venda?: Json | null
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
@@ -501,6 +503,7 @@ export type Database = {
         }
         Update: {
           acessorios?: Json | null
+          canais_venda?: Json | null
           categoria_ia?: string | null
           cidade?: string | null
           created_at?: string
@@ -869,6 +872,7 @@ export type Database = {
           max_installments: number
           monthly_revenue_goal: number | null
           pix_discount: number
+          sales_channels: Json | null
           updated_at: string
           user_id: string
         }
@@ -885,6 +889,7 @@ export type Database = {
           max_installments?: number
           monthly_revenue_goal?: number | null
           pix_discount?: number
+          sales_channels?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -901,6 +906,7 @@ export type Database = {
           max_installments?: number
           monthly_revenue_goal?: number | null
           pix_discount?: number
+          sales_channels?: Json | null
           updated_at?: string
           user_id?: string
         }
