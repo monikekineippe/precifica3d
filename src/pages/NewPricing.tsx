@@ -677,7 +677,7 @@ export default function NewPricing() {
             </div>
             <h2 className="text-xl font-bold text-foreground">Você atingiu o limite do plano gratuito</h2>
             <p className="text-muted-foreground text-sm">
-              Você já realizou 2 precificações este mês. Faça upgrade para o plano Pro e precifique sem limites.
+              Você já salvou 10 orçamentos este mês. Faça upgrade para o plano Pro e precifique sem limites.
             </p>
             <div className="space-y-3">
               <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">

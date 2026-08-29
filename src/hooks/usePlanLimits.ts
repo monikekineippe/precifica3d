@@ -28,13 +28,13 @@ export function usePlanLimits() {
       .then(({ count }) => setCustomPrintersCount(count || 0));
   }, [user]);
 
-  const canCreateQuote = isPro || quotesThisMonth < 2;
+  const canCreateQuote = isPro || quotesThisMonth < 10;
   const canCreatePrinter = isPro || customPrintersCount < 1;
   const canExport = isAnual;
   const canViewReports = isPro;
   const canViewFullHistory = isPro;
 
-  const FREE_QUOTE_LIMIT = 2;
+  const FREE_QUOTE_LIMIT = 10;
   const FREE_PRINTER_LIMIT = 1;
 
   return {
