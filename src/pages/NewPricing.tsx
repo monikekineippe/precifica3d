@@ -1140,9 +1140,9 @@ export default function NewPricing() {
                         <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
                           <Loader2 size={14} className="animate-spin" /> Carregando...
                         </div>
-                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').length === 0 ? (
+                      ) : inventory.filter(item => ['package', 'packaging', 'Embalagem'].includes(item.type)).length === 0 ? (
                         <div className="p-2 text-xs text-muted-foreground">Nenhuma embalagem encontrada.</div>
-                      ) : inventory.filter(item => item.type === 'package' || item.type === 'Embalagem').map((item) => (
+                      ) : inventory.filter(item => ['package', 'packaging', 'Embalagem'].includes(item.type)).map((item) => (
                         <CommandItem
                           key={item.id}
                           value={item.name}
@@ -1234,9 +1234,9 @@ export default function NewPricing() {
                             <div className="p-2 text-xs text-muted-foreground flex items-center gap-2">
                               <Loader2 size={14} className="animate-spin" /> Carregando...
                             </div>
-                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').length === 0 ? (
+                          ) : inventory.filter(item => ['accessory', 'accessories', 'Acessório'].includes(item.type)).length === 0 ? (
                             <div className="p-2 text-xs text-muted-foreground">Nenhum item encontrado.</div>
-                          ) : inventory.filter(item => item.type === 'accessory' || item.type === 'Acessório').map((item) => (
+                          ) : inventory.filter(item => ['accessory', 'accessories', 'Acessório'].includes(item.type)).map((item) => (
                             <CommandItem
                               key={item.id}
                               value={item.name}
