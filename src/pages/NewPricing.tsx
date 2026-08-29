@@ -91,7 +91,7 @@ interface MarginSuggestion {
 export default function NewPricing() {
   const navigate = useNavigate();
   const { user, profile, isPro, isAnual } = useAuth();
-  const { canCreateQuote, quotesThisMonth, refresh } = usePlanLimits();
+  const { canCalculate, calcsThisMonth, refresh } = usePlanLimits();
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [printers, setPrinters] = useState<PrinterRow[]>([]);
   const [catalogPrinters, setCatalogPrinters] = useState<PrinterRow[]>([]);
@@ -506,29 +506,30 @@ export default function NewPricing() {
     { name: "Impostos", value: +taxAmount.toFixed(2) },
   ].filter(d => d.value > 0);
 
-  const FREE_MONTHLY_QUOTE_LIMIT = 10;
+  const FREE_MONTHLY_CALC_LIMIT = 10;
 
   const handleSave = async () => {
     if (!pieceName.trim()) { toast.error("Nome da peça é obrigatório"); return; }
     if (!printer) { toast.error("Selecione uma impressora"); return; }
     if (!user) return;
 
-    // Plano free: máximo de 10 orçamentos salvos no mês atual
+    // Plano free: máximo de 10 cálculos no mês atual (eventos_uso, tipo "calculo")
     if (!isPro) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).toISOString();
       const { count, error: countError } = await supabase
-        .from("orcamentos")
+        .from("eventos_uso")
         .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
+        .eq("tipo", "calculo")
         .gte("created_at", startOfMonth)
         .lt("created_at", startOfNextMonth);
 
       if (countError) {
-        console.error("contar orçamentos do mês", countError);
-      } else if ((count || 0) >= FREE_MONTHLY_QUOTE_LIMIT) {
-        toast.error("Você chegou aos 10 orçamentos do mês no plano gratuito. Faça upgrade pra continuar sem limite.");
+        console.error("contar cálculos do mês", countError);
+      } else if ((count || 0) >= FREE_MONTHLY_CALC_LIMIT) {
+        toast.error("Você chegou aos 10 cálculos do mês no plano gratuito. Faça upgrade pra continuar sem limite.");
         setUpgradeOpen(true);
         return;
       }
@@ -734,7 +735,7 @@ export default function NewPricing() {
     return Math.ceil((nextMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }, []);
 
-  const isBlocked = !canCreateQuote;
+  const isBlocked = !canCalculate;
 
   const panelMissing = useMemo(() => {
     const m: string[] = [];
@@ -769,7 +770,7 @@ export default function NewPricing() {
             </div>
             <h2 className="text-xl font-bold text-foreground">Você atingiu o limite do plano gratuito</h2>
             <p className="text-muted-foreground text-sm">
-              Você já salvou 10 orçamentos este mês. Faça upgrade para o plano Pro e precifique sem limites.
+              Você já usou os 10 cálculos deste mês. Faça upgrade para o plano Pro e calcule sem limites.
             </p>
             <div className="space-y-3">
               <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
