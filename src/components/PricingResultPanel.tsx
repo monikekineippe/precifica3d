@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import type { ChannelResult } from "@/lib/sales-channels";
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export type PriceMode = "margem" | "preco";
+
 
 export interface PricingResultPanelProps {
   suggestedPrice: number;
