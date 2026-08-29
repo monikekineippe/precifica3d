@@ -342,7 +342,14 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
       ) : (
         reverseBlock
       )}
+      {channelResults.length > 0 && (
+        <>
+          <div className="pt-1 border-t border-border" />
+          <ChannelCards results={channelResults} />
+        </>
+      )}
     </>
+
   );
 
   return (
