@@ -435,6 +435,21 @@ export default function NewPricing() {
   const profit = suggestedPrice - minimumPrice;
   const realMargin = suggestedPrice > 0 ? (profit / suggestedPrice) * 100 : 0;
 
+  // Modo preço reverso: parte do preço informado e desconta impostos, comissão e cartão
+  const manualPriceValue = Number(String(manualPrice).replace(",", ".")) || 0;
+  const marketplaceFeeValue = Number(String(marketplaceFee).replace(",", ".")) || 0;
+  const reverseTaxAmount = manualPriceValue * (taxRate / 100);
+  const reverseMarketplaceAmount = manualPriceValue * (marketplaceFeeValue / 100);
+  const reverseCardAmount = applyCardFee ? manualPriceValue * (cardFeePercent / 100) : 0;
+  const reverseDeductions = [
+    { label: `Impostos (${taxRate}%)`, value: reverseTaxAmount },
+    { label: `Comissão de marketplace (${marketplaceFeeValue}%)`, value: reverseMarketplaceAmount },
+    { label: `Taxa de cartão (${cardFeePercent}%)`, value: reverseCardAmount },
+  ].filter(d => d.value > 0);
+  const reverseProfit = manualPriceValue - totalCost - reverseTaxAmount - reverseMarketplaceAmount - reverseCardAmount;
+  const reverseMargin = manualPriceValue > 0 ? (reverseProfit / manualPriceValue) * 100 : 0;
+  const minMarginPct = marginSuggestion?.margem_minima ?? settings.defaultMargin;
+
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
 
