@@ -1664,6 +1664,20 @@ export default function NewPricing() {
       </Dialog>
 
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      </div>
+
+      <PricingResultPanel
+        suggestedPrice={suggestedPrice}
+        profit={profit}
+        realMargin={realMargin}
+        totalCost={totalCost}
+        margin={margin}
+        onMarginChange={setMargin}
+        lines={panelLines}
+        missing={panelMissing}
+      />
+      </div>
     </div>
   );
 }
+
