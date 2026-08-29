@@ -34,6 +34,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import PricingResultPanel from "@/components/PricingResultPanel";
+
 
 const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)", "hsl(30,80%,50%)", "hsl(310,60%,55%)"];
 const FILAMENT_COLORS = ["#00ccaa", "#3399ff", "#ff6633", "#cc33ff", "#ffcc00", "#00ff88", "#ff3366", "#6633ff"];
@@ -667,8 +669,31 @@ export default function NewPricing() {
 
   const isBlocked = !canCreateQuote;
 
+  const panelMissing = useMemo(() => {
+    const m: string[] = [];
+    if (!pieceName.trim()) m.push("Nome da peça");
+    if (!printer) m.push("Impressora");
+    if (printTimeH <= 0) m.push("Tempo de impressão");
+    if (totalWeight <= 0) m.push("Peso do filamento");
+    if (totalFilamentCost <= 0) m.push("Custo do filamento por kg");
+    return m;
+  }, [pieceName, printer, printTimeH, totalWeight, totalFilamentCost]);
+
+  const panelLines = useMemo(() => ([
+    { label: "Material", value: totalFilamentCost },
+    { label: "Energia", value: energyCost },
+    { label: "Depreciação da impressora", value: depreciationCost },
+    { label: "Manutenção", value: maintenanceCost },
+    { label: "Mão de obra", value: laborCost + postProcessCost },
+    { label: "Falha e risco", value: failureCost },
+    { label: "Custos extras", value: totalPkgCost + totalAccessoriesCost },
+  ]), [totalFilamentCost, energyCost, depreciationCost, maintenanceCost, laborCost, postProcessCost, failureCost, totalPkgCost, totalAccessoriesCost]);
+
   return (
-    <div className="space-y-6 max-w-3xl relative">
+    <div className="relative pb-24 lg:pb-0">
+      <div className="lg:flex lg:gap-6 lg:items-start">
+      <div className="space-y-6 flex-1 min-w-0 max-w-3xl">
+
       {isBlocked && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
           <div className="bg-card border border-border rounded-xl p-8 max-w-md mx-4 text-center space-y-5 shadow-2xl">
@@ -1641,6 +1666,20 @@ export default function NewPricing() {
       </Dialog>
 
       <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+      </div>
+
+      <PricingResultPanel
+        suggestedPrice={suggestedPrice}
+        profit={profit}
+        realMargin={realMargin}
+        totalCost={totalCost}
+        margin={margin}
+        onMarginChange={setMargin}
+        lines={panelLines}
+        missing={panelMissing}
+      />
+      </div>
     </div>
   );
 }
+
