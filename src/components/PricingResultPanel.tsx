@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronUp, ChevronDown, AlertCircle, AlertTriangle } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ChannelResult } from "@/lib/sales-channels";
 
@@ -38,6 +39,37 @@ export interface PricingResultPanelProps {
   reverseMargin: number;
   minMargin: number;
   channelResults?: ChannelResult[];
+  // Limite do plano gratuito atingido: preço, lucro e comparador ficam desfocados
+  limitReached?: boolean;
+  onUpgrade?: () => void;
+}
+
+function LimitOverlay({
+  children,
+  onUpgrade,
+}: {
+  children: ReactNode;
+  onUpgrade?: () => void;
+}) {
+  return (
+    <div className="relative">
+      <div className="blur-md select-none pointer-events-none" aria-hidden="true">
+        {children}
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center px-3">
+        <p className="text-xs text-foreground font-medium">
+          Você usou seus 10 cálculos do mês. Faça upgrade pra ver o preço.
+        </p>
+        <Button
+          size="sm"
+          onClick={onUpgrade}
+          className="bg-primary text-primary-foreground font-semibold"
+        >
+          Fazer upgrade
+        </Button>
+      </div>
+    </div>
+  );
 }
 
 function ChannelCards({ results }: { results: ChannelResult[] }) {
@@ -204,7 +236,8 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
     reverseMargin,
     minMargin,
     channelResults = [],
-
+    limitReached = false,
+    onUpgrade,
   } = props;
   const [expanded, setExpanded] = useState(false);
   const incomplete = missing.length > 0;
@@ -272,42 +305,51 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
 
       {priceValue > 0 && (
         <>
-          <div
-            className={cn(
-              "rounded-lg border p-3 space-y-1",
-              loss
-                ? "border-destructive/50 bg-destructive/10"
-                : tight
-                ? "border-yellow-500/50 bg-yellow-500/10"
-                : "border-border bg-muted/40"
-            )}
-          >
-            <p className="text-xs text-muted-foreground">Lucro nesse preço</p>
-            <p
-              className={cn(
-                "text-2xl font-bold font-mono leading-tight",
-                loss ? "text-destructive" : tight ? "text-yellow-500" : "text-primary"
-              )}
-            >
-              {brl(reverseProfit)}
-            </p>
-            <p className="text-xs text-muted-foreground font-mono">
-              Margem real: {reverseMargin.toFixed(1)}% do preço
-            </p>
-            {loss && (
-              <p className="flex items-start gap-1.5 text-xs text-destructive font-medium pt-1">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                Nesse preço você paga pra trabalhar. Prejuízo de{" "}
-                {brl(Math.abs(reverseProfit))} por peça.
-              </p>
-            )}
-            {tight && (
-              <p className="flex items-start gap-1.5 text-xs text-yellow-500 font-medium pt-1">
-                <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                Margem apertada: abaixo do seu mínimo.
-              </p>
-            )}
-          </div>
+          {(() => {
+            const resultCard = (
+              <div
+                className={cn(
+                  "rounded-lg border p-3 space-y-1",
+                  loss
+                    ? "border-destructive/50 bg-destructive/10"
+                    : tight
+                    ? "border-yellow-500/50 bg-yellow-500/10"
+                    : "border-border bg-muted/40"
+                )}
+              >
+                <p className="text-xs text-muted-foreground">Lucro nesse preço</p>
+                <p
+                  className={cn(
+                    "text-2xl font-bold font-mono leading-tight",
+                    loss ? "text-destructive" : tight ? "text-yellow-500" : "text-primary"
+                  )}
+                >
+                  {brl(reverseProfit)}
+                </p>
+                <p className="text-xs text-muted-foreground font-mono">
+                  Margem real: {reverseMargin.toFixed(1)}% do preço
+                </p>
+                {loss && (
+                  <p className="flex items-start gap-1.5 text-xs text-destructive font-medium pt-1">
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                    Nesse preço você paga pra trabalhar. Prejuízo de{" "}
+                    {brl(Math.abs(reverseProfit))} por peça.
+                  </p>
+                )}
+                {tight && (
+                  <p className="flex items-start gap-1.5 text-xs text-yellow-500 font-medium pt-1">
+                    <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                    Margem apertada: abaixo do seu mínimo.
+                  </p>
+                )}
+              </div>
+            );
+            return limitReached ? (
+              <LimitOverlay onUpgrade={onUpgrade}>{resultCard}</LimitOverlay>
+            ) : (
+              resultCard
+            );
+          })()}
 
           {reverseDeductions.length > 0 && (
             <div className="space-y-1.5">
@@ -334,7 +376,7 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
       <Tabs mode={mode} onModeChange={onModeChange} />
       {mode === "margem" ? (
         <>
-          {header}
+          {limitReached ? <LimitOverlay onUpgrade={onUpgrade}>{header}</LimitOverlay> : header}
           <div className="pt-1 border-t border-border" />
           <Breakdown lines={lines} totalCost={totalCost} />
           <MarginSlider margin={margin} onMarginChange={onMarginChange} />
@@ -345,7 +387,13 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
       {channelResults.length > 0 && (
         <>
           <div className="pt-1 border-t border-border" />
-          <ChannelCards results={channelResults} />
+          {limitReached ? (
+            <LimitOverlay onUpgrade={onUpgrade}>
+              <ChannelCards results={channelResults} />
+            </LimitOverlay>
+          ) : (
+            <ChannelCards results={channelResults} />
+          )}
         </>
       )}
     </>
@@ -380,7 +428,8 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
               <span
                 className={cn(
                   "text-xs font-mono",
-                  loss ? "text-destructive" : tight ? "text-yellow-500" : "text-accent"
+                  loss ? "text-destructive" : tight ? "text-yellow-500" : "text-accent",
+                  limitReached && "blur-sm select-none"
                 )}
               >
                 lucro {brl(reverseProfit)}
@@ -388,10 +437,22 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
             </span>
           ) : (
             <span className="flex items-baseline gap-3">
-              <span className="text-lg font-bold font-mono text-primary">
+              <span
+                className={cn(
+                  "text-lg font-bold font-mono text-primary",
+                  limitReached && "blur-sm select-none"
+                )}
+              >
                 {brl(suggestedPrice)}
               </span>
-              <span className="text-xs font-mono text-accent">lucro {brl(profit)}</span>
+              <span
+                className={cn(
+                  "text-xs font-mono text-accent",
+                  limitReached && "blur-sm select-none"
+                )}
+              >
+                lucro {brl(profit)}
+              </span>
             </span>
           )}
           {expanded ? (
