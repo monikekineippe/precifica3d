@@ -211,6 +211,11 @@ export default function NewPricing() {
   const [margin, setMargin] = useState(settings.defaultMargin);
   const [taxRate, setTaxRate] = useState(settings.defaultTaxRate);
   const [failureRate, setFailureRate] = useState(5);
+  // Modo de precificação: margem (padrão) ou preço reverso
+  const [priceMode, setPriceMode] = useState<"margem" | "preco">("margem");
+  const [manualPrice, setManualPrice] = useState("");
+  const [marketplaceFee, setMarketplaceFee] = useState("");
+  const [applyCardFee, setApplyCardFee] = useState(false);
   const [finishHours, setFinishHours] = useState(0);
   const [finishMinutes, setFinishMinutes] = useState(0);
   const [finishRate, setFinishRate] = useState<number | "">("");
@@ -430,6 +435,23 @@ export default function NewPricing() {
   const profit = suggestedPrice - minimumPrice;
   const realMargin = suggestedPrice > 0 ? (profit / suggestedPrice) * 100 : 0;
 
+  // Modo preço reverso: parte do preço informado e desconta impostos, comissão e cartão
+  const manualPriceValue = Number(String(manualPrice).replace(",", ".")) || 0;
+  const marketplaceFeeValue = Number(String(marketplaceFee).replace(",", ".")) || 0;
+  const reverseTaxAmount = manualPriceValue * (taxRate / 100);
+  const reverseMarketplaceAmount = manualPriceValue * (marketplaceFeeValue / 100);
+  const reverseCardAmount = applyCardFee ? manualPriceValue * (cardFeePercent / 100) : 0;
+  const reverseDeductions = [
+    { label: `Impostos (${taxRate}%)`, value: reverseTaxAmount },
+    { label: `Comissão de marketplace (${marketplaceFeeValue}%)`, value: reverseMarketplaceAmount },
+    { label: `Taxa de cartão (${cardFeePercent}%)`, value: reverseCardAmount },
+  ].filter(d => d.value > 0);
+  const reverseProfit = manualPriceValue - totalCost - reverseTaxAmount - reverseMarketplaceAmount - reverseCardAmount;
+  const reverseMargin = manualPriceValue > 0 ? (reverseProfit / manualPriceValue) * 100 : 0;
+  const minMarkup = marginSuggestion?.margem_minima ?? settings.defaultMargin;
+  // Converte markup sobre custo em margem sobre o preço, pra comparar com a margem real
+  const minMarginPct = minMarkup > 0 ? (minMarkup / (100 + minMarkup)) * 100 : 0;
+
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
 
@@ -521,12 +543,12 @@ export default function NewPricing() {
       quantidade_embalagem: pkgQty,
       acessorios: accessories as any,
       custo_acessorios: totalAccessoriesCost,
-      margem_lucro: margin, 
+      margem_lucro: priceMode === "preco" ? Number(reverseMargin.toFixed(2)) : margin,
       percentual_impostos: taxRate,
       custo_total: totalCost, 
-      preco_sugerido: suggestedPrice, 
+      preco_sugerido: priceMode === "preco" ? manualPriceValue : suggestedPrice, 
       preco_minimo: minimumPrice,
-      lucro_liquido: profit,
+      lucro_liquido: priceMode === "preco" ? Number(reverseProfit.toFixed(2)) : profit,
     };
 
     console.log("Saving quote to 'orcamentos' table:", quoteData);
@@ -1677,6 +1699,20 @@ export default function NewPricing() {
         onMarginChange={setMargin}
         lines={panelLines}
         missing={panelMissing}
+        mode={priceMode}
+        onModeChange={setPriceMode}
+        manualPrice={manualPrice}
+        onManualPriceChange={setManualPrice}
+        marketplaceFee={marketplaceFee}
+        onMarketplaceFeeChange={setMarketplaceFee}
+        applyCardFee={applyCardFee}
+        onApplyCardFeeChange={setApplyCardFee}
+        cardFeePercent={cardFeePercent}
+        taxRate={taxRate}
+        reverseDeductions={reverseDeductions}
+        reverseProfit={reverseProfit}
+        reverseMargin={reverseMargin}
+        minMargin={minMarginPct}
       />
       </div>
     </div>
