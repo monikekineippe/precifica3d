@@ -203,6 +203,8 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
     reverseProfit,
     reverseMargin,
     minMargin,
+    channelResults = [],
+
   } = props;
   const [expanded, setExpanded] = useState(false);
   const incomplete = missing.length > 0;
