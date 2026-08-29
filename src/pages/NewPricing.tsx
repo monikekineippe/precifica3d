@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 // Antes de realizar qualquer ação, entenda o contexto e instrução recente do usuário, comando mais recente enviado por ele: Quero adicionar 5 melhorias na calculadora de precificação (tela /new). Não altere os cálculos que já funcionam (filamento, energia, mão de obra, manutenção, depreciação, pós-processamento, embalagem, acessórios, impostos, margem). Apenas some os itens abaixo e garanta que todos entrem no Custo Total, no Preço Mínimo, no Preço Sugerido, no Lucro Líquido e nos preços de marketplace. 1. RETRABALHO / TAXA DE FALHA (%) Se ainda não existir, adicione um campo "Retrabalho / Taxa de falha (%)", padrão 5%. Ele infla o custo de produção pela fórmula: custo_ajustado = custo_de_producao / (1 - taxa/100). A ideia: peças que falham consomem material, energia e desgaste, e esse desperdício é diluído nas peças boas. Mostre o valor de "custo de falha" embutido. 2. URGÊNCIA (%) Adicione um campo "Urgência (%)", padrão 0. Quando preenchido, aplica um acréscimo percentual sobre o preço final de venda (pedido com prazo apertado custa mais). Deixe claro no resultado quanto do preço veio da urgência. 3. AQUISIÇÃO DE MODELO (R$) Adicione um campo "Aquisição de modelo (R$)", padrão 0, para quando eu compro o arquivo/STL em vez de modelar. Esse valor entra no custo de produção. Se a mesma compra rende várias peças, dividir pelo número de peças (usar a quantidade do orçamento). 4. TAXA DE CARTÃO (%) Adicione um campo "Taxa de cartão (%)", padrão 0. Assim como já acontece com impostos e comissão de marketplace, essa taxa deve ser considerada no cálculo para que o Preço Sugerido preserve a margem líquida depois de descontada. Ou seja: o preço sobe o suficiente para que, após a taxa de cartão, sobre a margem que defini. 5. PESO COM SUPORTE E PURGA No campo de peso do filamento, deixe uma dica curta: "use o peso que o fatiador mostra, já com suporte e purga". Adicione também um campo opcional "Desperdício de suporte/purga (%)", padrão 0, que aumenta o peso considerado do filamento por esse percentual (para quem informa só o peso da peça limpa). Regras: - Use dados reais, sem mock. - Mantenha layout, identidade visual e os cálculos existentes. - NÃO use travessão (—). Use vírgula, ponto ou dois-pontos. - Português do Brasil.
 
-import { CHECKOUT_MENSAL, CHECKOUT_ANUAL } from "@/lib/checkout-links";
 import { getTariffByState, getDistributorsByState } from "@/lib/energy-tariffs";
 import { useNavigate } from "react-router-dom";
 import {
@@ -457,6 +456,33 @@ export default function NewPricing() {
   // Converte markup sobre custo em margem sobre o preço, pra comparar com a margem real
   const minMarginPct = minMarkup > 0 ? (minMarkup / (100 + minMarkup)) * 100 : 0;
 
+  // Registra o evento de cálculo quando o painel exibe um preço válido pra uma peça completa:
+  // impressora selecionada, ao menos um filamento com peso e tempo de impressão preenchidos.
+  // Espera 2 segundos de estabilidade dos campos (debounce) e grava no máximo 1 evento por
+  // peça na mesma visita à página. Com o limite do plano atingido o preço fica desfocado,
+  // então não conta um novo cálculo.
+  const recordedCalcPiecesRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!user) return;
+    if (!canCalculate) return;
+    const isComplete = Boolean(printer) && totalWeight > 0 && printTimeH > 0 && suggestedPrice > 0;
+    if (!isComplete) return;
+    const pieceKey = pieceName.trim().toLowerCase();
+    if (recordedCalcPiecesRef.current.has(pieceKey)) return;
+
+    const timer = setTimeout(async () => {
+      if (recordedCalcPiecesRef.current.has(pieceKey)) return;
+      recordedCalcPiecesRef.current.add(pieceKey);
+      try {
+        await (supabase.from("eventos_uso") as any).insert([{ user_id: user.id, tipo: "calculo" }]);
+      } catch (e) {
+        console.warn("Could not log calc event", e);
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [user, canCalculate, printer, totalWeight, printTimeH, suggestedPrice, pieceName]);
+
   // Comparador de canais de venda: preserva a margem líquida escolhida
   const targetMarginPct = priceMode === "preco" ? reverseMargin : realMargin;
   const channelResults = useMemo(
@@ -610,10 +636,10 @@ export default function NewPricing() {
 
       console.log("Quote saved successfully:", data);
 
-      // Track usage events (calculo + orcamento)
+      // Track usage event (orcamento). O evento de calculo é registrado quando o painel
+      // exibe um preço válido, não no salvamento.
       try {
         await (supabase.from("eventos_uso") as any).insert([
-          { user_id: user.id, tipo: "calculo" },
           { user_id: user.id, tipo: "orcamento" },
         ]);
       } catch (e) {
@@ -729,13 +755,7 @@ export default function NewPricing() {
   };
 
 
-  const daysUntilReset = useMemo(() => {
-    const now = new Date();
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    return Math.ceil((nextMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  }, []);
-
-  const isBlocked = !canCalculate;
+  const limitReached = !canCalculate;
 
   const panelMissing = useMemo(() => {
     const m: string[] = [];
@@ -761,38 +781,6 @@ export default function NewPricing() {
     <div className="relative pb-24 lg:pb-0">
       <div className="lg:flex lg:gap-6 lg:items-start">
       <div className="space-y-6 flex-1 min-w-0 max-w-3xl">
-
-      {isBlocked && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="bg-card border border-border rounded-xl p-8 max-w-md mx-4 text-center space-y-5 shadow-2xl">
-            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Lock className="text-primary" size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">Você atingiu o limite do plano gratuito</h2>
-            <p className="text-muted-foreground text-sm">
-              Você já usou os 10 cálculos deste mês. Faça upgrade para o plano Pro e calcule sem limites.
-            </p>
-            <div className="space-y-3">
-              <a href={CHECKOUT_MENSAL} target="_blank" rel="noopener noreferrer" className="block">
-                <Button className="w-full bg-primary text-primary-foreground font-semibold" size="lg">
-                  Assinar Pro Mensal R$ 29,90/mês
-                </Button>
-              </a>
-              <a href={CHECKOUT_ANUAL} target="_blank" rel="noopener noreferrer" className="block">
-                <Button variant="outline" className="w-full border-primary/50 text-primary hover:bg-primary/10" size="lg">
-                  Assinar Pro Anual R$ 239,90/ano
-                </Button>
-              </a>
-              <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => navigate("/")}>
-                Voltar ao Dashboard
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Limite reinicia em <span className="font-semibold text-foreground">{daysUntilReset} dias</span>
-            </p>
-          </div>
-        </div>
-      )}
 
       <div>
         <h1 className="text-2xl font-bold text-foreground">Nova Precificação</h1>
@@ -1767,6 +1755,8 @@ export default function NewPricing() {
         reverseMargin={reverseMargin}
         minMargin={minMarginPct}
         channelResults={channelResults}
+        limitReached={limitReached}
+        onUpgrade={() => setUpgradeOpen(true)}
       />
       </div>
     </div>
