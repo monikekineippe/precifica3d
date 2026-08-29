@@ -35,6 +35,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import PricingResultPanel from "@/components/PricingResultPanel";
+import SalesChannelsSection from "@/components/SalesChannelsSection";
+import { DEFAULT_SALES_CHANNELS, mergeChannelConfig, channelConfigToJson, calcChannelPrice, type SalesChannel } from "@/lib/sales-channels";
 
 
 const COLORS = ["hsl(173,80%,50%)", "hsl(200,100%,60%)", "hsl(160,100%,50%)", "hsl(280,80%,60%)", "hsl(40,90%,55%)", "hsl(0,70%,55%)", "hsl(30,80%,50%)", "hsl(310,60%,55%)"];
@@ -100,6 +102,8 @@ export default function NewPricing() {
   const [pixDiscount, setPixDiscount] = useState(0);
   const [cardFeePercent, setCardFeePercent] = useState(4.99);
   const [maxInstallments, setMaxInstallments] = useState(12);
+  const [salesChannels, setSalesChannels] = useState<SalesChannel[]>(DEFAULT_SALES_CHANNELS);
+  const [selectedChannels, setSelectedChannels] = useState<string[]>([]);
 
   const [inventory, setInventory] = useState<any[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
@@ -126,6 +130,7 @@ export default function NewPricing() {
           .then(({ data: settingsData }) => {
             if (settingsData) {
               setSettings({ defaultTariff: settingsData.default_tariff, defaultMargin: settingsData.default_margin, defaultTaxRate: settingsData.default_tax_rate });
+              setSalesChannels(mergeChannelConfig((settingsData as any).sales_channels));
               setMargin(settingsData.default_margin);
               setTaxRate(settingsData.default_tax_rate);
               // Apply saved defaults
@@ -452,6 +457,38 @@ export default function NewPricing() {
   // Converte markup sobre custo em margem sobre o preço, pra comparar com a margem real
   const minMarginPct = minMarkup > 0 ? (minMarkup / (100 + minMarkup)) * 100 : 0;
 
+  // Comparador de canais de venda: preserva a margem líquida escolhida
+  const targetMarginPct = priceMode === "preco" ? reverseMargin : realMargin;
+  const channelResults = useMemo(
+    () =>
+      salesChannels
+        .filter(c => selectedChannels.includes(c.id))
+        .map(c =>
+          calcChannelPrice(c, {
+            totalCost,
+            taxRate,
+            cardFeePercent,
+            applyCardFee,
+            targetMarginPct,
+          })
+        ),
+    [salesChannels, selectedChannels, totalCost, taxRate, cardFeePercent, applyCardFee, targetMarginPct]
+  );
+
+  const toggleChannel = (id: string) =>
+    setSelectedChannels(prev => (prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]));
+
+  const handleChannelFeeChange = async (id: string, percent: number, fixed: number) => {
+    const next = salesChannels.map(c => (c.id === id ? { ...c, percent, fixed } : c));
+    setSalesChannels(next);
+    if (user) {
+      await supabase.from("user_settings").upsert({
+        user_id: user.id,
+        sales_channels: channelConfigToJson(next),
+      } as any, { onConflict: 'user_id' });
+    }
+  };
+
   const calcPriceForMargin = (m: number) => minimumPrice * (1 + m / 100);
   const calcProfitForMargin = (m: number) => calcPriceForMargin(m) - minimumPrice;
 
@@ -549,6 +586,14 @@ export default function NewPricing() {
       preco_sugerido: priceMode === "preco" ? manualPriceValue : suggestedPrice, 
       preco_minimo: minimumPrice,
       lucro_liquido: priceMode === "preco" ? Number(reverseProfit.toFixed(2)) : profit,
+      canais_venda: channelResults.map(c => ({
+        id: c.id,
+        nome: c.name,
+        percentual: c.percent,
+        taxa_fixa: c.fixed,
+        preco: Number(c.price.toFixed(2)),
+        lucro: Number(c.profit.toFixed(2)),
+      })) as any,
     };
 
     console.log("Saving quote to 'orcamentos' table:", quoteData);
@@ -1389,6 +1434,13 @@ export default function NewPricing() {
             </p>
           )}
 
+          <SalesChannelsSection
+            channels={salesChannels}
+            selected={selectedChannels}
+            onToggle={toggleChannel}
+            onFeeChange={handleChannelFeeChange}
+          />
+
           {/* BLOCK 3 Result Panel */}
           <div className="grid grid-cols-2 gap-3">
             <div className="p-3 rounded-lg bg-muted/50 border border-border text-center">
@@ -1713,6 +1765,7 @@ export default function NewPricing() {
         reverseProfit={reverseProfit}
         reverseMargin={reverseMargin}
         minMargin={minMarginPct}
+        channelResults={channelResults}
       />
       </div>
     </div>

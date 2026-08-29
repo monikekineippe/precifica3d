@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import type { ChannelResult } from "@/lib/sales-channels";
 
 const brl = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export type PriceMode = "margem" | "preco";
+
 
 export interface PricingResultPanelProps {
   suggestedPrice: number;
@@ -35,7 +37,47 @@ export interface PricingResultPanelProps {
   reverseProfit: number;
   reverseMargin: number;
   minMargin: number;
+  channelResults?: ChannelResult[];
 }
+
+function ChannelCards({ results }: { results: ChannelResult[] }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-foreground font-semibold">Preço por canal</p>
+      <div className="grid grid-cols-2 gap-2">
+        {results.map((r) => (
+          <div
+            key={r.id}
+            className={cn(
+              "rounded-lg border p-2",
+              r.profit < 0 ? "border-destructive/50 bg-destructive/10" : "border-border bg-muted/40"
+            )}
+          >
+            <p className="text-[11px] text-foreground font-medium truncate">{r.name}</p>
+            <p className="text-sm font-bold font-mono text-primary leading-tight">
+              {brl(r.price)}
+            </p>
+            <p
+              className={cn(
+                "text-[10px] font-mono",
+                r.profit < 0 ? "text-destructive" : "text-accent"
+              )}
+            >
+              lucro {brl(r.profit)}
+            </p>
+            <p className="text-[10px] text-muted-foreground font-mono">
+              {r.percent}%{r.fixed > 0 ? ` + ${brl(r.fixed)}` : ""}
+            </p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Taxas padrão de mercado, confira as condições do seu contrato.
+      </p>
+    </div>
+  );
+}
+
 
 function Breakdown({
   lines,
@@ -161,6 +203,8 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
     reverseProfit,
     reverseMargin,
     minMargin,
+    channelResults = [],
+
   } = props;
   const [expanded, setExpanded] = useState(false);
   const incomplete = missing.length > 0;
@@ -298,7 +342,14 @@ export default function PricingResultPanel(props: PricingResultPanelProps) {
       ) : (
         reverseBlock
       )}
+      {channelResults.length > 0 && (
+        <>
+          <div className="pt-1 border-t border-border" />
+          <ChannelCards results={channelResults} />
+        </>
+      )}
     </>
+
   );
 
   return (
